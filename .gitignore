@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Confidential Knowledge Base & Documents (DO NOT COMMIT)
+*.pdf
+*.PDF
+papers/
+data/papers/
+data/pdf/
+data/raw/
+DRIVE_KNOWLEDGE.md
+KNOWLEDGE_BASE.md
+TRELLO_KNOWLEDGE.md
+Ekstrak/
+data/
+
+# Vector database & persistent caches
+*.faiss
+*.pkl
+data/faiss/
+faiss_index/
+cache/
+.cache/
+
+# Local AI Agent instructions & notes (Confidential / Internal)
+AGENTS.md
+agents.md
+*AGENT*.md
+*agent*.md
+CLAUDE.md
+.agents/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+*.swp
