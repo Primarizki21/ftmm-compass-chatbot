@@ -108,20 +108,19 @@ class EntityExtractor:
             if detected_prodi:
                 break
                 
-        # 4. SOP keywords
+        # 4. SOP keywords (word boundary matching to avoid partial word collisions)
         detected_sops = []
         for sop_label, keywords in self.SOP_KEYWORDS.items():
             for kw in keywords:
-                if kw in lower:
+                if re.search(r"\b" + re.escape(kw) + r"\b", lower):
                     detected_sops.append(sop_label)
                     break
                     
-        # 5. Career interests
+        # 5. Career interests (word boundary matching)
         detected_careers = []
         for ck in self.CAREER_KEYWORDS:
-            if ck in lower:
+            if re.search(r"\b" + re.escape(ck) + r"\b", lower):
                 detected_careers.append(ck)
-                
         return ExtractedEntities(
             course_codes=codes,
             program_studi=detected_prodi,
