@@ -140,9 +140,9 @@ class IntentClassifier:
     )
     
     OUT_OF_SCOPE_TRIGGERS = [
-        "resep", "masak", "makanan", "restoran", "kuliner",
-        "siapa presiden", "pemilu", "partai", "politik",
-        "ramalan cuaca", "buatkan puisi", "cerpen", "film",
+        "resep", "masak", "makanan", "restoran", "kuliner", "rendang", "sapi", "ayam", "kue",
+        "siapa presiden", "pemilu", "partai", "politik", "pilpres", "gubernur",
+        "ramalan cuaca", "buatkan puisi", "cerpen", "film", "lagu", "game", "sepak bola",
         "hack", "jailbreak", "ignore previous instructions", "bypass system"
     ]
     
@@ -189,9 +189,18 @@ class IntentClassifier:
         if entities.sop_keywords:
             return IntentType.REGULATION_FAQ, 0.92, f"Menanyakan aturan/SOP akademik: {entities.sop_keywords}"
 
-        # 6. Fallback Rule-of-thumb: check if question about faculty rules
-        if any(w in lower for w in ["aturan", "syarat", "cara", "bagaimana", "prosedur", "surat"]):
-            return IntentType.REGULATION_FAQ, 0.75, "Pertanyaan seputar tata cara atau prosedur akademik."
+        # 6. Fallback Check: pastikan ada konteks akademik FTMM
+        academic_context_words = [
+            "ftmm", "unair", "kampus", "kuliah", "akademik", "sks", "dosen", "mata kuliah", "matkul",
+            "semester", "mahasiswa", "lulus", "daftar", "bayar", "ukt", "ipk", "ips", "krs", "prasyarat"
+        ]
+        has_academic_context = any(w in lower for w in academic_context_words)
+        
+        if any(w in lower for w in ["aturan", "syarat", "prosedur", "surat", "cara", "bagaimana"]) and has_academic_context:
+            return IntentType.REGULATION_FAQ, 0.80, "Pertanyaan seputar tata cara atau prosedur akademik FTMM."
+
+        if not has_academic_context and not entities.course_codes and not entities.sop_keywords:
+            return IntentType.OUT_OF_SCOPE, 0.70, "Pertanyaan tidak teridentifikasi memiliki konteks kurikulum/akademik FTMM."
 
         # Default fallback to RAG for exploratory questions
         return IntentType.COURSE_SYLLABUS, 0.60, "Pertanyaan informasional kurikulum umum."

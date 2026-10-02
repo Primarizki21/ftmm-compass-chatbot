@@ -1,3 +1,4 @@
+from .base import EngineResult
 from .router import (
     IntentType,
     RoutingMode,
@@ -8,8 +9,12 @@ from .router import (
     HybridRouter,
     get_router,
 )
+from .pure_rag import PureRAGEngine
+from .pure_cag import PureCAGEngine
+from .hybrid_rag_cag import HybridRAGCAGEngine
 
 __all__ = [
+    "EngineResult",
     "IntentType",
     "RoutingMode",
     "ExtractedEntities",
@@ -18,4 +23,7 @@ __all__ = [
     "IntentClassifier",
     "HybridRouter",
     "get_router",
+    "PureRAGEngine",
+    "PureCAGEngine",
+    "HybridRAGCAGEngine",
 ]
