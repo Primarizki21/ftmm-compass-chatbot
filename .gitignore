@@ -25,6 +25,8 @@ venv/
 papers/
 data/papers/
 data/pdf/
+knowledge_base_riset_chatbot_rag_cag_intent_classification.md*
+*:Zone.Identifier
 data/raw/
 DRIVE_KNOWLEDGE.md
 KNOWLEDGE_BASE.md
