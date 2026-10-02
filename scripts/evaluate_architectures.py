@@ -17,14 +17,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import numpy as np
 import ollama
+import csv
 from src.evaluation.dataset import load_dataset
 from src.engine import PureRAGEngine, PureCAGEngine, HybridRAGCAGEngine
 
-OUTPUT_DIR = Path("data")
-RESULTS_JSON_PATH = OUTPUT_DIR / "benchmark_results.json"
-SUMMARY_MD_PATH = OUTPUT_DIR / "benchmark_summary.md"
+DEFAULT_OUTPUT_DIR = Path("docs/exp-001_baseline_cag_rag_hybrid")
 EMBED_MODEL = "nomic-embed-text"
-
 
 def compute_cosine_similarity(vec_a: list[float], vec_b: list[float]) -> float:
     a = np.array(vec_a, dtype=np.float32)
@@ -47,11 +45,15 @@ def compute_fact_recall(answer: str, key_facts: list[str]) -> float:
     return float(hits / len(key_facts))
 
 
-def run_evaluation(sample_limit: int | None = None):
+def run_evaluation(sample_limit: int | None = None, output_dir: Path = DEFAULT_OUTPUT_DIR):
+    output_dir.mkdir(parents=True, exist_ok=True)
+    results_json_path = output_dir / "benchmark_results.json"
+    summary_md_path = output_dir / "benchmark_summary.md"
+    metrics_csv_path = output_dir / "benchmark_metrics.csv"
+    
     dataset = load_dataset()
     sub_a = dataset["subset_a_formal"]
     sub_b = dataset["subset_b_informal"]
-
     if sample_limit:
         sub_a = sub_a[:sample_limit]
         sub_b = sub_b[:sample_limit]
@@ -125,17 +127,29 @@ def run_evaluation(sample_limit: int | None = None):
             except Exception as e:
                 print(f"    [ERROR] {eng_name} gagal pada {q_id}: {e}")
 
-    # Simpan hasil mentah
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    with open(RESULTS_JSON_PATH, "w", encoding="utf-8") as f:
+    # Simpan hasil mentah JSON
+    with open(results_json_path, "w", encoding="utf-8") as f:
         json.dump(records, f, indent=2, ensure_ascii=False)
-    print(f"\n[SUKSES] Hasil mentah disimpan di {RESULTS_JSON_PATH}")
+    print(f"\n[SUKSES] Hasil mentah disimpan di {results_json_path}")
+
+    # Simpan hasil metrik CSV
+    fieldnames = [
+        "sample_id", "category", "formality", "question", "architecture",
+        "retrieval_latency_ms", "generation_latency_ms", "total_latency_ms",
+        "semantic_similarity", "fact_recall", "correctness_score", "routing_mode"
+    ]
+    with open(metrics_csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for r in records:
+            row = {k: r.get(k, "") for k in fieldnames}
+            writer.writerow(row)
+    print(f"[SUKSES] Metrik tabular diekspor ke {metrics_csv_path}")
 
     # Hitung agregat dan sintesis tabel
-    synthesize_and_save_summary(records)
+    synthesize_and_save_summary(records, summary_md_path)
 
-
-def synthesize_and_save_summary(records: list[dict]):
+def synthesize_and_save_summary(records: list[dict], summary_md_path: Path):
     """Menghitung metrik agregat dan menulis kesimpulan RQ1-RQ3 ke Markdown."""
     archs = ["Pure RAG", "Pure CAG", "Hybrid RAG-CAG"]
     formalities = ["formal", "informal"]
@@ -239,19 +253,21 @@ def synthesize_and_save_summary(records: list[dict]):
     ])
 
     md_content = "\n".join(lines)
-    with open(SUMMARY_MD_PATH, "w", encoding="utf-8") as f:
+    with open(summary_md_path, "w", encoding="utf-8") as f:
         f.write(md_content)
 
-    print(f"\n[SUKSES] Ringkasan benchmark tersimpan di {SUMMARY_MD_PATH}\n")
+    print(f"\n[SUKSES] Ringkasan benchmark tersimpan di {summary_md_path}\n")
     print(md_content)
 
 
 def main():
     parser = argparse.ArgumentParser(description="Jalankan evaluasi komparatif 3 arsitektur chatbot.")
     parser.add_argument("--sample", type=int, default=None, help="Batasi jumlah sampel per subset untuk pengujian cepat.")
+    parser.add_argument("--exp-id", type=str, default="exp-001_baseline_cag_rag_hybrid", help="ID folder eksperimen di docs/ (contoh: exp-001_baseline_cag_rag_hybrid)")
     args = parser.parse_args()
 
-    run_evaluation(sample_limit=args.sample)
+    out_dir = Path("docs") / args.exp_id
+    run_evaluation(sample_limit=args.sample, output_dir=out_dir)
 
 
 if __name__ == "__main__":
