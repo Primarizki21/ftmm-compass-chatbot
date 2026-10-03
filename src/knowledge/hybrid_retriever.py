@@ -24,6 +24,7 @@ class HybridCourseRetriever:
         for r, hit in enumerate(raw_results, start=1):
             course = hit["course"]
             results.append({
+                "doc_idx": hit.get("doc_idx", -1),
                 "course_id": course["id"],
                 "kode_mk": course["kode_mk"],
                 "nama_mk": course["nama_mk"],
@@ -41,6 +42,7 @@ class HybridCourseRetriever:
         for r, (idx, score) in enumerate(ranked, start=1):
             course = self.courses[idx]
             results.append({
+                "doc_idx": int(idx),
                 "course_id": course["id"],
                 "kode_mk": course["kode_mk"],
                 "nama_mk": course["nama_mk"],
@@ -69,21 +71,21 @@ class HybridCourseRetriever:
         payloads: dict[str, dict[str, Any]] = {}
 
         for rank, hit in enumerate(dense_hits, start=1):
-            cid = hit["course_id"]
-            scores[cid] = scores.get(cid, 0.0) + (weight_dense / (k_rrf + rank))
-            payloads[cid] = hit
+            did = hit["doc_idx"]
+            scores[did] = scores.get(did, 0.0) + (weight_dense / (k_rrf + rank))
+            payloads[did] = hit
 
         for rank, hit in enumerate(sparse_hits, start=1):
-            cid = hit["course_id"]
-            scores[cid] = scores.get(cid, 0.0) + (weight_sparse / (k_rrf + rank))
-            if cid not in payloads:
-                payloads[cid] = hit
+            did = hit["doc_idx"]
+            scores[did] = scores.get(did, 0.0) + (weight_sparse / (k_rrf + rank))
+            if did not in payloads:
+                payloads[did] = hit
 
-        sorted_cids = sorted(scores.keys(), key=lambda cid: scores[cid], reverse=True)[:top_k]
+        sorted_dids = sorted(scores.keys(), key=lambda did: scores[did], reverse=True)[:top_k]
         fused_results = []
-        for r, cid in enumerate(sorted_cids, start=1):
-            item = dict(payloads[cid])
-            item["rrf_score"] = scores[cid]
+        for r, did in enumerate(sorted_dids, start=1):
+            item = dict(payloads[did])
+            item["rrf_score"] = scores[did]
             item["rank"] = r
             fused_results.append(item)
 

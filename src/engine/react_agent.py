@@ -1,0 +1,152 @@
+import json
+import time
+from typing import Any
+import ollama
+from src.engine.base import EngineResult
+from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
+
+DEFAULT_MODEL = "qwen2.5:3b"
+
+REACT_SYSTEM_PROMPT = """Anda adalah Compass AI, agen penasihat akademik resmi Fakultas Teknologi Maju dan Multidisiplin (FTMM) Universitas Airlangga.
+Tugas Anda adalah membantu mahasiswa dengan informasi akurat, perencanaan studi, dan pengecekan regulasi akademik.
+
+Prinsip Kerja Agen:
+1. Gunakan tools deterministik yang tersedia untuk mencari mata kuliah, memvalidasi prasyarat, menghitung batas SKS, dan menyusun rencana studi.
+2. Dilarang menebak atau berhalusinasi tentang prasyarat atau batas SKS; selalu rujuk hasil tools.
+3. Setelah menerima data dari tools, jelaskan hasilnya kepada mahasiswa dengan ramah, jelas, dan terstruktur.
+"""
+
+
+class ReActAgentEngine:
+    def __init__(self, model: str = DEFAULT_MODEL, max_steps: int = 5):
+        self.model = model
+        self.max_steps = max_steps
+
+    def generate_answer(
+        self,
+        query: str,
+        history: list[dict[str, str]] | None = None,
+        student_profile: dict[str, Any] | None = None,
+    ) -> EngineResult:
+        t0 = time.perf_counter()
+        
+        # Build initial message stack
+        messages: list[dict[str, Any]] = [
+            {"role": "system", "content": REACT_SYSTEM_PROMPT}
+        ]
+        
+        if student_profile:
+            profile_context = (
+                f"[PROFIL MAHASISWA]:\n"
+                f"- Program Studi: {student_profile.get('program_studi', 'Belum ditentukan')}\n"
+                f"- Semester Saat Ini: {student_profile.get('semester_saat_ini', 1)}\n"
+                f"- Mata Kuliah Lulus: {', '.join(student_profile.get('riwayat_matkul_lulus', [])) or 'Belum ada data'}\n"
+                f"- Minat/Fokus: {', '.join(student_profile.get('minat_fokus', [])) or 'Umum'}\n"
+                f"- Target Kelulusan: Semester {student_profile.get('target_kelulusan_semester', 8)}\n"
+            )
+            messages.append({"role": "system", "content": profile_context})
+
+        if history:
+            messages.extend(history[-4:])
+
+        messages.append({"role": "user", "content": query})
+
+        total_tool_latency_ms = 0.0
+        total_gen_latency_ms = 0.0
+        tools_executed: list[dict[str, Any]] = []
+        plan_payload: dict[str, Any] | None = None
+        action_type = "CHAT"
+        step_count = 0
+        final_answer = ""
+        tokens_generated = 0
+
+        # Reasoning Loop
+        while step_count < self.max_steps:
+            step_count += 1
+            t_gen_start = time.perf_counter()
+            
+            resp = ollama.chat(
+                model=self.model,
+                messages=messages,
+                tools=ACADEMIC_TOOL_DEFINITIONS,
+                options={"temperature": 0.1, "top_p": 0.9, "num_predict": 300}
+            )
+            
+            gen_time = (time.perf_counter() - t_gen_start) * 1000.0
+            total_gen_latency_ms += gen_time
+            tokens_generated += resp.get("eval_count", 0)
+
+            msg = resp.message
+            tool_calls = getattr(msg, "tool_calls", None)
+
+            # Case A: Model outputs tool calls -> execute tools
+            if tool_calls:
+                messages.append(msg)
+                
+                for tc in tool_calls:
+                    fn_name = tc.function.name
+                    args = tc.function.arguments
+                    
+                    if isinstance(args, str):
+                        try:
+                            args = json.loads(args)
+                        except Exception:
+                            args = {}
+                            
+                    t_tool_start = time.perf_counter()
+                    if fn_name in TOOL_REGISTRY:
+                        tool_fn = TOOL_REGISTRY[fn_name]
+                        try:
+                            result = tool_fn(**args)
+                        except Exception as e:
+                            result = {"error": str(e)}
+                    else:
+                        result = {"error": f"Tool '{fn_name}' tidak terdaftar."}
+                        
+                    tool_time = (time.perf_counter() - t_tool_start) * 1000.0
+                    total_tool_latency_ms += tool_time
+
+                    tools_executed.append({
+                        "step": step_count,
+                        "tool": fn_name,
+                        "args": args,
+                        "latency_ms": tool_time,
+                    })
+
+                    # If degree plan was generated, capture payload for frontend
+                    if fn_name == "generate_degree_plan" and isinstance(result, dict) and "action" in result:
+                        plan_payload = result
+                        action_type = "PLAN_GENERATED"
+
+                    messages.append({
+                        "role": "tool",
+                        "content": json.dumps(result, ensure_ascii=False)
+                    })
+            else:
+                # Case B: Model completed reasoning and returned final text
+                final_answer = msg.content.strip()
+                break
+
+        if not final_answer and messages:
+            last_content = getattr(messages[-1], "content", "")
+            if isinstance(last_content, str):
+                final_answer = last_content
+
+        total_latency_ms = (time.perf_counter() - t0) * 1000.0
+
+        return EngineResult(
+            answer=final_answer,
+            architecture="ReAct Agent (Native Tool-Calling)",
+            retrieved_chunks=[f"Tool: {t['tool']} -> {t['args']}" for t in tools_executed],
+            retrieval_latency_ms=total_tool_latency_ms,
+            generation_latency_ms=total_gen_latency_ms,
+            total_latency_ms=total_latency_ms,
+            tokens_generated=tokens_generated,
+            routing_mode="REACT_AGENT",
+            metadata={
+                "steps": step_count,
+                "action_type": action_type,
+                "plan_payload": plan_payload,
+                "tools_executed": tools_executed,
+            }
+        )

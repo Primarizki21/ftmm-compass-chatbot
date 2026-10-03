@@ -75,7 +75,8 @@ class CourseRetriever:
             results.append({
                 "score": float(score),
                 "course": course,
-                "chunk": chunk
+                "chunk": chunk,
+                "doc_idx": int(idx)
             })
             if len(results) >= top_k:
                 break

@@ -1,0 +1,121 @@
+from typing import Any
+from src.engine.tools.academic_tools import (
+    search_courses,
+    validate_prerequisites_dag,
+    calculate_sks_limit,
+    generate_degree_plan,
+)
+
+# Tool Schemas for native Ollama function-calling (OpenAI tool format)
+ACADEMIC_TOOL_DEFINITIONS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "search_courses",
+            "description": "Mencari silabus dan data mata kuliah FTMM berdasarkan kesamaan kata kunci atau arti semantik.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Kata kunci pencarian, topik, atau nama mata kuliah."
+                    },
+                    "prodi": {
+                        "type": "string",
+                        "description": "Nama prodi FTMM untuk menyaring hasil (opsional)."
+                    },
+                    "top_k": {
+                        "type": "integer",
+                        "description": "Jumlah rekomendasi mata kuliah yang diinginkan (default 3)."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "validate_prerequisites_dag",
+            "description": "Memeriksa apakah mahasiswa berhak mengambil suatu mata kuliah berdasarkan riwayat mata kuliah yang sudah lulus (Prerequisite DAG validation).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "course_code_or_name": {
+                        "type": "string",
+                        "description": "Nama lengkap atau kode mata kuliah yang ingin diperiksa (contoh: 'Pembelajaran Mesin', 'Machine Learning', 'Data Mining I'). Dilarang menebak kode acak; jika tidak tahu kodenya, gunakan NAMA mata kuliah."
+                    },
+                    "passed_courses": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Daftar nama atau kode mata kuliah yang sudah lulus ditempuh mahasiswa."
+                    }
+                },
+                "required": ["course_code_or_name", "passed_courses"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "calculate_sks_limit",
+            "description": "Menghitung batas beban studi SKS maksimum semester depan berdasarkan Indeks Prestasi Semester (IPS) sesuai Pasal 5.4 Panduan Akademik FTMM.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "ips": {
+                        "type": "number",
+                        "description": "Indeks Prestasi Semester (IPS) mahasiswa sebelumnya (rentang 0.00 hingga 4.00)."
+                    }
+                },
+                "required": ["ips"]
+            }
+        }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "generate_degree_plan",
+            "description": "Menghasilkan rancangan rencana studi (Degree Plan) dari semester saat ini sampai target lulus dengan validasi prasyarat.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "program_studi": {
+                        "type": "string",
+                        "description": "Nama program studi resmi FTMM (misal: 'Teknologi Sains Data', 'Teknik Robotika dan Kecerdasan Buatan')."
+                    },
+                    "current_semester": {
+                        "type": "integer",
+                        "description": "Semester yang sedang ditempuh saat ini (1-8)."
+                    },
+                    "target_semester": {
+                        "type": "integer",
+                        "description": "Target semester kelulusan (7 atau 8)."
+                    },
+                    "passed_courses": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Daftar mata kuliah yang sudah lulus."
+                    },
+                    "focus_tracks": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Daftar topik minat/spesialisasi yang diinginkan (misal: ['Machine Learning', 'Computer Vision'])."
+                    },
+                    "max_sks_per_sem": {
+                        "type": "integer",
+                        "description": "Batas maksimum SKS per semester (default 24)."
+                    }
+                },
+                "required": ["program_studi", "current_semester", "target_semester", "passed_courses", "focus_tracks"]
+            }
+        }
+    }
+]
+
+TOOL_REGISTRY: dict[str, Any] = {
+    "search_courses": search_courses,
+    "validate_prerequisites_dag": validate_prerequisites_dag,
+    "calculate_sks_limit": calculate_sks_limit,
+    "generate_degree_plan": generate_degree_plan,
+}

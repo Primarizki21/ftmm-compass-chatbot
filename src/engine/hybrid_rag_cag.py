@@ -83,7 +83,7 @@ class HybridRAGCAGEngine:
             resp = ollama.chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.2, "top_p": 0.9}
+                options={"temperature": 0.2, "top_p": 0.9, "num_predict": 300}
             )
             generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
             total_latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -183,7 +183,7 @@ class HybridRAGCAGEngine:
             resp = ollama.chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.2, "top_p": 0.9}
+                options={"temperature": 0.2, "top_p": 0.9, "num_predict": 300}
             )
             generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
             total_latency_ms = (time.perf_counter() - t0) * 1000.0
