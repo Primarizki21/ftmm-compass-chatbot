@@ -1,0 +1,517 @@
+sample_id,register,method,hit@1,hit@3,hit@5,mrr,precision@3,recall@3,precision@5,recall@5,latency_ms,top1_retrieved,target_courses
+FORMAL-1,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.25,1.1199370001122588,Agama Islam 1,Agama Islam I; Agama Islam II; Agama Islam I
+FORMAL-1,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.5,53.57164899987765,Agama Islam I,Agama Islam I; Agama Islam II; Agama Islam I
+FORMAL-1,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,51.53879599993161,Agama Islam 1,Agama Islam I; Agama Islam II; Agama Islam I
+FORMAL-1,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,444.53724000004513,Agama Islam 1,Agama Islam I; Agama Islam II; Agama Islam I
+FORMAL-2,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.6,0.75,0.5594730000666459,Agama Katolik 2,Agama Katolik I; Agama Katolik II; Agama Katolik I
+FORMAL-2,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.25,27.201713000067684,Agama Buddha II,Agama Katolik I; Agama Katolik II; Agama Katolik I
+FORMAL-2,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.5,31.070099999851664,Agama Katolik 1,Agama Katolik I; Agama Katolik II; Agama Katolik I
+FORMAL-2,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.6,0.75,379.1395379998903,Agama Katolik 1,Agama Katolik I; Agama Katolik II; Agama Katolik I
+FORMAL-3,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,0.5472699999700126,Agama Protestan 1,Agama Protestan I; Agama Protestan II; Agama Protestan I
+FORMAL-3,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.6,1.0,27.635078000002977,Agama Protestan 2,Agama Protestan I; Agama Protestan II; Agama Protestan I
+FORMAL-3,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,28.13934000005247,Agama Protestan 1,Agama Protestan I; Agama Protestan II; Agama Protestan I
+FORMAL-3,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.6,1.0,270.10556000004726,Agama Protestan 1,Agama Protestan I; Agama Protestan II; Agama Protestan I
+FORMAL-4,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,0.5686399999831337,Agama Hindu 1,Agama Hindu I; Agama Hindu II; Agama Hindu I
+FORMAL-4,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.5,53.168555999945966,Agama Hindu II,Agama Hindu I; Agama Hindu II; Agama Hindu I
+FORMAL-4,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.6,0.75,27.373426999929507,Agama Hindu 1,Agama Hindu I; Agama Hindu II; Agama Hindu I
+FORMAL-4,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,249.49960300000384,Agama Hindu 1,Agama Hindu I; Agama Hindu II; Agama Hindu I
+FORMAL-5,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.4,1.0,0.5764050001744181,Agama Budha 2,Agama Budha I; Agama Budha I
+FORMAL-5,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.2,0.5,31.122195000079955,Agama Buddha II,Agama Budha I; Agama Budha I
+FORMAL-5,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,28.825026000049547,Agama Budha I,Agama Budha I; Agama Budha I
+FORMAL-5,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,280.6272259999787,Agama Budha 1,Agama Budha I; Agama Budha I
+FORMAL-6,formal,BM25 (Sparse),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.8,1.3333333333333333,0.672944000143616,Agama Konghucu 2,Agama Konghucu I; Agama Konghucu II; Agama Konghucu I
+FORMAL-6,formal,FAISS (Dense),0.0,0.0,1.0,0.25,0.0,0.0,0.2,0.3333333333333333,29.539652000039496,Agama Konghucu 2,Agama Konghucu I; Agama Konghucu II; Agama Konghucu I
+FORMAL-6,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.6,1.0,27.209195000068576,Agama Konghucu 1,Agama Konghucu I; Agama Konghucu II; Agama Konghucu I
+FORMAL-6,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,289.1142599996783,Agama Konghucu 1,Agama Konghucu I; Agama Konghucu II; Agama Konghucu I
+FORMAL-7,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.6666666666666667,0.5475810003190418,Pancasila,Pancasila; Pancasila; Pancasila
+FORMAL-7,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.3333333333333333,28.720164999867848,Pancasila,Pancasila; Pancasila; Pancasila
+FORMAL-7,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,30.876855999849795,Pancasila,Pancasila; Pancasila; Pancasila
+FORMAL-7,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,280.8882170002107,Pancasila,Pancasila; Pancasila; Pancasila
+FORMAL-8,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.5,0.6,1.5,0.5781079998996574,Kewarganegaraan,Kewarganegaraan; Kewarganegaraan; Kewarganegaraan
+FORMAL-8,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.531338999826403,Agama Buddha II,Kewarganegaraan; Kewarganegaraan; Kewarganegaraan
+FORMAL-8,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,26.900898999883793,Kewarganegaraan,Kewarganegaraan; Kewarganegaraan; Kewarganegaraan
+FORMAL-8,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,294.571114000064,Kewarganegaraan,Kewarganegaraan; Kewarganegaraan; Kewarganegaraan
+FORMAL-9,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.25,0.5862429998160223,Bahasa Indonesia,Bahasa Indonesia; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-9,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.25,33.70315699976345,Bahasa Indonesia,Bahasa Indonesia; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-9,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.0,28.65224200013472,Bahasa Indonesia,Bahasa Indonesia; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-9,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.0,273.14100500007044,Bahasa Indonesia,Bahasa Indonesia; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-10,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.8,1.0,0.8155400000759983,Data dan Pustaka,Data dan Pustaka; Data dan Pustaka; Data dan Pustaka
+FORMAL-10,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,50.349381000160065,Magang,Data dan Pustaka; Data dan Pustaka; Data dan Pustaka
+FORMAL-10,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,28.77592300001197,Data dan Pustaka,Data dan Pustaka; Data dan Pustaka; Data dan Pustaka
+FORMAL-10,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,352.937263000058,Data dan Pustaka,Data dan Pustaka; Data dan Pustaka; Data dan Pustaka
+FORMAL-11,formal,BM25 (Sparse),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.6,1.0,0.6635559998358076,Biologi,Biologi Dasar; Praktikum Biologi Dasar 1; Biologi Dasar
+FORMAL-11,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,26.781878999827313,Biologi,Biologi Dasar; Praktikum Biologi Dasar 1; Biologi Dasar
+FORMAL-11,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,27.099459000055504,Biologi Dasar,Biologi Dasar; Praktikum Biologi Dasar 1; Biologi Dasar
+FORMAL-11,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,289.25745199967423,Praktikum Biologi Dasar 1,Biologi Dasar; Praktikum Biologi Dasar 1; Biologi Dasar
+FORMAL-12,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.7170960002440552,Kimia Dasar,Kimia Dasar; Praktikum Kimia Dasar 1; Kimia Dasar 2
+FORMAL-12,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.2,25.82313199991404,Agama Konghucu I,Kimia Dasar; Praktikum Kimia Dasar 1; Kimia Dasar 2
+FORMAL-12,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.6,0.6,28.77778899983241,Kimia Dasar,Kimia Dasar; Praktikum Kimia Dasar 1; Kimia Dasar 2
+FORMAL-12,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.8,0.8,253.47302600039257,Kimia Dasar,Kimia Dasar; Praktikum Kimia Dasar 1; Kimia Dasar 2
+FORMAL-13,formal,BM25 (Sparse),0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,0.6054880000192497,Metode Statistika,Pengantar Statistika
+FORMAL-13,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,29.90760400007275,Pengantar Statistika,Pengantar Statistika
+FORMAL-13,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,30.347144000188564,Statistika Matematika,Pengantar Statistika
+FORMAL-13,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,250.02398900005574,"Probabilitas, Statistika dan Proses Stokastik",Pengantar Statistika
+FORMAL-14,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.6661819998043939,Pengantar Pemrograman,Pengantar Pemrograman
+FORMAL-14,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,30.872862999785866,Pemrograman Lanjut,Pengantar Pemrograman
+FORMAL-14,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,29.297798000243347,Agama Konghucu I,Pengantar Pemrograman
+FORMAL-14,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,309.1904269999759,Pengantar Pemrograman,Pengantar Pemrograman
+FORMAL-15,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.6666666666666667,0.8513369998581766,Logika dan Pemikiran Kritis,Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis
+FORMAL-15,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.8,1.3333333333333333,26.358322000305634,Agama Buddha II,Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis
+FORMAL-15,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,29.11665500005256,Logika dan Pemikiran Kritis,Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis
+FORMAL-15,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,310.83845900002416,Logika dan Pemikiran Kritis,Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis
+FORMAL-16,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.3333333333333333,0.7085600000209524,Pengantar Kolaborasi Keilmuan,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-16,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,28.394028000093385,Pengantar Kolaborasi Keilmuan,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-16,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,28.969222000341688,Pengantar Kolaborasi Keilmuan,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-16,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,290.20502899993517,Pengantar Kolaborasi Keilmuan,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-17,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.3333333333333333,0.8222430001296743,Komunikasi dan Pengembangan Diri,Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri
+FORMAL-17,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.6,1.0,32.39519699991433,Teori Komunikasi Massa,Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri
+FORMAL-17,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,26.495325999803754,Komunikasi dan Pengembangan Diri,Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri
+FORMAL-17,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,305.94020899980023,Komunikasi dan Pengembangan Diri,Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri
+FORMAL-18,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.6481180002992915,Praktikum Fisika Dasar 1,Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-18,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.8,0.8,25.94688400040468,Kalkulus Peubah Banyak,Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-18,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.8,0.8,28.359138000269013,Fisika Dasar II (Praktikum),Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-18,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,272.0227029999478,Fisika Dasar II (Praktikum),Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-19,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5161519998182484,Aljabar Linier dan Sistem Diskrit,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-19,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.8,0.8,34.55496400010816,Kalkulus Peubah Banyak,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-19,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.6,0.6,27.567254999667057,Agama Buddha II,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-19,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,239.96953099958773,Matematika Diskrit,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-20,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.0,0.674507999974594,Pengantar Teknologi Maju,Pengantar Teknologi Maju; Pengantar Teknologi Maju; Pengantar Teknologi Maju
+FORMAL-20,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.25,26.837355000225216,Teori Komunikasi Massa,Pengantar Teknologi Maju; Pengantar Teknologi Maju; Pengantar Teknologi Maju
+FORMAL-20,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.4,0.5,29.243032000067615,Teknologi Hijau,Pengantar Teknologi Maju; Pengantar Teknologi Maju; Pengantar Teknologi Maju
+FORMAL-20,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,295.9777649998614,Pengantar Teknologi Maju,Pengantar Teknologi Maju; Pengantar Teknologi Maju; Pengantar Teknologi Maju
+FORMAL-21,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.5777359997409803,Metode Statistika,Metode Statistika
+FORMAL-21,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,25.92385000025388,Ekonometrika,Metode Statistika
+FORMAL-21,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,28.178550000120595,Statistika Matematika,Metode Statistika
+FORMAL-21,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,259.71146199981376,"Probabilitas, Statistika dan Proses Stokastik",Metode Statistika
+FORMAL-22,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,0.5683900003532472,Pengantar Pemrograman,Algoritma Pemrograman I
+FORMAL-22,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,27.91623100029028,Pemrograman Lanjut,Algoritma Pemrograman I
+FORMAL-22,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,28.11799900018741,Agama Konghucu I,Algoritma Pemrograman I
+FORMAL-22,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,350.1919159998579,Praktikum Pemrograman Komputer,Algoritma Pemrograman I
+FORMAL-23,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,1.1737280001398176,Matematika Lanjut,Matematika Lanjut; Matematika Lanjut
+FORMAL-23,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.4,1.0,31.28101600032096,Kalkulus Peubah Banyak,Matematika Lanjut; Matematika Lanjut
+FORMAL-23,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,26.780671999858896,Matematika Lanjut,Matematika Lanjut; Matematika Lanjut
+FORMAL-23,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,264.64567700031694,Matematika Lanjut,Matematika Lanjut; Matematika Lanjut
+FORMAL-24,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.623812999947404,Bahasa Inggris,Bahasa Inggris; Bahasa Inggris; Bahasa Inggris
+FORMAL-24,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.6,0.6,34.72923799972705,Bahasa Inggris,Bahasa Inggris; Bahasa Inggris; Bahasa Inggris
+FORMAL-24,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.6,0.6,29.993483999987802,Bahasa Indonesia,Bahasa Inggris; Bahasa Inggris; Bahasa Inggris
+FORMAL-24,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.8,0.8,331.21077200030413,Bahasa Indonesia,Bahasa Inggris; Bahasa Inggris; Bahasa Inggris
+FORMAL-25,formal,BM25 (Sparse),0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,1.200497999889194,Metode Statistika,Pengantar Statistika
+FORMAL-25,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,29.652081999756774,Statistika Dasar,Pengantar Statistika
+FORMAL-25,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,27.779243000168208,Statistik Industri,Pengantar Statistika
+FORMAL-25,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,230.28898299980938,Statistik Industri,Pengantar Statistika
+FORMAL-26,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,0.8078050000221992,Pemrograman Orientasi Objek,Pengantar Pemrograman
+FORMAL-26,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,26.933694000035757,Pengantar Pemrograman,Pengantar Pemrograman
+FORMAL-26,formal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,34.91141399990738,Pengukuran Dasar (Praktikum),Pengantar Pemrograman
+FORMAL-26,formal,Hybrid + Reformulation,0.0,0.0,1.0,0.25,0.0,0.0,0.2,1.0,292.55748300010964,Pengukuran Dasar (Praktikum),Pengantar Pemrograman
+FORMAL-27,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.6666666666666667,1.158969999778492,Logika dan Pemikiran Kritis,Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis
+FORMAL-27,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.6666666666666667,27.446948000033444,Logika dan Pemikiran Kritis,Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis
+FORMAL-27,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,29.237225000088074,Logika dan Pemikiran Kritis,Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis
+FORMAL-27,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,306.9925009999679,Logika dan Pemikiran Kritis,Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis; Logika dan Pemikiran Kritis
+FORMAL-28,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.3333333333333333,0.9591080001882801,Pengantar Kolaborasi Keilmuan,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-28,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.6,1.0,32.73142999978518,Kuliah Kerja Nyata,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-28,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,27.09979800010842,Pengantar Kolaborasi Keilmuan,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-28,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,295.7300729999588,Pengantar Kolaborasi Keilmuan,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-29,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.6666666666666667,1.010804000088683,Komunikasi dan Pengembangan Diri,Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri
+FORMAL-29,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.3333333333333333,42.97911699995893,Komunikasi dan Pengembangan Diri,Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri
+FORMAL-29,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,28.765060999830894,Komunikasi dan Pengembangan Diri,Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri
+FORMAL-29,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,361.4657039997837,Komunikasi dan Pengembangan Diri,Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri; Komunikasi dan Pengembangan Diri
+FORMAL-30,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.8,0.8,0.8431709998149017,Praktikum Fisika Dasar 1,Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-30,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,47.09758699982558,Praktikum Fisika Dasar 1,Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-30,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,27.888131000054273,Fisika Dasar II (Praktikum),Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-30,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,283.3542880002824,Fisika Dasar II (Praktikum),Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-31,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.8943060001911363,Metode Statistika,Metode Statistika
+FORMAL-31,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,39.808523999909085,Statistika Dasar,Metode Statistika
+FORMAL-31,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,26.523021000230074,Statistik Industri,Metode Statistika
+FORMAL-31,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,245.33578199998374,Statistik Industri,Metode Statistika
+FORMAL-32,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.7624310001119738,Algoritma Pemrograman I,Algoritma Pemrograman I
+FORMAL-32,formal,FAISS (Dense),0.0,0.0,1.0,0.2,0.0,0.0,0.2,1.0,46.83727299970997,Pengantar Pemrograman,Algoritma Pemrograman I
+FORMAL-32,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,30.173438000019814,Matematika Lanjut,Algoritma Pemrograman I
+FORMAL-32,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,284.588291000091,Matematika Diskrit,Algoritma Pemrograman I
+FORMAL-33,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,1.3537629997699696,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data
+FORMAL-33,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,36.04819800011683,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data
+FORMAL-33,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,27.751001000069664,Bahasa Inggris,Eksplorasi dan Visualisasi Data
+FORMAL-33,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,250.72125299993786,Bahasa Inggris,Eksplorasi dan Visualisasi Data
+FORMAL-34,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,1.6927830001804978,Pengantar Basis Data,Pengantar Basis Data
+FORMAL-34,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,48.63178899995546,Basis Data Lanjut,Pengantar Basis Data
+FORMAL-34,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,28.004852999856666,Basis Data Lanjut,Pengantar Basis Data
+FORMAL-34,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,258.85234599991236,Basis Data Lanjut,Pengantar Basis Data
+FORMAL-35,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,1.2063339995620481,Teknologi Big Data,Teknologi Big Data
+FORMAL-35,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,28.394223999839596,Teknologi Big Data,Teknologi Big Data
+FORMAL-35,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,27.54967000009856,Pengantar Teknologi Maju,Teknologi Big Data
+FORMAL-35,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,364.6937000003163,Teknologi Big Data,Teknologi Big Data
+FORMAL-36,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.9946040004251699,Basis Data Lanjut,Basis Data Lanjut
+FORMAL-36,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,30.577871999867057,Basis Data Lanjut,Basis Data Lanjut
+FORMAL-36,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,29.777992999697744,Basis Data Lanjut,Basis Data Lanjut
+FORMAL-36,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,240.81042999978308,Basis Data Lanjut,Basis Data Lanjut
+FORMAL-37,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.733998000214342,Metode Statistika,Metode Statistika
+FORMAL-37,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,28.11161700037701,Ekonometrika,Metode Statistika
+FORMAL-37,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,31.126604999826668,"Probabilitas, Statistika dan Proses Stokastik",Metode Statistika
+FORMAL-37,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,270.21049199993286,"Probabilitas, Statistika dan Proses Stokastik",Metode Statistika
+FORMAL-38,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,1.0322240000277816,Pemrograman Non Linear,Algoritma Pemrograman I
+FORMAL-38,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,54.08790000001318,Algoritma Pemrograman I,Algoritma Pemrograman I
+FORMAL-38,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,28.019835999657516,Algoritma Pemrograman I,Algoritma Pemrograman I
+FORMAL-38,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,300.3216080001039,Algoritma Pemrograman I,Algoritma Pemrograman I
+FORMAL-39,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.6996540000727691,Matematika Lanjut,Matematika Lanjut; Matematika Lanjut
+FORMAL-39,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.4,1.0,25.212088999978732,Kalkulus Peubah Banyak,Matematika Lanjut; Matematika Lanjut
+FORMAL-39,formal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.4,1.0,28.54188699984661,Kalkulus Peubah Banyak,Matematika Lanjut; Matematika Lanjut
+FORMAL-39,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,261.6776039999422,Matematika Lanjut,Matematika Lanjut; Matematika Lanjut
+FORMAL-40,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.63811900008659,Statistika Nonparametrik,Statistika Nonparametrik
+FORMAL-40,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,44.727555999998,Statistika Nonparametrik,Statistika Nonparametrik
+FORMAL-40,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,27.666243000112445,Statistik Industri,Statistika Nonparametrik
+FORMAL-40,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,364.54587399975935,Statistika Matematika,Statistika Nonparametrik
+FORMAL-41,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,0.6962980000935204,"Probabilitas, Statistik dan Proses Stokastik","Probabilitas, Statistik dan Proses Stokastik; Probabilitas, Statistika dan Proses Stokastik; Probabilitas"
+FORMAL-41,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.8,1.3333333333333333,27.581610000197543,Probabilitas,"Probabilitas, Statistik dan Proses Stokastik; Probabilitas, Statistika dan Proses Stokastik; Probabilitas"
+FORMAL-41,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,26.614506999976584,Statistika Matematika,"Probabilitas, Statistik dan Proses Stokastik; Probabilitas, Statistika dan Proses Stokastik; Probabilitas"
+FORMAL-41,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,311.1464620001243,"Probabilitas, Statistika dan Proses Stokastik","Probabilitas, Statistik dan Proses Stokastik; Probabilitas, Statistika dan Proses Stokastik; Probabilitas"
+FORMAL-42,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,1.0431040000185021,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data
+FORMAL-42,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,26.369460999831063,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data
+FORMAL-42,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,26.452877999872726,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data
+FORMAL-42,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,320.89610100001664,Bahasa Inggris,Eksplorasi dan Visualisasi Data
+FORMAL-44,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.6660710000687686,Regresi Terapan,Regresi Terapan
+FORMAL-44,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,26.729591000275832,Regresi Terapan,Regresi Terapan
+FORMAL-44,formal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,26.782790000197565,Regresi Nonparametrik,Regresi Terapan
+FORMAL-44,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,250.92850800001543,Statistik Industri,Regresi Terapan
+FORMAL-45,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.9641130000090925,Statistika Matematika,Statistika Matematika
+FORMAL-45,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,24.42082900006426,Statistika Matematika,Statistika Matematika
+FORMAL-45,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,26.95833699999639,"Probabilitas, Statistika dan Proses Stokastik",Statistika Matematika
+FORMAL-45,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,259.00366999985636,"Probabilitas, Statistika dan Proses Stokastik",Statistika Matematika
+FORMAL-46,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.7306410002456687,Komputasi Statistika,Komputasi Statistika
+FORMAL-46,formal,FAISS (Dense),0.0,0.0,1.0,0.2,0.0,0.0,0.2,1.0,30.128174999845214,Statistika Dasar,Komputasi Statistika
+FORMAL-46,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,27.764730999933818,Komputasi Statistika,Komputasi Statistika
+FORMAL-46,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,267.46365000008154,Komputasi Statistika,Komputasi Statistika
+FORMAL-47,formal,BM25 (Sparse),0.0,1.0,1.0,0.5,0.6666666666666666,1.0,0.4,1.0,1.0170059999836667,Sains Data Consulting,Data Mining I; Data Mining II
+FORMAL-47,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,31.68234199983999,Data Mining I,Data Mining I; Data Mining II
+FORMAL-47,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.6666666666666666,1.0,0.4,1.0,27.8319939998255,Sains Data Consulting,Data Mining I; Data Mining II
+FORMAL-47,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.6666666666666666,1.0,0.4,1.0,226.6797150000457,Sains Data Consulting,Data Mining I; Data Mining II
+FORMAL-48,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.8268709998446866,Sains Data Consulting,Sains Data Consulting
+FORMAL-48,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,27.877945999989606,Sains Data Consulting,Sains Data Consulting
+FORMAL-48,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,27.425037999819324,Sains Data Consulting,Sains Data Consulting
+FORMAL-48,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,245.90729699957592,Sains Data Consulting,Sains Data Consulting
+FORMAL-49,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.7447779998983606,Basis Data Lanjut,Basis Data Lanjut
+FORMAL-49,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,25.59648299984474,Basis Data Lanjut,Basis Data Lanjut
+FORMAL-49,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,28.667738999956782,Manajemen Jaringan,Basis Data Lanjut
+FORMAL-49,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,322.2435200000291,Manajemen Jaringan,Basis Data Lanjut
+FORMAL-51,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.25,2.278846000081103,Agama Islam 1,Agama Islam I; Agama Islam II; Agama Islam I
+FORMAL-51,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,0.6,0.75,64.50651400018614,Agama Islam 1,Agama Islam I; Agama Islam II; Agama Islam I
+FORMAL-51,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,28.87425800008714,Agama Islam I,Agama Islam I; Agama Islam II; Agama Islam I
+FORMAL-51,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.6,0.75,256.999132999681,Agama Islam I,Agama Islam I; Agama Islam II; Agama Islam I
+FORMAL-52,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.25,1.9376609998289496,Agama Katolik 1,Agama Katolik I; Agama Katolik II; Agama Katolik I
+FORMAL-52,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.6,0.75,36.13215700033834,Agama Katolik 1,Agama Katolik I; Agama Katolik II; Agama Katolik I
+FORMAL-52,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,30.832506000024296,Agama Katolik I,Agama Katolik I; Agama Katolik II; Agama Katolik I
+FORMAL-52,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.5,499.40210200020374,Agama Katolik I,Agama Katolik I; Agama Katolik II; Agama Katolik I
+FORMAL-53,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.3333333333333333,1.929936000124144,Agama Protestan 1,Agama Protestan I; Agama Protestan II; Agama Protestan I
+FORMAL-53,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.3333333333333333,25.77035599961164,Agama Protestan 1,Agama Protestan I; Agama Protestan II; Agama Protestan I
+FORMAL-53,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,28.957812000044214,Agama I,Agama Protestan I; Agama Protestan II; Agama Protestan I
+FORMAL-53,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.6666666666666666,498.69322699987606,Agama I,Agama Protestan I; Agama Protestan II; Agama Protestan I
+FORMAL-75,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,2.3014990001684055,Basis Data Lanjut,Basis Data Lanjut
+FORMAL-75,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,51.72076000008019,Basis Data Lanjut,Basis Data Lanjut
+FORMAL-75,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,28.221615999882488,Data dan Pustaka,Basis Data Lanjut
+FORMAL-75,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,259.3356610000228,Data dan Pustaka,Basis Data Lanjut
+FORMAL-76,formal,BM25 (Sparse),0.0,0.0,1.0,0.25,0.0,0.0,0.2,1.0,1.7683649998616602,Data Mining II,Eksplorasi dan Visualisasi Data
+FORMAL-76,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,49.2536859997017,Data Mining II,Eksplorasi dan Visualisasi Data
+FORMAL-76,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,31.255915999736317,Data Mining II,Eksplorasi dan Visualisasi Data
+FORMAL-76,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,280.71857799977806,Data Mining II,Eksplorasi dan Visualisasi Data
+FORMAL-77,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.6,1.5,2.8398610002113855,Kewirausahaan,Kewirausahaan; Kewirausahaan
+FORMAL-77,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,33.711645000039425,Kuliah Kerja Nyata,Kewirausahaan; Kewirausahaan
+FORMAL-77,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,29.488141999991058,Kewirausahaan,Kewirausahaan; Kewirausahaan
+FORMAL-77,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,281.90123800004585,Kewirausahaan,Kewirausahaan; Kewirausahaan
+FORMAL-78,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,2.523661999930482,Kapita Selekta Sains Data,Kapita Selekta Sains Data
+FORMAL-78,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,30.701637999754894,Praktek Kerja Lapangan,Kapita Selekta Sains Data
+FORMAL-78,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,28.409574000306748,Data dan Pustaka,Kapita Selekta Sains Data
+FORMAL-78,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,468.06310900001336,Data dan Pustaka,Kapita Selekta Sains Data
+FORMAL-80,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.6,0.6,1.8449179997332976,Skripsi,Skripsi; Proposal Skripsi; Skripsi
+FORMAL-80,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.8,0.8,36.729685999944195,Skripsi,Skripsi; Proposal Skripsi; Skripsi
+FORMAL-80,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,29.85378099992886,Proposal Skripsi,Skripsi; Proposal Skripsi; Skripsi
+FORMAL-80,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,353.0846369999381,Proposal Skripsi,Skripsi; Proposal Skripsi; Skripsi
+FORMAL-81,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.4,0.4,1.0970040002575843,Kontrol Penggerak Elektrik,Pancasila; Kewarganegaraan; Data dan Pustaka
+FORMAL-81,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.2,0.2,26.33230299989009,Praktikum Kimia Dasar 2,Pancasila; Kewarganegaraan; Data dan Pustaka
+FORMAL-81,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.8,0.8,28.9653550003095,Agama Protestan 1,Pancasila; Kewarganegaraan; Data dan Pustaka
+FORMAL-81,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.4,420.2261059999728,Agama Budha 1,Pancasila; Kewarganegaraan; Data dan Pustaka
+FORMAL-82,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,1.5419040000779205,Matematika Lanjut,Agama Islam I; Agama Katolik I; Agama Protestan I
+FORMAL-82,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.4,0.4,47.37955399968996,Agama Konghucu 2,Agama Islam I; Agama Katolik I; Agama Protestan I
+FORMAL-82,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.6,0.6,25.91210199989291,Agama Protestan 1,Agama Islam I; Agama Katolik I; Agama Protestan I
+FORMAL-82,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,461.09972400017796,Agama Protestan 1,Agama Islam I; Agama Katolik I; Agama Protestan I
+FORMAL-83,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.6,0.6,0.9243330000572314,Logika dan Pemikiran Kritis,Biologi Dasar; Praktikum Biologi Dasar 1; Kimia Dasar
+FORMAL-83,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.6,0.6,27.626450000298064,Biologi,Biologi Dasar; Praktikum Biologi Dasar 1; Kimia Dasar
+FORMAL-83,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,26.883355999871128,Biologi Dasar,Biologi Dasar; Praktikum Biologi Dasar 1; Kimia Dasar
+FORMAL-83,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,449.348977000227,Biologi Dasar,Biologi Dasar; Praktikum Biologi Dasar 1; Kimia Dasar
+FORMAL-84,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.6175810003696824,Pengantar Kecerdasan Buatan,Data dan Pustaka; Biologi Dasar; Praktikum Biologi Dasar 1
+FORMAL-84,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.2,0.2,25.046052999641688,Magang,Data dan Pustaka; Biologi Dasar; Praktikum Biologi Dasar 1
+FORMAL-84,formal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.4,0.4,27.71167000037167,Eksplorasi dan Visualisasi Data,Data dan Pustaka; Biologi Dasar; Praktikum Biologi Dasar 1
+FORMAL-84,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,341.8965810001282,Pengantar Statistika,Data dan Pustaka; Biologi Dasar; Praktikum Biologi Dasar 1
+FORMAL-85,formal,BM25 (Sparse),0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.4,0.4,0.8844879998832766,Analisis Keputusan Bisnis,"Probabilitas, Statistik dan Proses Stokastik; Probabilitas, Statistika dan Proses Stokastik; Pengantar Statistika"
+FORMAL-85,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,26.94984999970984,Probabilitas,"Probabilitas, Statistik dan Proses Stokastik; Probabilitas, Statistika dan Proses Stokastik; Pengantar Statistika"
+FORMAL-85,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,28.70304899988696,"Probabilitas, Statistika dan Proses Stokastik","Probabilitas, Statistik dan Proses Stokastik; Probabilitas, Statistika dan Proses Stokastik; Pengantar Statistika"
+FORMAL-85,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.4,496.13908800029094,"Probabilitas, Statistika dan Proses Stokastik","Probabilitas, Statistik dan Proses Stokastik; Probabilitas, Statistika dan Proses Stokastik; Pengantar Statistika"
+FORMAL-86,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3351139998812869,Pemrograman Orientasi Objek,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-86,formal,FAISS (Dense),0.0,0.0,1.0,0.25,0.0,0.0,0.4,1.0,45.20475100025578,Pemrograman Orientasi Objek,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-86,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,25.96447999985685,Pengukuran Dasar (Praktikum),Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-86,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,326.56299099971875,Pengukuran Dasar (Praktikum),Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-87,formal,BM25 (Sparse),0.0,0.0,1.0,0.25,0.0,0.0,0.2,0.2,0.5307289998199849,Mesin Listrik,Pengantar Kecerdasan Buatan; Matematika Lanjut; Matematika Lanjut
+FORMAL-87,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,30.091117000210943,Agama Konghucu 2,Pengantar Kecerdasan Buatan; Matematika Lanjut; Matematika Lanjut
+FORMAL-87,formal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.2,24.02574600000662,Skripsi,Pengantar Kecerdasan Buatan; Matematika Lanjut; Matematika Lanjut
+FORMAL-87,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.2,0.2,273.6537559999306,Skripsi,Pengantar Kecerdasan Buatan; Matematika Lanjut; Matematika Lanjut
+FORMAL-88,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.4,0.914944999749423,Pengantar Teknologi Maju,Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-88,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,0.6,0.6,28.01698600023883,Metode Matematika,Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-88,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.8,0.8,28.47595499997624,Pengantar Teknologi Maju,Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-88,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.8,0.8,487.81632800000807,Pengantar Teknologi Maju,Fisika Dasar 1; Praktikum Fisika Dasar 1; Fisika Dasar 2
+FORMAL-89,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.4,0.7620599999427213,Data dan Pustaka,Data dan Pustaka; Biologi Dasar; Praktikum Biologi Dasar 1
+FORMAL-89,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,25.378070999977353,Agama Katolik I,Data dan Pustaka; Biologi Dasar; Praktikum Biologi Dasar 1
+FORMAL-89,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.6,0.6,27.934543999890593,Agama Katolik 1,Data dan Pustaka; Biologi Dasar; Praktikum Biologi Dasar 1
+FORMAL-89,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.2,0.2,238.48642200027825,Analisis Data Kategorik,Data dan Pustaka; Biologi Dasar; Praktikum Biologi Dasar 1
+FORMAL-90,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,0.4204440001558396,Metode Statistika,Metode Statistika; Metode Matematika
+FORMAL-90,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,27.82552200005739,Metode Statistika,Metode Statistika; Metode Matematika
+FORMAL-90,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.2,0.5,27.095209999970393,Statistik Industri,Metode Statistika; Metode Matematika
+FORMAL-90,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.2,0.5,332.52579500003776,Statistik Industri,Metode Statistika; Metode Matematika
+FORMAL-91,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,0.9381579998262168,Manajemen Jaringan,Pengantar Basis Data; Integrasi Aplikasi Korporasi; Manajemen Jaringan
+FORMAL-91,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.6,1.0,26.63877599979969,Basis Data Lanjut,Pengantar Basis Data; Integrasi Aplikasi Korporasi; Manajemen Jaringan
+FORMAL-91,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,28.875309000341076,Pengantar Basis Data,Pengantar Basis Data; Integrasi Aplikasi Korporasi; Manajemen Jaringan
+FORMAL-91,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,435.72909299973617,Manajemen Jaringan,Pengantar Basis Data; Integrasi Aplikasi Korporasi; Manajemen Jaringan
+FORMAL-92,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,1.0431639998387254,Pengantar Basis Data,Pengantar Basis Data; Data Mining I; Data Mining II
+FORMAL-92,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.0,50.34863399987444,Pengantar Basis Data,Pengantar Basis Data; Data Mining I; Data Mining II
+FORMAL-92,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.8,1.0,41.459448999830784,Data Mining II,Pengantar Basis Data; Data Mining I; Data Mining II
+FORMAL-92,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.8,1.0,348.0052970003271,Data Mining II,Pengantar Basis Data; Data Mining I; Data Mining II
+FORMAL-93,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.2,0.5934559999332123,Data Mining II,Data dan Pustaka; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-93,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.2,46.24983500025337,Data Mining I,Data dan Pustaka; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-93,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.4,27.58390100007091,Eksplorasi dan Visualisasi Data,Data dan Pustaka; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-93,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.2,270.7282809997196,Data Mining I,Data dan Pustaka; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-94,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,1.1457349996817356,Metode Statistika,Pengantar Statistika; Metode Statistika; Statistika Matematika
+FORMAL-94,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,28.41980999983207,Metode Statistika,Pengantar Statistika; Metode Statistika; Statistika Matematika
+FORMAL-94,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,1.0,27.255710000190447,Statistika Matematika,Pengantar Statistika; Metode Statistika; Statistika Matematika
+FORMAL-94,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.6,1.0,392.96427599992967,Statistika Matematika,Pengantar Statistika; Metode Statistika; Statistika Matematika
+FORMAL-95,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.5148599998392456,Proposal Skripsi,Bahasa Indonesia; Skripsi; Bahasa Indonesia
+FORMAL-95,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,0.8,0.8,26.05840200021703,Bahasa Indonesia,Bahasa Indonesia; Skripsi; Bahasa Indonesia
+FORMAL-95,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.8,0.8,28.46123399967837,Bahasa Indonesia,Bahasa Indonesia; Skripsi; Bahasa Indonesia
+FORMAL-95,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,395.50670300013735,Bahasa Indonesia,Bahasa Indonesia; Skripsi; Bahasa Indonesia
+FORMAL-96,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.4140920000281767,Kapita Selekta Sains Data,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-96,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,33.25464799991096,Analisis Data Kategorik,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-96,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,26.367854999989504,Agama Budha I,Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-96,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.2,0.2,290.101611999944,"Probabilitas, Statistika dan Proses Stokastik",Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan; Pengantar Kolaborasi Keilmuan
+FORMAL-97,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.6013199999870267,Data Mining II,Data dan Pustaka; Pengantar Kolaborasi Keilmuan; Data dan Pustaka
+FORMAL-97,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,24.959693000255356,Basis Data Lanjut,Data dan Pustaka; Pengantar Kolaborasi Keilmuan; Data dan Pustaka
+FORMAL-97,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.775125000109256,Data Mining I,Data dan Pustaka; Pengantar Kolaborasi Keilmuan; Data dan Pustaka
+FORMAL-97,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,271.99949800024115,Analisis Data Kategorik,Data dan Pustaka; Pengantar Kolaborasi Keilmuan; Data dan Pustaka
+FORMAL-98,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.6717219998790824,Sains Data Consulting,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-98,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.482536999788863,Data Mining I,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-98,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.586561999873084,Data Mining I,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-98,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,321.1318480002774,Data Mining I,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-99,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.5,0.7501479999518779,Statistika Matematika,Matematika Lanjut; Matematika Lanjut; Metode Statistika
+FORMAL-99,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.5,25.939993000065442,Metode Statistika,Matematika Lanjut; Matematika Lanjut; Metode Statistika
+FORMAL-99,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.5,25.36743300015587,Statistik Industri,Matematika Lanjut; Matematika Lanjut; Metode Statistika
+FORMAL-99,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.5,228.3487839999907,Statistik Industri,Matematika Lanjut; Matematika Lanjut; Metode Statistika
+FORMAL-100,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.3651900001386821,Pengantar Basis Data,Pengantar Basis Data; Basis Data Lanjut
+FORMAL-100,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,26.76690599992071,Basis Data Lanjut,Pengantar Basis Data; Basis Data Lanjut
+FORMAL-100,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.6666666666666666,1.0,0.4,1.0,27.0585849998497,Data dan Pustaka,Pengantar Basis Data; Basis Data Lanjut
+FORMAL-100,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.4,1.0,267.7723980000337,Manajemen Jaringan,Pengantar Basis Data; Basis Data Lanjut
+FORMAL-101,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.4580840000016906,Teknologi Big Data,Metode Statistika; Statistika Matematika; Pemrograman Lanjut
+FORMAL-101,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,48.51121400042757,Teknologi Big Data,Metode Statistika; Statistika Matematika; Pemrograman Lanjut
+FORMAL-101,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,27.343595999809622,Teknologi Big Data,Metode Statistika; Statistika Matematika; Pemrograman Lanjut
+FORMAL-101,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,276.78628000012395,Teknologi Big Data,Metode Statistika; Statistika Matematika; Pemrograman Lanjut
+FORMAL-102,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,0.2506670002730971,"Probabilitas, Statistik dan Proses Stokastik","Matematika; Matematika Lanjut; Probabilitas, Statistik dan Proses Stokastik"
+FORMAL-102,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,0.8,0.8,39.58841700023186,Probabilitas,"Matematika; Matematika Lanjut; Probabilitas, Statistik dan Proses Stokastik"
+FORMAL-102,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,27.690091999829747,"Probabilitas, Statistika dan Proses Stokastik","Matematika; Matematika Lanjut; Probabilitas, Statistik dan Proses Stokastik"
+FORMAL-102,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,231.20244900019316,"Probabilitas, Statistika dan Proses Stokastik","Matematika; Matematika Lanjut; Probabilitas, Statistik dan Proses Stokastik"
+FORMAL-103,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.4500390000430343,Data dan Pustaka,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-103,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,26.056592000259116,Analisis Data Kategorik,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-103,formal,Hybrid RRF,0.0,0.0,1.0,0.25,0.0,0.0,0.2,0.2,28.307037000104174,Data dan Pustaka,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-103,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.2,296.2322309999763,Data dan Pustaka,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-104,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.9711900002002949,Teknologi Big Data,Metode Statistika; Algoritma Pemrograman I; Data Mining II
+FORMAL-104,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.02610500020819,Kesehatan dan Keselamatan Kerja,Metode Statistika; Algoritma Pemrograman I; Data Mining II
+FORMAL-104,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.242420999958995,Kuliah Kerja Nyata,Metode Statistika; Algoritma Pemrograman I; Data Mining II
+FORMAL-104,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,327.38365099976363,Agama Katolik II,Metode Statistika; Algoritma Pemrograman I; Data Mining II
+FORMAL-105,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.4058159997839539,Statistika Nonparametrik,Statistika Nonparametrik; Multivariat
+FORMAL-105,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,27.8775299998415,Statistika Nonparametrik,Statistika Nonparametrik; Multivariat
+FORMAL-105,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.6666666666666666,1.0,0.4,1.0,25.524045000111073,Statistik Industri,Statistika Nonparametrik; Multivariat
+FORMAL-105,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,339.8787659998561,Multivariat,Statistika Nonparametrik; Multivariat
+FORMAL-106,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,0.665088999994623,Integrasi Aplikasi Korporasi,Integrasi Aplikasi Korporasi; Pemrograman Lanjut
+FORMAL-106,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,35.68556100026399,Pemrograman Lanjut,Integrasi Aplikasi Korporasi; Pemrograman Lanjut
+FORMAL-106,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,27.041672999985167,Pemrograman Lanjut,Integrasi Aplikasi Korporasi; Pemrograman Lanjut
+FORMAL-106,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,415.60222199996133,Perancangan Teknik Industri,Integrasi Aplikasi Korporasi; Pemrograman Lanjut
+FORMAL-107,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,0.4627809998964949,Metode Statistika,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-107,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.4,0.5,50.02517399998396,Statistika Dasar,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-107,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.6,0.75,24.73510099980558,Analisis Keputusan Bisnis,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-107,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.6666666666666666,0.6666666666666666,0.4,0.5,278.60485900009735,Statistik Industri,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-108,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.2,0.2,0.45090000003256137,Manajemen Jaringan,Pengantar Teknologi Maju; Pengantar Teknologi Maju; Pengantar Teknologi Maju
+FORMAL-108,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.2,0.2,30.833097999675374,Manajemen Jaringan,Pengantar Teknologi Maju; Pengantar Teknologi Maju; Pengantar Teknologi Maju
+FORMAL-108,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.2,0.2,30.822258000171132,Matematika,Pengantar Teknologi Maju; Pengantar Teknologi Maju; Pengantar Teknologi Maju
+FORMAL-108,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.2,0.2,273.96508600031666,Kalkulus Peubah Banyak,Pengantar Teknologi Maju; Pengantar Teknologi Maju; Pengantar Teknologi Maju
+FORMAL-109,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.6246240000109538,Pengantar Kecerdasan Buatan,Kewirausahaan; Kewirausahaan
+FORMAL-109,formal,FAISS (Dense),0.0,0.0,1.0,0.25,0.0,0.0,0.2,0.5,26.22435300008874,Kuliah Kerja Nyata,Kewirausahaan; Kewirausahaan
+FORMAL-109,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.4,1.0,30.096252000021195,Manajemen Jaringan,Kewirausahaan; Kewirausahaan
+FORMAL-109,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,233.5338419998152,Manajemen Jaringan,Kewirausahaan; Kewirausahaan
+FORMAL-110,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.6915849999131751,Kapita Selekta Sains Data,Kapita Selekta Sains Data
+FORMAL-110,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,29.476114999852143,Basis Data Lanjut,Kapita Selekta Sains Data
+FORMAL-110,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.760291999788024,Natural Language Processing,Kapita Selekta Sains Data
+FORMAL-110,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,316.9496660002551,Pembelajaran Mesin,Kapita Selekta Sains Data
+FORMAL-111,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.7414920000883285,Agama Budha 1,Pengantar Pemrograman; Algoritma Pemrograman I; Integrasi Aplikasi Korporasi
+FORMAL-111,formal,FAISS (Dense),0.0,0.0,1.0,0.25,0.0,0.0,0.2,0.3333333333333333,48.57893799999147,Pemrograman Lanjut,Pengantar Pemrograman; Algoritma Pemrograman I; Integrasi Aplikasi Korporasi
+FORMAL-111,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,26.953967999816086,Agama Budha 1,Pengantar Pemrograman; Algoritma Pemrograman I; Integrasi Aplikasi Korporasi
+FORMAL-111,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,427.99807100027465,Pemrograman Lanjut,Pengantar Pemrograman; Algoritma Pemrograman I; Integrasi Aplikasi Korporasi
+FORMAL-112,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.4237289999764471,Keahlian Riset dan Pengembangan Akademik,Bahasa Indonesia; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-112,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.962137999769766,Komunikasi dan Pengembangan Diri,Bahasa Indonesia; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-112,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.527525999834324,Agama Protestan I,Bahasa Indonesia; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-112,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,319.23286100027326,Proposal Skripsi,Bahasa Indonesia; Bahasa Indonesia; Bahasa Indonesia
+FORMAL-113,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.4,0.464045000171609,Statistika Matematika,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-113,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,36.112397000124474,Statistika Matematika,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-113,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.6,0.6,27.365626000118937,Agama Khonghucu 1,Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-113,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.6,275.69718199993076,"Probabilitas, Statistika dan Proses Stokastik",Matematika; Matematika Lanjut; Matematika Lanjut
+FORMAL-114,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.4,1.0,0.6297129998529272,Eksplorasi dan Visualisasi Data,Pengantar Statistika; Eksplorasi dan Visualisasi Data
+FORMAL-114,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,46.58373300026142,Eksplorasi dan Visualisasi Data,Pengantar Statistika; Eksplorasi dan Visualisasi Data
+FORMAL-114,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.4,1.0,25.41079799993895,Eksplorasi dan Visualisasi Data,Pengantar Statistika; Eksplorasi dan Visualisasi Data
+FORMAL-114,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.4,1.0,471.81692900039707,Eksplorasi dan Visualisasi Data,Pengantar Statistika; Eksplorasi dan Visualisasi Data
+FORMAL-115,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.4393979997985298,Bahasa Indonesia,Teknologi Big Data; Data Mining II
+FORMAL-115,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.269469000249956,Matriks dan Ruang Vektor,Teknologi Big Data; Data Mining II
+FORMAL-115,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,31.08560900000157,Ergonomi,Teknologi Big Data; Data Mining II
+FORMAL-115,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.2,0.5,268.33662500030186,Praktikum Rangkaian Elektronika,Teknologi Big Data; Data Mining II
+FORMAL-116,formal,BM25 (Sparse),0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.2,0.2,0.4005460000371386,Pengantar Kecerdasan Buatan,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-116,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,50.3939690001971,Sains Data Consulting,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-116,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.589892000127293,Data dan Pustaka,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-116,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,266.2943290001749,Data Mining II,Pengantar Statistika; Metode Statistika; Statistika Nonparametrik
+FORMAL-117,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.4,0.4,0.719459999800165,Kesehatan dan Keselamatan Kerja,Pengantar Kecerdasan Buatan; Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-117,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.2,0.2,48.17254099998536,Agama Konghucu I,Pengantar Kecerdasan Buatan; Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-117,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.4,0.4,27.699475000190432,Agama Khonghucu 1,Pengantar Kecerdasan Buatan; Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-117,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.2,588.4364319999804,Pemrograman Lanjut,Pengantar Kecerdasan Buatan; Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-118,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.21885799969822983,Statistika Nonparametrik,Statistika Nonparametrik; Multivariat
+FORMAL-118,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,26.631061999978556,Statistika Nonparametrik,Statistika Nonparametrik; Multivariat
+FORMAL-118,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.6666666666666666,1.0,0.4,1.0,29.32377599972824,Statistik Industri,Statistika Nonparametrik; Multivariat
+FORMAL-118,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,382.8777749999972,Multivariat,Statistika Nonparametrik; Multivariat
+FORMAL-119,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.4135499998483283,Algoritma Pemrograman I,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-119,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,25.95119199986584,Algoritma Pemrograman I,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-119,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.6666666666666666,1.0,0.4,1.0,27.93974900032481,Pemrosesan Bahasa Alami,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-119,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.4,1.0,372.1603310000319,Pemrosesan Bahasa Alami,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-120,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.4,1.0,0.7807550000507035,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data; Teknologi Big Data
+FORMAL-120,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,29.029357000126765,Teknologi Big Data,Eksplorasi dan Visualisasi Data; Teknologi Big Data
+FORMAL-120,formal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.4,1.0,29.508650000025227,Bahasa Inggris,Eksplorasi dan Visualisasi Data; Teknologi Big Data
+FORMAL-120,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.4,1.0,431.35184900029344,Bahasa Inggris,Eksplorasi dan Visualisasi Data; Teknologi Big Data
+FORMAL-121,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.3109899998889887,Multivariat,Metode Statistika; Multivariat
+FORMAL-121,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,47.63092899975163,Multivariat,Metode Statistika; Multivariat
+FORMAL-121,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.6666666666666666,1.0,0.4,1.0,26.411397999709152,Statistik Industri,Metode Statistika; Multivariat
+FORMAL-121,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.4,1.0,356.99308099992777,Statistik Industri,Metode Statistika; Multivariat
+FORMAL-122,formal,BM25 (Sparse),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,0.6198249998305982,Deep Learning,Pemrograman Lanjut
+FORMAL-122,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.259383000204252,Pemrosesan Bahasa Alami,Pemrograman Lanjut
+FORMAL-122,formal,Hybrid RRF,0.0,0.0,1.0,0.2,0.0,0.0,0.2,1.0,25.07692200015299,Pengantar Komputasi,Pemrograman Lanjut
+FORMAL-122,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,269.6359050000865,Data Mining II,Pemrograman Lanjut
+FORMAL-123,formal,BM25 (Sparse),0.0,0.0,1.0,0.2,0.0,0.0,0.2,1.0,0.30037999977139407,Skripsi,Pengantar Statistika
+FORMAL-123,formal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,27.466976000141585,Metode Statistika,Pengantar Statistika
+FORMAL-123,formal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,29.808076999870536,Statistik Industri,Pengantar Statistika
+FORMAL-123,formal,Hybrid + Reformulation,0.0,0.0,1.0,0.25,0.0,0.0,0.2,1.0,360.5468559999281,Statistik Industri,Pengantar Statistika
+FORMAL-124,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.52791400003116,Pengantar Kecerdasan Buatan,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-124,formal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,33.94595500003561,Logika dan Pemikiran Kritis,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-124,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,29.082155999731185,Logika dan Pemikiran Kritis,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-124,formal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,254.21566399973017,Logika dan Pemikiran Kritis,Pengantar Pemrograman; Algoritma Pemrograman I
+FORMAL-125,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.5500950001078309,Algoritma Pemrograman I,Algoritma Pemrograman I; Pemrograman Lanjut
+FORMAL-125,formal,FAISS (Dense),0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.4,1.0,33.44489599976441,Pemrograman Komputer,Algoritma Pemrograman I; Pemrograman Lanjut
+FORMAL-125,formal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.4,1.0,27.25022499998886,Pemrograman Non Linear,Algoritma Pemrograman I; Pemrograman Lanjut
+FORMAL-125,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.4,1.0,279.42286999996213,Aljabar Linier,Algoritma Pemrograman I; Pemrograman Lanjut
+FORMAL-126,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.5403270001806959,Statistika Nonparametrik,Metode Statistika; Statistika Nonparametrik
+FORMAL-126,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,27.685436999945523,Statistika Nonparametrik,Metode Statistika; Statistika Nonparametrik
+FORMAL-126,formal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.4,1.0,28.558487000282184,Statistik Industri,Metode Statistika; Statistika Nonparametrik
+FORMAL-126,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.4,1.0,244.9877720000586,Statistik Industri,Metode Statistika; Statistika Nonparametrik
+FORMAL-127,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,1.020100999994611,Multivariat,Multivariat
+FORMAL-127,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,29.473283999777777,Multivariat,Multivariat
+FORMAL-127,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,28.137465999861888,Pembelajaran Mesin (Praktikum),Multivariat
+FORMAL-127,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,311.4507989998856,Pembelajaran Mesin (Praktikum),Multivariat
+FORMAL-128,formal,BM25 (Sparse),0.0,0.0,1.0,0.25,0.0,0.0,0.2,0.2,0.604797000050894,Agama Islam II,Skripsi; Proposal Skripsi; Skripsi
+FORMAL-128,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.2,0.2,30.5865929999527,Kuliah Kerja Nyata,Skripsi; Proposal Skripsi; Skripsi
+FORMAL-128,formal,Hybrid RRF,0.0,0.0,1.0,0.2,0.0,0.0,0.2,0.2,26.07006900007036,Keahlian Riset dan Pengembangan Akademik,Skripsi; Proposal Skripsi; Skripsi
+FORMAL-128,formal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.4,0.4,334.62311099992803,Keahlian Riset dan Pengembangan Akademik,Skripsi; Proposal Skripsi; Skripsi
+FORMAL-129,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.7406800000353542,Pancasila,Pancasila; Kewarganegaraan; Pancasila
+FORMAL-129,formal,FAISS (Dense),1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,26.96470999990197,Pancasila,Pancasila; Kewarganegaraan; Pancasila
+FORMAL-129,formal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.8,0.8,27.586849000272196,Pancasila,Pancasila; Kewarganegaraan; Pancasila
+FORMAL-129,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.8,0.8,266.2307300001885,Kewarganegaraan,Pancasila; Kewarganegaraan; Pancasila
+FORMAL-130,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,0.4381069998089515,Pengantar Basis Data,Pengantar Basis Data; Integrasi Aplikasi Korporasi; Basis Data Lanjut
+FORMAL-130,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,46.20773899978303,Pengantar Basis Data,Pengantar Basis Data; Integrasi Aplikasi Korporasi; Basis Data Lanjut
+FORMAL-130,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,25.681107999844244,Pengantar Basis Data,Pengantar Basis Data; Integrasi Aplikasi Korporasi; Basis Data Lanjut
+FORMAL-130,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.4,0.6666666666666666,242.07025699979567,Pengantar Basis Data,Pengantar Basis Data; Integrasi Aplikasi Korporasi; Basis Data Lanjut
+FORMAL-131,formal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.45517899980040966,Data dan Pustaka,Pengantar Pemrograman; Algoritma Pemrograman I; Integrasi Aplikasi Korporasi
+FORMAL-131,formal,FAISS (Dense),0.0,0.0,1.0,0.2,0.0,0.0,0.2,0.3333333333333333,27.628647000256024,Pemrograman Lanjut,Pengantar Pemrograman; Algoritma Pemrograman I; Integrasi Aplikasi Korporasi
+FORMAL-131,formal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,27.89876099996036,Agama Budha 1,Pengantar Pemrograman; Algoritma Pemrograman I; Integrasi Aplikasi Korporasi
+FORMAL-131,formal,Hybrid + Reformulation,0.0,0.0,1.0,0.2,0.0,0.0,0.2,0.3333333333333333,262.1664289999899,Pemrograman Lanjut,Pengantar Pemrograman; Algoritma Pemrograman I; Integrasi Aplikasi Korporasi
+FORMAL-132,formal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.6710899997415254,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data; Kapita Selekta Sains Data
+FORMAL-132,formal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,25.633316000039486,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data; Kapita Selekta Sains Data
+FORMAL-132,formal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.4,1.0,26.77444499977355,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data; Kapita Selekta Sains Data
+FORMAL-132,formal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,326.4004049997311,Eksplorasi dan Visualisasi Data,Eksplorasi dan Visualisasi Data; Kapita Selekta Sains Data
+INFORMAL-01,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0172119998751441,-,Algoritma Pemrograman I
+INFORMAL-01,informal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,44.66005599988421,Analisa dan Perancangan Sistem Informasi,Algoritma Pemrograman I
+INFORMAL-01,informal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.82116399980805,Agama Konghucu I,Algoritma Pemrograman I
+INFORMAL-01,informal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,313.16135499992015,Matriks dan Ruang Vektor,Algoritma Pemrograman I
+INFORMAL-02,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.2440250000290689,Struktur Data,Struktur Data
+INFORMAL-02,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,31.304767999699834,Struktur Data,Struktur Data
+INFORMAL-02,informal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,27.965544999915437,Struktur Data,Struktur Data
+INFORMAL-02,informal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,236.24552199999016,Struktur Data,Struktur Data
+INFORMAL-04,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.4,0.5,0.450109000212251,Kalkulus 2,Kalkulus 1; Kalkulus 2; Kalkulus dan Aplikasinya
+INFORMAL-04,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,0.6666666666666666,0.6,0.75,31.3426940001591,Kalkulus dan Aplikasinya,Kalkulus 1; Kalkulus 2; Kalkulus dan Aplikasinya
+INFORMAL-04,informal,Hybrid RRF,1.0,1.0,1.0,1.0,1.0,1.0,0.6,0.75,28.95854500002315,Agama Khonghucu 1,Kalkulus 1; Kalkulus 2; Kalkulus dan Aplikasinya
+INFORMAL-04,informal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.2,0.25,266.276046999792,Matematika Diskrit,Kalkulus 1; Kalkulus 2; Kalkulus dan Aplikasinya
+INFORMAL-06,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.2,0.2,0.5161209996913385,Kecerdasan Buatan,"Probabilitas, Statistik dan Proses Stokastik; Statistika Dasar; Probabilitas, Statistika dan Proses Stokastik"
+INFORMAL-06,informal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,2864.2935319999197,Biologi Dasar,"Probabilitas, Statistik dan Proses Stokastik; Statistika Dasar; Probabilitas, Statistika dan Proses Stokastik"
+INFORMAL-06,informal,Hybrid RRF,0.0,0.0,1.0,0.2,0.0,0.0,0.2,0.2,28.225558999565692,Biologi Dasar,"Probabilitas, Statistik dan Proses Stokastik; Statistika Dasar; Probabilitas, Statistika dan Proses Stokastik"
+INFORMAL-06,informal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,1.0,1.0,0.8,0.8,280.46342500010724,"Probabilitas, Statistika dan Proses Stokastik","Probabilitas, Statistik dan Proses Stokastik; Statistika Dasar; Probabilitas, Statistika dan Proses Stokastik"
+INFORMAL-08,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.10573700001259567,Regresi Terapan,Metode Statistika
+INFORMAL-08,informal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,35.15252400029567,Regresi Terapan,Metode Statistika
+INFORMAL-08,informal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.75401800019972,Regresi Nonparametrik,Metode Statistika
+INFORMAL-08,informal,Hybrid + Reformulation,0.0,0.0,1.0,0.2,0.0,0.0,0.2,1.0,290.8719749998454,Statistik Industri,Metode Statistika
+INFORMAL-09,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.35884899989468977,Skripsi,Eksperimen Robotika I; Eksperimen Robotika II; Topik Khusus Robotika dan Kecerdasan Buatan
+INFORMAL-09,informal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.4,0.5,24.25461599978007,Autonomous Vehicle,Eksperimen Robotika I; Eksperimen Robotika II; Topik Khusus Robotika dan Kecerdasan Buatan
+INFORMAL-09,informal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,24.882229000013467,Sistem Waktu Nyata,Eksperimen Robotika I; Eksperimen Robotika II; Topik Khusus Robotika dan Kecerdasan Buatan
+INFORMAL-09,informal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,274.62726800013115,Sistem Waktu Nyata,Eksperimen Robotika I; Eksperimen Robotika II; Topik Khusus Robotika dan Kecerdasan Buatan
+INFORMAL-10,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.37811399988640915,Data dan Pustaka,Eksplorasi dan Visualisasi Data
+INFORMAL-10,informal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,32.28081599991128,Metodologi Penyelesaian Masalah,Eksplorasi dan Visualisasi Data
+INFORMAL-10,informal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,28.049245000147494,Skripsi,Eksplorasi dan Visualisasi Data
+INFORMAL-10,informal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,241.33969300009994,"Probabilitas, Statistika dan Proses Stokastik",Eksplorasi dan Visualisasi Data
+INFORMAL-11,informal,BM25 (Sparse),0.0,0.0,1.0,0.25,0.0,0.0,0.2,0.5,0.3909490001205995,Proposal Skripsi,Pemrosesan Bahasa Alami; Natural Language Processing
+INFORMAL-11,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,25.218715999926644,Natural Language Processing,Pemrosesan Bahasa Alami; Natural Language Processing
+INFORMAL-11,informal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.2,0.5,27.99699699971825,Aljabar Linier,Pemrosesan Bahasa Alami; Natural Language Processing
+INFORMAL-11,informal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,315.13690600013433,Kesehatan dan Keselamatan Kerja,Pemrosesan Bahasa Alami; Natural Language Processing
+INFORMAL-12,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.23252299979503732,Deep Learning,Deep Learning
+INFORMAL-12,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,2872.0243100001426,Deep Learning,Deep Learning
+INFORMAL-12,informal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,29.22527999999147,Pembelajaran Mesin,Deep Learning
+INFORMAL-12,informal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,371.345508000104,Pembelajaran Mesin,Deep Learning
+INFORMAL-13,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.18876200010709,Komputasi Awan,Komputasi Awan
+INFORMAL-13,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,25.317005000033532,Komputasi Awan,Komputasi Awan
+INFORMAL-13,informal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,27.385463999962667,Pengantar Komputasi,Komputasi Awan
+INFORMAL-13,informal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,362.8480710003714,Komputasi Awan,Komputasi Awan
+INFORMAL-14,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3741969999282446,Agama Protestan 2,Kinetika dan Termodinamika
+INFORMAL-14,informal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.52059499976167,Agama II,Kinetika dan Termodinamika
+INFORMAL-14,informal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.91149099998802,Pengantar Kolaborasi Keilmuan,Kinetika dan Termodinamika
+INFORMAL-14,informal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,254.49629400009144,Agama Katolik 1,Kinetika dan Termodinamika
+INFORMAL-16,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,0.32554600011280854,Sistem Tertanam dan Internet of Things (IoT),Nanobioteknologi Mikroba; Sistem Tertanam dan Internet of Things (IoT)
+INFORMAL-16,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.5,0.2,0.5,27.021416000025056,Sistem Tertanam dan Internet of Things (IoT),Nanobioteknologi Mikroba; Sistem Tertanam dan Internet of Things (IoT)
+INFORMAL-16,informal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.2,0.5,29.20341799972448,Elektronika (Praktikum),Nanobioteknologi Mikroba; Sistem Tertanam dan Internet of Things (IoT)
+INFORMAL-16,informal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,0.5,0.2,0.5,303.4679130000768,Elektronika (Praktikum),Nanobioteknologi Mikroba; Sistem Tertanam dan Internet of Things (IoT)
+INFORMAL-19,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3945390003536886,Pengantar Teknologi Maju,Riset Operasi
+INFORMAL-19,informal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,26.469821000318916,Penelitian Operasi Lanjut,Riset Operasi
+INFORMAL-19,informal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,25.8088850000604,Matematika Optimasi,Riset Operasi
+INFORMAL-19,informal,Hybrid + Reformulation,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,355.67691999995077,Matematika Optimasi,Riset Operasi
+INFORMAL-20,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.4223570003887289,Kimia Dasar,Pengantar Nanoteknologi 1; Pengantar Nanoteknologi 2
+INFORMAL-20,informal,FAISS (Dense),0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.2,0.5,30.627512000137358,Praktikum Nanoteknologi 2,Pengantar Nanoteknologi 1; Pengantar Nanoteknologi 2
+INFORMAL-20,informal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.2,0.5,27.145463000124437,Kimia Dasar,Pengantar Nanoteknologi 1; Pengantar Nanoteknologi 2
+INFORMAL-20,informal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.5,0.2,0.5,314.08424799974455,Kimia Dasar,Pengantar Nanoteknologi 1; Pengantar Nanoteknologi 2
+INFORMAL-21,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.8400860001529509,Teknologi Big Data,Teknologi Big Data
+INFORMAL-21,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,2833.319133000259,Teknologi Big Data,Teknologi Big Data
+INFORMAL-21,informal,Hybrid RRF,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,26.217164000172488,Teknologi Big Data,Teknologi Big Data
+INFORMAL-21,informal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,249.6422919998622,Teknologi Big Data,Teknologi Big Data
+INFORMAL-23,informal,BM25 (Sparse),0.0,1.0,1.0,0.5,0.3333333333333333,0.3333333333333333,0.4,0.5,0.43058200026280247,Deep Learning,Pengantar Kecerdasan Buatan; Kecerdasan Buatan; Topik Khusus Robotika dan Kecerdasan Buatan
+INFORMAL-23,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.2,0.25,48.63367699999799,Kecerdasan Buatan,Pengantar Kecerdasan Buatan; Kecerdasan Buatan; Topik Khusus Robotika dan Kecerdasan Buatan
+INFORMAL-23,informal,Hybrid RRF,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,0.3333333333333333,0.2,0.25,26.73479400027645,Teknologi Big Data,Pengantar Kecerdasan Buatan; Kecerdasan Buatan; Topik Khusus Robotika dan Kecerdasan Buatan
+INFORMAL-23,informal,Hybrid + Reformulation,0.0,0.0,1.0,0.25,0.0,0.0,0.4,0.5,457.82458200028486,Pengantar Kolaborasi Keilmuan,Pengantar Kecerdasan Buatan; Kecerdasan Buatan; Topik Khusus Robotika dan Kecerdasan Buatan
+INFORMAL-25,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.2992679997078085,Multivariat,Multivariat
+INFORMAL-25,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,31.390724000175396,Multivariat,Multivariat
+INFORMAL-25,informal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,26.74366099972758,Analisis Keputusan Bisnis,Multivariat
+INFORMAL-25,informal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,362.62375599972074,Statistik Industri,Multivariat
+INFORMAL-26,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,0.29188400003477,Pengantar Basis Data,Pengantar Basis Data; Basis Data Lanjut
+INFORMAL-26,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,31.560853999963,Pengantar Basis Data,Pengantar Basis Data; Basis Data Lanjut
+INFORMAL-26,informal,Hybrid RRF,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,25.166255999920395,Pengantar Basis Data,Pengantar Basis Data; Basis Data Lanjut
+INFORMAL-26,informal,Hybrid + Reformulation,1.0,1.0,1.0,1.0,0.6666666666666666,1.0,0.4,1.0,265.7841059999555,Pengantar Basis Data,Pengantar Basis Data; Basis Data Lanjut
+INFORMAL-28,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.8220320000873471,Pengantar Teknologi Maju,Elektronika
+INFORMAL-28,informal,FAISS (Dense),0.0,0.0,1.0,0.25,0.0,0.0,0.2,1.0,26.6683310001099,Praktikum Rangkaian Elektronika,Elektronika
+INFORMAL-28,informal,Hybrid RRF,0.0,0.0,1.0,0.25,0.0,0.0,0.2,1.0,27.404504000060115,Praktikum Rangkaian Elektronika,Elektronika
+INFORMAL-28,informal,Hybrid + Reformulation,0.0,1.0,1.0,0.3333333333333333,0.3333333333333333,1.0,0.2,1.0,327.2398509998311,Praktikum Rangkaian Elektronika,Elektronika
+INFORMAL-29,informal,BM25 (Sparse),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.19700700022440287,Deep Learning,Visi Komputer
+INFORMAL-29,informal,FAISS (Dense),0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,47.457428999678086,Pengolahan Sinyal Lanjut,Visi Komputer
+INFORMAL-29,informal,Hybrid RRF,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,29.17185200021777,Computer Aided Design (CAD),Visi Komputer
+INFORMAL-29,informal,Hybrid + Reformulation,0.0,0.0,1.0,0.25,0.0,0.0,0.2,1.0,380.9637570002451,Pengukuran Dasar (Praktikum),Visi Komputer
+INFORMAL-30,informal,BM25 (Sparse),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,0.8380990002478939,Simulasi Komputer,Simulasi Komputer
+INFORMAL-30,informal,FAISS (Dense),1.0,1.0,1.0,1.0,0.3333333333333333,1.0,0.2,1.0,48.52262099984728,Simulasi Komputer,Simulasi Komputer
+INFORMAL-30,informal,Hybrid RRF,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,28.89639300019553,Analisa dan Perancangan Sistem Informasi,Simulasi Komputer
+INFORMAL-30,informal,Hybrid + Reformulation,0.0,1.0,1.0,0.5,0.3333333333333333,1.0,0.2,1.0,283.5232699999324,Analisa dan Perancangan Sistem Informasi,Simulasi Komputer
