@@ -1,0 +1,72 @@
+{
+  "overall": {
+    "ReAct Agent (Tool-Calling)": {
+      "count": 30,
+      "goal_success_rate": 0.6,
+      "fact_recall": 0.611111111111111,
+      "hallucination_rate": 0.13333333333333333,
+      "tool_accuracy": 0.9666666666666667,
+      "avg_latency_ms": 2219.097591333351,
+      "avg_steps": 1.9666666666666666
+    },
+    "Static 1-Shot Router": {
+      "count": 30,
+      "goal_success_rate": 0.4,
+      "fact_recall": 0.4611111111111111,
+      "hallucination_rate": 0.26666666666666666,
+      "tool_accuracy": 0.0,
+      "avg_latency_ms": 2933.0383885666834,
+      "avg_steps": 1.0
+    }
+  },
+  "by_category": {
+    "PREREQUISITE_CHECK": {
+      "ReAct Agent (Tool-Calling)": {
+        "count": 10,
+        "goal_success_rate": 0.6,
+        "fact_recall": 0.6166666666666666,
+        "hallucination_rate": 0.4,
+        "avg_latency_ms": 2364.3627886000104
+      },
+      "Static 1-Shot Router": {
+        "count": 10,
+        "goal_success_rate": 0.6,
+        "fact_recall": 0.4833333333333333,
+        "hallucination_rate": 0.4,
+        "avg_latency_ms": 3879.989908400012
+      }
+    },
+    "SKS_LIMIT_CONSTRAINT": {
+      "ReAct Agent (Tool-Calling)": {
+        "count": 10,
+        "goal_success_rate": 1.0,
+        "fact_recall": 0.7833333333333333,
+        "hallucination_rate": 0.0,
+        "avg_latency_ms": 1614.2489658999693
+      },
+      "Static 1-Shot Router": {
+        "count": 10,
+        "goal_success_rate": 0.6,
+        "fact_recall": 0.3833333333333333,
+        "hallucination_rate": 0.4,
+        "avg_latency_ms": 1072.422809100044
+      }
+    },
+    "STUDY_PLANNING_ACTION": {
+      "ReAct Agent (Tool-Calling)": {
+        "count": 10,
+        "goal_success_rate": 0.2,
+        "fact_recall": 0.4333333333333333,
+        "hallucination_rate": 0.0,
+        "avg_latency_ms": 2678.6810195000726
+      },
+      "Static 1-Shot Router": {
+        "count": 10,
+        "goal_success_rate": 0.0,
+        "fact_recall": 0.5166666666666666,
+        "hallucination_rate": 0.0,
+        "avg_latency_ms": 3846.7024481999943
+      }
+    }
+  }
+}

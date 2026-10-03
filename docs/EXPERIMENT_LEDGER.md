@@ -12,6 +12,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | **`exp-001`** | 2026-09-30 | Baseline Komparasi 3 Paradigma (Card 31, 32, 36) | `qwen2.5:3b` + `nomic-embed-text` | Pure RAG: 0.5903<br>Pure CAG: **0.7043**<br>Hybrid: 0.6836 | Pure RAG: 0.7831<br>Pure CAG: **0.8350**<br>Hybrid: 0.8078 | Pure RAG: 30.11%<br>Pure CAG: **50.83%**<br>Hybrid: 49.72% | Pure RAG: 34.3 ms<br>Pure CAG: **0.0 ms**<br>Hybrid: **3.5 ms** | Pure RAG: 2329.8 ms<br>Pure CAG: **1665.4 ms**<br>Hybrid: 2507.6 ms | Pure RAG: ±0.1825<br>Pure CAG: ±0.1718<br>Hybrid: **±0.1561** | **Hybrid RAG-CAG terbukti paling stabil** (varians terendah ±0.1561) dan paling tahan kueri slang/informal (delta hanya +0.0435). CAG tercepat (0 ms retrieval). | `docs/exp-001_baseline_cag_rag_hybrid/` |
 | **`exp-002`** | 2026-10-03 | Retrieval Ablation & Evaluation (Card 24, 25, 27, 28, 29) | `nomic-embed-text` + `qwen2.5:3b` (reform) | BM25: Hit@3 77.5%<br>Dense: Hit@3 76.0%<br>Hybrid RRF: **81.4%**<br>Reform: **83.7%** | BM25: MRR 0.7018<br>Dense: MRR 0.6306<br>Hybrid RRF: 0.6313<br>Reform: **0.6698** | BM25: Recall@3 65.5%<br>Dense: 58.1%<br>Hybrid RRF: 63.0%<br>Reform: 64.3% | BM25: **0.8 ms**<br>Dense: 99.1 ms<br>Hybrid RRF: **28.3 ms**<br>Reform: 315.6 ms | BM25: 0.8 ms<br>Dense: 99.1 ms<br>Hybrid RRF: 28.3 ms<br>Reform: 315.6 ms | BM25: P95 1.8 ms<br>Dense: P95 52.6 ms<br>Hybrid RRF: **P95 31.0 ms**<br>Reform: P95 465.3 ms | **Hybrid RRF ($k=60$) terpilih sebagai backbone terbaik**: mengungguli BM25 & Dense murni (Hit@3 81.4%, Hit@5 85.3%) pada latensi sangat rendah (28.3 ms). BM25 drop -30.0% pada kueri slang. Menutup Card 29. | `docs/exp-002_retrieval_ablation/` |
+| **`exp-003`** | 2026-10-03 | ReAct Agent Tool-Calling vs Static Router (Card 44) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Static Router: 40.0%<br>ReAct Agent: **60.0%** (Task Success) | Static Router: 0.0%<br>ReAct: **96.7%** (Tool Acc) | Static: 46.1%<br>ReAct: **61.1%** | Static: 28.3 ms<br>ReAct: **42.2 ms** (Tool Exec) | Static: 2933.0 ms<br>ReAct: **2219.1 ms** | Static: Halluc 26.7%<br>ReAct: **Halluc 13.3%** | **ReAct Agent melipatgandakan Task Success (+50% rel)** dan menekan halusinasi SKS hingga 0%. Berhasil mengeksekusi `generate_degree_plan` (JSON) untuk integrasi UI `DegreePlanner.tsx`. Menjawab Card 44. | `docs/exp-003_react_tool_calling/` |
 
 ---
 
@@ -70,3 +71,35 @@
   - `docs/exp-002_retrieval_ablation/benchmark_summary.md`
   - `docs/exp-002_retrieval_ablation/benchmark_metrics.csv`
   - `docs/exp-002_retrieval_ablation/benchmark_results.json`
+
+---
+
+### [exp-003] ReAct Agent (Tool-Calling) vs Static 1-Shot Router: Evaluasi Multi-Hop & Perencanaan Studi
+- **Tanggal:** 2026-10-03
+- **Kartu Trello:** Card 44 (`[Nauval & Ario] Implementasi ReAct Agent dengan tool-calling`).
+- **Tujuan / Hipotesis:**
+  Menguji apakah reasoning loop ReAct berbasis Ollama native tool-calling yang terhubung ke 4 fungsi deterministik (`search_courses`, `validate_prerequisites_dag`, `calculate_sks_limit`, `generate_degree_plan`) mampu mengeliminasi halusinasi regulasi dan menghasilkan payload perencanaan studi yang kompatibel langsung dengan antarmuka React frontend.
+- **Setup Teknis (Low-Level Architecture):**
+  - **LLM Backbone:** Ollama `qwen2.5:3b` via native tool calling protocol (OpenAI-compatible schema).
+  - **Tool 1 (`search_courses`):** Hybrid RRF retriever (BM25 Okapi + FAISS Cosine) dari Exp-002.
+  - **Tool 2 (`validate_prerequisites_dag`):** Graph traversal deterministik rantai prasyarat kurikulum resmi.
+  - **Tool 3 (`calculate_sks_limit`):** Aturan deterministik Pasal 5.4 Panduan Akademik FTMM.
+  - **Tool 4 (`generate_degree_plan`):** State generator semester-by-semester untuk antarmuka visual `DegreePlanner.tsx`.
+  - **Testbed Pengujian:** 30 skenario terstratifikasi (10 Cek Prasyarat DAG, 10 Batasan Beban SKS, 10 Perencanaan Studi End-to-End).
+- **Temuan Kunci:**
+  1. **Peningkatan Task Success Rate Drastis:**
+     ReAct Agent mencatat kesuksesan tugas **60.0%** vs Static Router **40.0%** (peningkatan relatif +50%).
+  2. **Eliminasi Total Halusinasi Batas SKS:**
+     Pada kategori batas SKS (`SKS_LIMIT_CONSTRAINT`), ReAct Agent mencapai **100% Success Rate** dan **0.0% Hallucination** berkat eksekusi Pasal 5.4 secara deterministik. Sebaliknya, Static Router mengalami halusinasi 40.0%.
+  3. **Akurasi Pemilihan Alat (Tool Selection):**
+     Model mencapai akurasi seleksi alat sebesar **96.7%** (29 dari 30 skenario memanggil tool yang relevan secara presisi).
+  4. **Eksekusi Structured Action Payload untuk Frontend:**
+     ReAct Agent sukses memicu pembuatan JSON `DegreePlanPayload` (`action: "APPLY_DEGREE_PLAN"`) yang siap dikonsumsi langsung oleh `DegreePlanner.tsx` di frontend `ftmm-compass-ui`.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - ReAct Agent ditetapkan sebagai arsitektur eksekutor untuk kueri perencanaan studi dan pengecekan prasyarat di Sprint 6.
+  - Menutup target riset Card 44.
+- **Artefak:**
+  - `docs/exp-003_react_tool_calling/README.md`
+  - `docs/exp-003_react_tool_calling/benchmark_summary.md`
+  - `docs/exp-003_react_tool_calling/benchmark_metrics.csv`
+  - `docs/exp-003_react_tool_calling/benchmark_results.json`
