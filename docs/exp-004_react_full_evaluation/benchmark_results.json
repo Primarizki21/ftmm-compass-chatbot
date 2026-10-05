@@ -1,0 +1,181 @@
+{
+  "overall": {
+    "total_scenarios": 60,
+    "success_rate": 0.75,
+    "fact_recall": 0.6083333333333333,
+    "hallucination_rate": 0.1,
+    "tool_selection_acc": 0.9666666666666667,
+    "self_correction_rate": 0.2,
+    "avg_steps": 2.1,
+    "avg_latency_ms": 2703.7248333333337,
+    "p50_latency_ms": 2002.685,
+    "p95_latency_ms": 6807.504499999999,
+    "avg_prompt_tokens": 2533.55,
+    "avg_completion_tokens": 195.46666666666667
+  },
+  "by_prodi": {
+    "RN": {
+      "count": 12,
+      "success_rate": 0.75,
+      "tool_accuracy": 1.0,
+      "avg_latency_ms": 2700.4441666666667
+    },
+    "TE": {
+      "count": 12,
+      "success_rate": 0.75,
+      "tool_accuracy": 1.0,
+      "avg_latency_ms": 2680.7250000000004
+    },
+    "TI": {
+      "count": 12,
+      "success_rate": 0.8333333333333334,
+      "tool_accuracy": 0.9166666666666666,
+      "avg_latency_ms": 2659.1458333333335
+    },
+    "TRKB": {
+      "count": 12,
+      "success_rate": 0.6666666666666666,
+      "tool_accuracy": 1.0,
+      "avg_latency_ms": 3014.0691666666667
+    },
+    "TSD": {
+      "count": 12,
+      "success_rate": 0.75,
+      "tool_accuracy": 0.9166666666666666,
+      "avg_latency_ms": 2464.2400000000002
+    }
+  },
+  "by_category": {
+    "COURSE_DISCOVERY": {
+      "count": 10,
+      "success_rate": 0.8,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 4168.0419999999995
+    },
+    "DEGREE_PLANNING": {
+      "count": 10,
+      "success_rate": 0.3,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 4416.454
+    },
+    "PREREQUISITE_DAG": {
+      "count": 20,
+      "success_rate": 0.7,
+      "hallucination_rate": 0.3,
+      "avg_latency_ms": 2255.857
+    },
+    "SKS_POLICY": {
+      "count": 20,
+      "success_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 1563.0695
+    }
+  },
+  "failures": [
+    {
+      "sample_id": "TSD-09",
+      "prodi": "TSD",
+      "category": "COURSE_DISCOVERY",
+      "status": "FAILED",
+      "reason": "Matkul yang dicari tidak muncul di jawaban"
+    },
+    {
+      "sample_id": "TSD-11",
+      "prodi": "TSD",
+      "category": "DEGREE_PLANNING",
+      "status": "FAILED",
+      "reason": "Gagal memicu action PLAN_GENERATED atau plan_payload kosong"
+    },
+    {
+      "sample_id": "TSD-12",
+      "prodi": "TSD",
+      "category": "DEGREE_PLANNING",
+      "status": "FAILED",
+      "reason": "Gagal memicu action PLAN_GENERATED atau plan_payload kosong"
+    },
+    {
+      "sample_id": "TRKB-01",
+      "prodi": "TRKB",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Positive: Belum memenuhi prasyarat tapi model mengizinkan"
+    },
+    {
+      "sample_id": "TRKB-04",
+      "prodi": "TRKB",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Positive: Belum memenuhi prasyarat tapi model mengizinkan"
+    },
+    {
+      "sample_id": "TRKB-10",
+      "prodi": "TRKB",
+      "category": "COURSE_DISCOVERY",
+      "status": "FAILED",
+      "reason": "Matkul yang dicari tidak muncul di jawaban"
+    },
+    {
+      "sample_id": "TRKB-11",
+      "prodi": "TRKB",
+      "category": "DEGREE_PLANNING",
+      "status": "FAILED",
+      "reason": "Gagal memicu action PLAN_GENERATED atau plan_payload kosong"
+    },
+    {
+      "sample_id": "RN-04",
+      "prodi": "RN",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Positive: Belum memenuhi prasyarat tapi model mengizinkan"
+    },
+    {
+      "sample_id": "RN-11",
+      "prodi": "RN",
+      "category": "DEGREE_PLANNING",
+      "status": "FAILED",
+      "reason": "Gagal memicu action PLAN_GENERATED atau plan_payload kosong"
+    },
+    {
+      "sample_id": "RN-12",
+      "prodi": "RN",
+      "category": "DEGREE_PLANNING",
+      "status": "FAILED",
+      "reason": "Gagal memicu action PLAN_GENERATED atau plan_payload kosong"
+    },
+    {
+      "sample_id": "TI-01",
+      "prodi": "TI",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Positive: Belum memenuhi prasyarat tapi model mengizinkan"
+    },
+    {
+      "sample_id": "TI-11",
+      "prodi": "TI",
+      "category": "DEGREE_PLANNING",
+      "status": "FAILED",
+      "reason": "Gagal memicu action PLAN_GENERATED atau plan_payload kosong"
+    },
+    {
+      "sample_id": "TE-03",
+      "prodi": "TE",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Seharusnya eligible/boleh tapi model menolak"
+    },
+    {
+      "sample_id": "TE-04",
+      "prodi": "TE",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Positive: Belum memenuhi prasyarat tapi model mengizinkan"
+    },
+    {
+      "sample_id": "TE-11",
+      "prodi": "TE",
+      "category": "DEGREE_PLANNING",
+      "status": "FAILED",
+      "reason": "Gagal memicu action PLAN_GENERATED atau plan_payload kosong"
+    }
+  ]
+}

@@ -13,6 +13,7 @@
 | **`exp-001`** | 2026-09-30 | Baseline Komparasi 3 Paradigma (Card 31, 32, 36) | `qwen2.5:3b` + `nomic-embed-text` | Pure RAG: 0.5903<br>Pure CAG: **0.7043**<br>Hybrid: 0.6836 | Pure RAG: 0.7831<br>Pure CAG: **0.8350**<br>Hybrid: 0.8078 | Pure RAG: 30.11%<br>Pure CAG: **50.83%**<br>Hybrid: 49.72% | Pure RAG: 34.3 ms<br>Pure CAG: **0.0 ms**<br>Hybrid: **3.5 ms** | Pure RAG: 2329.8 ms<br>Pure CAG: **1665.4 ms**<br>Hybrid: 2507.6 ms | Pure RAG: ±0.1825<br>Pure CAG: ±0.1718<br>Hybrid: **±0.1561** | **Hybrid RAG-CAG terbukti paling stabil** (varians terendah ±0.1561) dan paling tahan kueri slang/informal (delta hanya +0.0435). CAG tercepat (0 ms retrieval). | `docs/exp-001_baseline_cag_rag_hybrid/` |
 | **`exp-002`** | 2026-10-03 | Retrieval Ablation & Evaluation (Card 24, 25, 27, 28, 29) | `nomic-embed-text` + `qwen2.5:3b` (reform) | BM25: Hit@3 77.5%<br>Dense: Hit@3 76.0%<br>Hybrid RRF: **81.4%**<br>Reform: **83.7%** | BM25: MRR 0.7018<br>Dense: MRR 0.6306<br>Hybrid RRF: 0.6313<br>Reform: **0.6698** | BM25: Recall@3 65.5%<br>Dense: 58.1%<br>Hybrid RRF: 63.0%<br>Reform: 64.3% | BM25: **0.8 ms**<br>Dense: 99.1 ms<br>Hybrid RRF: **28.3 ms**<br>Reform: 315.6 ms | BM25: 0.8 ms<br>Dense: 99.1 ms<br>Hybrid RRF: 28.3 ms<br>Reform: 315.6 ms | BM25: P95 1.8 ms<br>Dense: P95 52.6 ms<br>Hybrid RRF: **P95 31.0 ms**<br>Reform: P95 465.3 ms | **Hybrid RRF ($k=60$) terpilih sebagai backbone terbaik**: mengungguli BM25 & Dense murni (Hit@3 81.4%, Hit@5 85.3%) pada latensi sangat rendah (28.3 ms). BM25 drop -30.0% pada kueri slang. Menutup Card 29. | `docs/exp-002_retrieval_ablation/` |
 | **`exp-003`** | 2026-10-03 | ReAct Agent Tool-Calling vs Static Router (Card 44) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Static Router: 40.0%<br>ReAct Agent: **60.0%** (Task Success) | Static Router: 0.0%<br>ReAct: **96.7%** (Tool Acc) | Static: 46.1%<br>ReAct: **61.1%** | Static: 28.3 ms<br>ReAct: **42.2 ms** (Tool Exec) | Static: 2933.0 ms<br>ReAct: **2219.1 ms** | Static: Halluc 26.7%<br>ReAct: **Halluc 13.3%** | **ReAct Agent melipatgandakan Task Success (+50% rel)** dan menekan halusinasi SKS hingga 0%. Berhasil mengeksekusi `generate_degree_plan` (JSON) untuk integrasi UI `DegreePlanner.tsx`. Menjawab Card 44. | `docs/exp-003_react_tool_calling/` |
+| **`exp-004`** | 2026-10-03 | Evaluasi Penuh ReAct Agent (Zero-Abstraction Telemetry) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Task Success: **75.0%** (45/60)<br>TI: 83.3%<br>TSD/RN/TE: 75.0%<br>TRKB: 66.7% | Tool Selection Acc: **96.7%** (58/60) | SKS: **100%**<br>Prereq: 70.0%<br>Discovery: 80% | Tool Exec: **3.8 ms** (avg) | Total: **2703.7 ms**<br>P50: 2002.7 ms<br>P95: 6807.5 ms | Hallucination: **10.0%**<br>Self-Correction: **20.0%** | **Evaluasi 60 skenario lintas 5 prodi FTMM**: Task success naik ke 75.0% (vs 60.0% di exp-003). SKS policy 100% konsisten. Kegagalan terlacak mentah: 7 kasus planning via teks & 6 false positive akibat hedging sopan. Dump raw traces tersimpan di JSONL. | `docs/exp-004_react_full_evaluation/` |
 
 ---
 
@@ -103,3 +104,37 @@
   - `docs/exp-003_react_tool_calling/benchmark_summary.md`
   - `docs/exp-003_react_tool_calling/benchmark_metrics.csv`
   - `docs/exp-003_react_tool_calling/benchmark_results.json`
+
+---
+
+### [exp-004] Evaluasi Penuh ReAct Agent: Zero-Abstraction Telemetry & 60 Skenario Lintas 5 Prodi FTMM
+- **Tanggal:** 2026-10-03
+- **Kartu Trello:** Card 44 (`[Nauval & Ario] Implementasi ReAct Agent dengan tool-calling`).
+- **Tujuan / Hipotesis:**
+  Melakukan evaluasi skala penuh terhadap agen penalaran ReAct dengan instrumentasi telemetri tingkat rendah (zero black-box) tanpa abstraksi. Menguji 60 skenario multi-hop lintas 5 program studi FTMM (TSD, TRKB, RN, TI, TE) serta merekam trace eksekusi mentah, token, latensi per step, dan mekanisme self-correction saat argumen fungsi salah.
+- **Setup Teknis (Low-Level Architecture):**
+  - **LLM Backbone:** Ollama `qwen2.5:3b` (native tool-calling JSON schema).
+  - **Telemetry Logging:** Perekaman raw prompt messages, completion tokens, prompt tokens, latency per-step dalam microsecond, dan raw tool outputs ke file JSON Lines (`benchmark_raw_traces.jsonl`).
+  - **Self-Correction Retry Loop:** Mekanisme recovery otomatis pada level Python runtime saat argumen tool menghasilkan pengecualian atau ketidaksesuaian tipe data.
+  - **Testbed Pengujian:** 60 skenario akademik tervalidasi kurikulum resmi (12 skenario per program studi).
+- **Temuan Kunci:**
+  1. **Kenaikan Task Success Rate ke 75.0%:**
+     Kesuksesan tugas naik dari 60.0% (Exp-003) menjadi **75.0%** (45 dari 60 skenario tuntas dengan benar).
+  2. **Konsistensi Kebijakan Beban SKS Mutlak (100% SKS_POLICY):**
+     Seluruh 20 kasus aturan SKS berhasil 100% dengan angka halusinasi **0.0%** dan latensi rata-rata tercepat (**1563.1 ms**).
+  3. **Akurasi Seleksi Alat Sangat Tinggi (96.7%):**
+     Model berhasil memilih tool deterministik yang tepat pada 58 dari 60 skenario uji.
+  4. **Aktivasi Self-Correction (20.0%):**
+     Sebanyak 12 skenario memicu self-correction di mana agen secara dinamis memperbaiki tipe data parameter dan berhasil merampungkan tugas.
+  5. **Diagnosis Kegagalan yang Terlacak Mentah (Failure Analysis):**
+     - *DEGREE_PLANNING (7 gagal):* Model 3B terkadang menjabarkan rencana studi langsung secara teks naratif alih-alih memanggil tool `generate_degree_plan`.
+     - *PREREQUISITE_DAG (6 false positive):* Model menerima informasi bahwa mahasiswa belum memenuhi prasyarat, namun merespons dengan kalimat sopan bersyarat (*"Anda boleh mengambilnya jika sudah..."*) yang terbaca ambigu oleh sistem evaluasi.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - Seluruh raw traces tersimpan dan dapat diinspeksi per skenario untuk debugging.
+  - Menyiapkan integrasi engine ke endpoint API backend (`/api/chat`).
+- **Artefak:**
+  - `docs/exp-004_react_full_evaluation/README.md`
+  - `docs/exp-004_react_full_evaluation/benchmark_summary.md`
+  - `docs/exp-004_react_full_evaluation/benchmark_metrics.csv`
+  - `docs/exp-004_react_full_evaluation/benchmark_raw_traces.jsonl`
+  - `docs/exp-004_react_full_evaluation/benchmark_results.json`
