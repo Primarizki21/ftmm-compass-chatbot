@@ -1,0 +1,125 @@
+{
+  "overall": {
+    "total_scenarios": 60,
+    "success_rate": 0.8833333333333333,
+    "fact_recall": 0.5583349999999999,
+    "hallucination_rate": 0.1,
+    "tool_selection_acc": 0.95,
+    "self_correction_rate": 0.0,
+    "avg_steps": 2.0,
+    "avg_latency_ms": 2934.043166666666,
+    "p50_latency_ms": 1951.0349999999999,
+    "p95_latency_ms": 6609.726,
+    "avg_prompt_tokens": 2759.9333333333334,
+    "avg_completion_tokens": 219.08333333333334
+  },
+  "by_prodi": {
+    "RN": {
+      "count": 12,
+      "success_rate": 0.8333333333333334,
+      "tool_accuracy": 1.0,
+      "avg_latency_ms": 2857.2075
+    },
+    "TE": {
+      "count": 12,
+      "success_rate": 0.8333333333333334,
+      "tool_accuracy": 0.9166666666666666,
+      "avg_latency_ms": 2923.635
+    },
+    "TI": {
+      "count": 12,
+      "success_rate": 1.0,
+      "tool_accuracy": 1.0,
+      "avg_latency_ms": 2513.4708333333333
+    },
+    "TRKB": {
+      "count": 12,
+      "success_rate": 0.8333333333333334,
+      "tool_accuracy": 0.8333333333333334,
+      "avg_latency_ms": 2967.0783333333334
+    },
+    "TSD": {
+      "count": 12,
+      "success_rate": 0.9166666666666666,
+      "tool_accuracy": 1.0,
+      "avg_latency_ms": 3408.824166666666
+    }
+  },
+  "by_category": {
+    "COURSE_DISCOVERY": {
+      "count": 10,
+      "success_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 3734.471
+    },
+    "DEGREE_PLANNING": {
+      "count": 10,
+      "success_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 6400.868
+    },
+    "PREREQUISITE_DAG": {
+      "count": 20,
+      "success_rate": 0.7,
+      "hallucination_rate": 0.25,
+      "avg_latency_ms": 2308.69
+    },
+    "SKS_POLICY": {
+      "count": 20,
+      "success_rate": 0.95,
+      "hallucination_rate": 0.05,
+      "avg_latency_ms": 1425.7700000000002
+    }
+  },
+  "failures": [
+    {
+      "sample_id": "TSD-04",
+      "prodi": "TSD",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Seharusnya eligible/boleh tapi model menolak"
+    },
+    {
+      "sample_id": "TRKB-02",
+      "prodi": "TRKB",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Seharusnya eligible/boleh tapi model menolak"
+    },
+    {
+      "sample_id": "TRKB-06",
+      "prodi": "TRKB",
+      "category": "SKS_POLICY",
+      "status": "HALLUCINATED",
+      "reason": "Aturan SKS meleset: Seharusnya 20 SKS"
+    },
+    {
+      "sample_id": "RN-02",
+      "prodi": "RN",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Seharusnya eligible/boleh tapi model menolak"
+    },
+    {
+      "sample_id": "RN-03",
+      "prodi": "RN",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Seharusnya eligible/boleh tapi model menolak"
+    },
+    {
+      "sample_id": "TE-02",
+      "prodi": "TE",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Seharusnya eligible/boleh tapi model menolak"
+    },
+    {
+      "sample_id": "TE-03",
+      "prodi": "TE",
+      "category": "PREREQUISITE_DAG",
+      "status": "FAILED",
+      "reason": "Jawaban tidak tegas menyatakan status kelayakan prasyarat"
+    }
+  ]
+}
