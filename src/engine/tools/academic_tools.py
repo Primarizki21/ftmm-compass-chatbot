@@ -34,8 +34,7 @@ def search_courses(query: str, prodi: str = "", top_k: int = 3) -> list[dict[str
     results, _ = retriever.retrieve_hybrid_rrf(query, top_k=top_k * 2)
     
     filtered = []
-    prodi_lower = prodi.lower().strip()
-    
+    prodi_lower = str(prodi or "").lower().strip()
     for r in results:
         course_prodi = str(r.get("chunk", "")).lower()
         if prodi_lower and prodi_lower not in course_prodi:
@@ -58,13 +57,18 @@ def search_courses(query: str, prodi: str = "", top_k: int = 3) -> list[dict[str
     return filtered
 
 
-def validate_prerequisites_dag(course_code_or_name: str, passed_courses: list[str]) -> dict[str, Any]:
+def validate_prerequisites_dag(
+    course_code_or_name: str,
+    passed_courses: list[str] | str | None = None
+) -> dict[str, Any]:
     """
     Memvalidasi apakah mata kuliah yang ingin diambil sudah memenuhi rantai prasyarat (prerequisite DAG).
     """
     catalog = _get_catalog()
-    query = str(course_code_or_name).lower().strip()
-    if isinstance(passed_courses, str):
+    query = str(course_code_or_name or "").lower().strip()
+    if passed_courses is None:
+        passed_courses = []
+    elif isinstance(passed_courses, str):
         passed_courses = [p.strip() for p in passed_courses.split(",") if p.strip()]
     target_course = None
     for c in catalog:
@@ -161,25 +165,29 @@ def calculate_sks_limit(ips: float) -> dict[str, Any]:
 
 
 def generate_degree_plan(
-    program_studi: str,
-    current_semester: int,
-    target_semester: int,
-    passed_courses: list[str],
-    focus_tracks: list[str],
+    program_studi: str = "Teknologi Sains Data",
+    current_semester: int = 1,
+    target_semester: int = 8,
+    passed_courses: list[str] | str | None = None,
+    focus_tracks: list[str] | str | None = None,
     max_sks_per_sem: int = 24
 ) -> dict[str, Any]:
     """
     Menyusun rancangan studi semester per semester tervalidasi prasyarat yang dapat langsung dikonsumsi DegreePlanner.tsx.
     """
     catalog = _get_catalog()
-    current_semester = int(current_semester)
-    target_semester = int(target_semester)
-    max_sks_per_sem = int(max_sks_per_sem)
-    if isinstance(passed_courses, str):
+    current_semester = int(current_semester or 1)
+    target_semester = int(target_semester or 8)
+    max_sks_per_sem = int(max_sks_per_sem or 24)
+    if passed_courses is None:
+        passed_courses = []
+    elif isinstance(passed_courses, str):
         passed_courses = [p.strip() for p in passed_courses.split(",") if p.strip()]
-    if isinstance(focus_tracks, str):
+    if focus_tracks is None:
+        focus_tracks = []
+    elif isinstance(focus_tracks, str):
         focus_tracks = [t.strip() for t in focus_tracks.split(",") if t.strip()]
-    prodi_lower = str(program_studi).lower().strip()
+    prodi_lower = str(program_studi or "Teknologi Sains Data").lower().strip()
     prodi_courses = [
         c for c in catalog
         if prodi_lower in str(c.get("program_studi", "")).lower() or not prodi_lower

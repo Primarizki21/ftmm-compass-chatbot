@@ -43,15 +43,15 @@ ACADEMIC_TOOL_DEFINITIONS = [
                 "properties": {
                     "course_code_or_name": {
                         "type": "string",
-                        "description": "Nama lengkap atau kode mata kuliah yang ingin diperiksa (contoh: 'Pembelajaran Mesin', 'Machine Learning', 'Data Mining I'). Dilarang menebak kode acak; jika tidak tahu kodenya, gunakan NAMA mata kuliah."
+                        "description": "Mata kuliah TARGET yang ingin diambil/diprogram mahasiswa (contoh: jika mahasiswa bertanya 'Bolehkah saya mengambil Pengolahan Citra Digital sebelum lulus Kalkulus I?', TARGET yang diperiksa adalah 'Pengolahan Citra Digital', BUKAN 'Kalkulus I'). Dilarang membalik target dengan prasyarat."
                     },
                     "passed_courses": {
                         "type": "array",
                         "items": {"type": "string"},
-                        "description": "Daftar nama atau kode mata kuliah yang sudah lulus ditempuh mahasiswa."
+                        "description": "Daftar mata kuliah yang sudah lulus (opsional, default [])."
                     }
                 },
-                "required": ["course_code_or_name", "passed_courses"]
+                "required": ["course_code_or_name"]
             }
         }
     },
@@ -107,7 +107,7 @@ ACADEMIC_TOOL_DEFINITIONS = [
                         "description": "Batas maksimum SKS per semester (default 24)."
                     }
                 },
-                "required": ["program_studi", "current_semester", "target_semester", "passed_courses", "focus_tracks"]
+                "required": ["current_semester"]
             }
         }
     }

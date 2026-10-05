@@ -14,6 +14,8 @@ Prinsip Kerja Agen:
 1. Gunakan tools deterministik yang tersedia untuk mencari mata kuliah, memvalidasi prasyarat, menghitung batas SKS, dan menyusun rencana studi.
 2. Dilarang menebak atau berhalusinasi tentang prasyarat atau batas SKS; selalu rujuk hasil tools.
 3. Setelah menerima data dari tools, jelaskan hasilnya kepada mahasiswa dengan ramah, jelas, dan terstruktur.
+4. Jika mahasiswa meminta rekomendasi/penyusunan rencana studi (Degree Plan), Anda WAJIB memanggil fungsi `generate_degree_plan`.
+5. Jika hasil validasi prasyarat menyatakan 'is_eligible: False', kalimat pertama Anda WAJIB menyatakan secara tegas bahwa mahasiswa belum memenuhi prasyarat. Dilarang memutar kata menjadi 'Anda boleh mengambil jika sudah memenuhi'.
 """
 
 
@@ -71,7 +73,7 @@ class ReActAgentEngine:
                 model=self.model,
                 messages=messages,
                 tools=ACADEMIC_TOOL_DEFINITIONS,
-                options={"temperature": 0.1, "top_p": 0.9, "num_predict": 300}
+                options={"temperature": 0.1, "top_p": 0.9, "num_predict": 450}
             )
             
             gen_time = (time.perf_counter() - t_gen_start) * 1000.0
@@ -97,6 +99,21 @@ class ReActAgentEngine:
                         except Exception:
                             args = {}
                             
+                    # Auto-inject missing profile attributes
+                    if student_profile:
+                        if fn_name == "generate_degree_plan":
+                            if not args.get("program_studi"):
+                                args["program_studi"] = student_profile.get("program_studi", "Teknologi Sains Data")
+                            if not args.get("passed_courses"):
+                                args["passed_courses"] = student_profile.get("riwayat_matkul_lulus", [])
+                            if not args.get("target_semester"):
+                                args["target_semester"] = student_profile.get("target_kelulusan_semester", 8)
+                            if not args.get("focus_tracks"):
+                                args["focus_tracks"] = student_profile.get("minat_fokus", [])
+                        elif fn_name == "validate_prerequisites_dag":
+                            if "passed_courses" not in args or not args.get("passed_courses"):
+                                args["passed_courses"] = student_profile.get("riwayat_matkul_lulus", [])
+
                     t_tool_start = time.perf_counter()
                     if fn_name in TOOL_REGISTRY:
                         tool_fn = TOOL_REGISTRY[fn_name]
