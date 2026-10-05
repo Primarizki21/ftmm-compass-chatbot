@@ -1,0 +1,152 @@
+{
+  "overall": {
+    "total_queries": 60,
+    "success_rate": 0.8833333333333333,
+    "tool_selection_acc": 0.8333333333333334,
+    "hallucination_rate": 0.03333333333333333,
+    "paraphrase_invariance_score": 0.75,
+    "avg_latency_ms": 2407.0908333333336,
+    "p50_latency_ms": 1454.01,
+    "p95_latency_ms": 6078.584
+  },
+  "by_style": {
+    "formal": {
+      "count": 20,
+      "success_rate": 0.9,
+      "tool_selection_acc": 0.85,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 2489.611
+    },
+    "slang": {
+      "count": 20,
+      "success_rate": 0.85,
+      "tool_selection_acc": 0.7,
+      "hallucination_rate": 0.1,
+      "avg_latency_ms": 2343.8334999999997
+    },
+    "implicit": {
+      "count": 20,
+      "success_rate": 0.9,
+      "tool_selection_acc": 0.95,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 2387.8280000000004
+    }
+  },
+  "by_category": {
+    "DEGREE_PLANNING": {
+      "count": 15,
+      "success_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 5674.809333333333
+    },
+    "PREREQUISITE_DAG": {
+      "count": 30,
+      "success_rate": 0.8,
+      "hallucination_rate": 0.03333333333333333,
+      "avg_latency_ms": 1306.4383333333333
+    },
+    "SKS_POLICY": {
+      "count": 15,
+      "success_rate": 0.9333333333333333,
+      "hallucination_rate": 0.06666666666666667,
+      "avg_latency_ms": 1340.677333333333
+    }
+  },
+  "by_prodi": {
+    "RN": {
+      "count": 12,
+      "success_rate": 0.8333333333333334,
+      "tool_selection_acc": 0.6666666666666666,
+      "avg_latency_ms": 2497.081666666667
+    },
+    "TE": {
+      "count": 12,
+      "success_rate": 1.0,
+      "tool_selection_acc": 0.9166666666666666,
+      "avg_latency_ms": 2590.9950000000003
+    },
+    "TI": {
+      "count": 12,
+      "success_rate": 0.75,
+      "tool_selection_acc": 0.6666666666666666,
+      "avg_latency_ms": 2199.978333333334
+    },
+    "TRKB": {
+      "count": 12,
+      "success_rate": 0.9166666666666666,
+      "tool_selection_acc": 1.0,
+      "avg_latency_ms": 2500.295833333333
+    },
+    "TSD": {
+      "count": 12,
+      "success_rate": 0.9166666666666666,
+      "tool_selection_acc": 0.9166666666666666,
+      "avg_latency_ms": 2247.1033333333335
+    }
+  },
+  "failures": [
+    {
+      "sample_id": "TSD-PREREQ-NEG-FORMAL",
+      "base_id": "TSD-PREREQ-NEG",
+      "style": "formal",
+      "prodi": "TSD",
+      "category": "PREREQUISITE_DAG",
+      "status": "FAILED",
+      "reason": "Jawaban tidak tegas menyatakan status kelayakan prasyarat"
+    },
+    {
+      "sample_id": "TRKB-PREREQ-NEG-IMPLICIT",
+      "base_id": "TRKB-PREREQ-NEG",
+      "style": "implicit",
+      "prodi": "TRKB",
+      "category": "PREREQUISITE_DAG",
+      "status": "FAILED",
+      "reason": "Jawaban tidak tegas menyatakan status kelayakan prasyarat"
+    },
+    {
+      "sample_id": "RN-PREREQ-POS-SLANG",
+      "base_id": "RN-PREREQ-POS",
+      "style": "slang",
+      "prodi": "RN",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Seharusnya eligible/boleh tapi model menolak"
+    },
+    {
+      "sample_id": "RN-SKS-SLANG",
+      "base_id": "RN-SKS",
+      "style": "slang",
+      "prodi": "RN",
+      "category": "SKS_POLICY",
+      "status": "HALLUCINATED",
+      "reason": "Aturan SKS meleset: Seharusnya 20 SKS"
+    },
+    {
+      "sample_id": "TI-PREREQ-NEG-FORMAL",
+      "base_id": "TI-PREREQ-NEG",
+      "style": "formal",
+      "prodi": "TI",
+      "category": "PREREQUISITE_DAG",
+      "status": "FAILED",
+      "reason": "Jawaban tidak tegas menyatakan status kelayakan prasyarat"
+    },
+    {
+      "sample_id": "TI-PREREQ-NEG-SLANG",
+      "base_id": "TI-PREREQ-NEG",
+      "style": "slang",
+      "prodi": "TI",
+      "category": "PREREQUISITE_DAG",
+      "status": "FAILED",
+      "reason": "Jawaban tidak tegas menyatakan status kelayakan prasyarat"
+    },
+    {
+      "sample_id": "TI-PREREQ-NEG-IMPLICIT",
+      "base_id": "TI-PREREQ-NEG",
+      "style": "implicit",
+      "prodi": "TI",
+      "category": "PREREQUISITE_DAG",
+      "status": "FAILED",
+      "reason": "Jawaban tidak tegas menyatakan status kelayakan prasyarat"
+    }
+  ]
+}
