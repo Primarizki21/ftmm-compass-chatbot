@@ -63,8 +63,9 @@ def validate_prerequisites_dag(course_code_or_name: str, passed_courses: list[st
     Memvalidasi apakah mata kuliah yang ingin diambil sudah memenuhi rantai prasyarat (prerequisite DAG).
     """
     catalog = _get_catalog()
-    query = course_code_or_name.lower().strip()
-    
+    query = str(course_code_or_name).lower().strip()
+    if isinstance(passed_courses, str):
+        passed_courses = [p.strip() for p in passed_courses.split(",") if p.strip()]
     target_course = None
     for c in catalog:
         if c["kode_mk"].lower() == query or c["nama_mk"].lower() == query or query in c["nama_mk"].lower():
@@ -136,7 +137,7 @@ def calculate_sks_limit(ips: float) -> dict[str, Any]:
     """
     Menghitung batas beban studi (SKS) maksimal berdasarkan Pasal 5.4 Panduan Akademik FTMM.
     """
-    ips_val = float(ips)
+    ips_val = float(str(ips).replace(",", ".").strip())
     if ips_val > 3.00:
         max_sks = 24
         tier = "IPS > 3.00"
@@ -171,8 +172,14 @@ def generate_degree_plan(
     Menyusun rancangan studi semester per semester tervalidasi prasyarat yang dapat langsung dikonsumsi DegreePlanner.tsx.
     """
     catalog = _get_catalog()
-    prodi_lower = program_studi.lower().strip()
-    
+    current_semester = int(current_semester)
+    target_semester = int(target_semester)
+    max_sks_per_sem = int(max_sks_per_sem)
+    if isinstance(passed_courses, str):
+        passed_courses = [p.strip() for p in passed_courses.split(",") if p.strip()]
+    if isinstance(focus_tracks, str):
+        focus_tracks = [t.strip() for t in focus_tracks.split(",") if t.strip()]
+    prodi_lower = str(program_studi).lower().strip()
     prodi_courses = [
         c for c in catalog
         if prodi_lower in str(c.get("program_studi", "")).lower() or not prodi_lower

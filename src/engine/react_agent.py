@@ -54,12 +54,14 @@ class ReActAgentEngine:
         total_tool_latency_ms = 0.0
         total_gen_latency_ms = 0.0
         tools_executed: list[dict[str, Any]] = []
+        raw_execution_traces: list[dict[str, Any]] = []
         plan_payload: dict[str, Any] | None = None
         action_type = "CHAT"
         step_count = 0
         final_answer = ""
-        tokens_generated = 0
-
+        total_prompt_tokens = 0
+        total_completion_tokens = 0
+        self_correction_triggered = False
         # Reasoning Loop
         while step_count < self.max_steps:
             step_count += 1
@@ -74,15 +76,17 @@ class ReActAgentEngine:
             
             gen_time = (time.perf_counter() - t_gen_start) * 1000.0
             total_gen_latency_ms += gen_time
-            tokens_generated += resp.get("eval_count", 0)
-
+            p_tokens = resp.get("prompt_eval_count", 0)
+            c_tokens = resp.get("eval_count", 0)
+            total_prompt_tokens += p_tokens
+            total_completion_tokens += c_tokens
             msg = resp.message
             tool_calls = getattr(msg, "tool_calls", None)
 
             # Case A: Model outputs tool calls -> execute tools
             if tool_calls:
                 messages.append(msg)
-                
+                step_tools_record = []
                 for tc in tool_calls:
                     fn_name = tc.function.name
                     args = tc.function.arguments
@@ -99,10 +103,15 @@ class ReActAgentEngine:
                         try:
                             result = tool_fn(**args)
                         except Exception as e:
-                            result = {"error": str(e)}
+                            result = {
+                                "status": "error",
+                                "error": str(e),
+                                "hint": "Perbaiki argumen fungsi sesuai schema parameter."
+                            }
+                            self_correction_triggered = True
                     else:
-                        result = {"error": f"Tool '{fn_name}' tidak terdaftar."}
-                        
+                        result = {"status": "error", "error": f"Tool '{fn_name}' tidak terdaftar."}
+                        self_correction_triggered = True
                     tool_time = (time.perf_counter() - t_tool_start) * 1000.0
                     total_tool_latency_ms += tool_time
 
@@ -117,16 +126,38 @@ class ReActAgentEngine:
                     if fn_name == "generate_degree_plan" and isinstance(result, dict) and "action" in result:
                         plan_payload = result
                         action_type = "PLAN_GENERATED"
+                    step_tools_record.append({
+                        "tool": fn_name,
+                        "args_raw": args,
+                        "result_raw": result,
+                        "latency_ms": round(tool_time, 2)
+                    })
 
                     messages.append({
                         "role": "tool",
                         "content": json.dumps(result, ensure_ascii=False)
                     })
+
+                raw_execution_traces.append({
+                    "step": step_count,
+                    "prompt_tokens": p_tokens,
+                    "completion_tokens": c_tokens,
+                    "gen_latency_ms": round(gen_time, 2),
+                    "action": "TOOL_CALL",
+                    "tools": step_tools_record,
+                })
             else:
                 # Case B: Model completed reasoning and returned final text
                 final_answer = msg.content.strip()
+                raw_execution_traces.append({
+                    "step": step_count,
+                    "prompt_tokens": p_tokens,
+                    "completion_tokens": c_tokens,
+                    "gen_latency_ms": round(gen_time, 2),
+                    "action": "FINAL_ANSWER",
+                    "answer": final_answer,
+                })
                 break
-
         if not final_answer and messages:
             last_content = getattr(messages[-1], "content", "")
             if isinstance(last_content, str):
@@ -141,12 +172,16 @@ class ReActAgentEngine:
             retrieval_latency_ms=total_tool_latency_ms,
             generation_latency_ms=total_gen_latency_ms,
             total_latency_ms=total_latency_ms,
-            tokens_generated=tokens_generated,
+            tokens_generated=total_completion_tokens,
             routing_mode="REACT_AGENT",
             metadata={
                 "steps": step_count,
                 "action_type": action_type,
                 "plan_payload": plan_payload,
                 "tools_executed": tools_executed,
+                "prompt_tokens": total_prompt_tokens,
+                "completion_tokens": total_completion_tokens,
+                "self_correction_triggered": self_correction_triggered,
+                "execution_traces": raw_execution_traces,
             }
         )
