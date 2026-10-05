@@ -1,0 +1,101 @@
+{
+  "overall": {
+    "total_queries": 40,
+    "success_rate": 0.875,
+    "tool_selection_acc": 1.0,
+    "language_adherence": 0.85,
+    "hallucination_rate": 0.125,
+    "bilingual_parity_rate": 0.8,
+    "avg_latency_ms": 2670.41475,
+    "p50_latency_ms": 1630.83,
+    "p95_latency_ms": 6784.456499999999,
+    "avg_prompt_tokens": 3161.125,
+    "avg_completion_tokens": 184.325
+  },
+  "by_language": {
+    "id": {
+      "count": 20,
+      "success_rate": 0.85,
+      "tool_selection_acc": 1.0,
+      "language_adherence": 0.8,
+      "hallucination_rate": 0.15,
+      "avg_latency_ms": 2824.5289999999995
+    },
+    "en": {
+      "count": 20,
+      "success_rate": 0.9,
+      "tool_selection_acc": 1.0,
+      "language_adherence": 0.9,
+      "hallucination_rate": 0.1,
+      "avg_latency_ms": 2516.3005000000003
+    }
+  },
+  "by_category": {
+    "COURSE_DISCOVERY": {
+      "count": 4,
+      "success_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 3211.5674999999997
+    },
+    "DEGREE_PLANNING": {
+      "count": 8,
+      "success_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 6407.905000000001
+    },
+    "PREREQUISITE_DAG": {
+      "count": 16,
+      "success_rate": 0.6875,
+      "hallucination_rate": 0.3125,
+      "avg_latency_ms": 1517.441875
+    },
+    "SKS_POLICY": {
+      "count": 12,
+      "success_rate": 1.0,
+      "hallucination_rate": 0.0,
+      "avg_latency_ms": 1535.6674999999998
+    }
+  },
+  "failures": [
+    {
+      "sample_id": "PAIR-03-ID",
+      "pair_id": "PAIR-03",
+      "language": "id",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Expected eligible but rejected"
+    },
+    {
+      "sample_id": "PAIR-04-ID",
+      "pair_id": "PAIR-04",
+      "language": "id",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Positive: Missing prerequisites but accepted"
+    },
+    {
+      "sample_id": "PAIR-04-EN",
+      "pair_id": "PAIR-04",
+      "language": "en",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Positive: Missing prerequisites but accepted"
+    },
+    {
+      "sample_id": "PAIR-06-EN",
+      "pair_id": "PAIR-06",
+      "language": "en",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Negative: Expected eligible but rejected"
+    },
+    {
+      "sample_id": "PAIR-08-ID",
+      "pair_id": "PAIR-08",
+      "language": "id",
+      "category": "PREREQUISITE_DAG",
+      "status": "HALLUCINATED",
+      "reason": "False Positive: Missing prerequisites but accepted"
+    }
+  ]
+}

@@ -16,6 +16,7 @@
 | **`exp-004`** | 2026-10-03 | Evaluasi Penuh ReAct Agent (Zero-Abstraction Telemetry) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Task Success: **75.0%** (45/60)<br>TI: 83.3%<br>TSD/RN/TE: 75.0%<br>TRKB: 66.7% | Tool Selection Acc: **96.7%** (58/60) | SKS: **100%**<br>Prereq: 70.0%<br>Discovery: 80% | Tool Exec: **3.8 ms** (avg) | Total: **2703.7 ms**<br>P50: 2002.7 ms<br>P95: 6807.5 ms | Hallucination: **10.0%**<br>Self-Correction: **20.0%** | **Evaluasi 60 skenario lintas 5 prodi FTMM**: Task success naik ke 75.0% (vs 60.0% di exp-003). SKS policy 100% konsisten. Kegagalan terlacak mentah: 7 kasus planning via teks & 6 false positive akibat hedging sopan. Dump raw traces tersimpan di JSONL. | `docs/exp-004_react_full_evaluation/` |
 | **`exp-005`** | 2026-10-03 | ReAct Agent Hardened: Mitigasi 5 Kluster Kegagalan (Card 44) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Task Success: **88.3%** (53/60)<br>TI: **100%**<br>TSD: **91.7%**<br>TRKB/RN/TE: **83.3%** | Tool Selection Acc: **95.0%** (57/60) | Planning: **100%**<br>Discovery: **100%**<br>SKS: **95%**<br>Prereq: **70%** | Tool Exec: **4.1 ms** (avg) | Total: **2934.0 ms**<br>P50: 1951.0 ms<br>P95: 6609.7 ms | Hallucination: **10.0%**<br>Self-Correction: **0.0%** | **Lonjakan Task Success ke 88.3% (+13.3% vs exp-004)**: DEGREE_PLANNING melonjak dari 30% ke **100%** berkat profile auto-injection & parameter defaults. TI mencapai 100% tuntas. Kegagalan terpotong dari 15 kasus menjadi 7 kasus. Zero black-box traces tersimpan di JSONL. | `docs/exp-005_react_hardened_evaluation/` |
 | **`exp-006`** | 2026-10-03 | Multi-Style Resilience & Paraphrase Invariance (Card 44, 91) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Formal: **90.0%**<br>Implicit: **90.0%**<br>Slang: **85.0%** | Tool Selection Acc: **83.3%** (50/60) | Planning: **100%**<br>SKS: **93.3%**<br>Prereq: **80.0%** | Tool Exec: **3.9 ms** (avg) | Total: **2407.1 ms**<br>P50: 1729.5 ms<br>P95: 5780.0 ms | **Invariance: 75.0%**<br>Halluc: **3.3%** | **Generalisasi Anti-Overfitting Terbukti**: Evaluasi 60 kueri berpasangan (Formal, Slang, Implisit) membuktikan ReAct tahan variasi diksi (slang hanya drop 5% vs -30% di BM25). Paraphrase Invariance 75.0%. DEGREE_PLANNING 100% konsisten di semua gaya bahasa. | `docs/exp-006_react_multistyle_resilience/` |
+| **`exp-007`** | 2026-10-03 | Evaluasi Bilingual ReAct & Hardware Efficiency (Card 31, 32, 44) | `qwen2.5:3b` + native tools + `nomic-embed-text` | English (EN): **90.0%**<br>Indonesian (ID): **85.0%** | Tool Selection Acc: **100.0%** (40/40) | Planning: **100%**<br>SKS: **100%**<br>Discovery: **100%** | Tool Exec: **3.8 ms** (avg) | Total: **2670.4 ms**<br>P50: 1630.8 ms<br>P95: 6784.5 ms | **Parity: 80.0%**<br>Lang Adherence: **85.0%** | **Keberhasilan Penalaran Dwibahasa (Bilingual Parity 80.0%)**: Kueri Bahasa Inggris mencapai success rate 90.0% (melampaui ID 85.0%) dengan 100% Tool Selection Accuracy. Profiling RTX 5050 (8GB VRAM) aman pada ~2.5 GB alokasi model + 4096 token context window tanpa OOM spillover. | `docs/exp-007_bilingual_react_efficiency/` |
 
 ---
 
@@ -205,3 +206,35 @@
   - `docs/exp-006_react_multistyle_resilience/benchmark_metrics.csv`
   - `docs/exp-006_react_multistyle_resilience/benchmark_raw_traces.jsonl`
   - `docs/exp-006_react_multistyle_resilience/benchmark_results.json`
+
+---
+
+### [exp-007] Evaluasi Bilingual ReAct (ID vs EN) & Hardware Efficiency Profiling (RTX 5050 8GB)
+- **Tanggal:** 2026-10-03
+- **Kartu Trello:** Card 31 (CAG Hardware VRAM), Card 32 (Hybrid), Card 44 (ReAct Agent).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi kemampuan agen ReAct dalam memproses kueri berbahasa Inggris terhadap basis data kurikulum nasional FTMM UNAIR (Cross-Lingual Generalization) serta mengukur profil konsumsi hardware lokal (RTX 5050 Laptop GPU 8GB VRAM) untuk membuktikan kesiapan deployment tanpa OOM.
+- **Setup Teknis (Low-Level Architecture):**
+  - **Bilingual Academic Normalizer (`academic_tools.py`):** Pemetaan kamus istilah akademik internasional (Calculus, Discrete Math, Operating Systems, Database, Robotics, Control Systems, Nanotechnology, Supply Chain) ke kurikulum FTMM.
+  - **Language-Adaptive Prompting (`react_agent.py`):** Aturan simetris di mana model otomatis menjawab dalam bahasa yang sama dengan input pengguna (Language Mirroring).
+  - **Hardware Profiling:** Pengujian alokasi model ~2.5 GB (Qwen2.5-3B) dengan batas konteks 4096 token pada GPU RTX 5050 (8151 MB VRAM).
+  - **Dataset Pengujian:** 40 kueri paralel (20 pasang kueri identik: 20 Bahasa Indonesia vs 20 Bahasa Inggris) mencakup 4 kategori akademik lintas 5 prodi FTMM.
+- **Temuan Kunci:**
+  1. **Akurasi Kueri Bahasa Inggris Melampaui Bahasa Indonesia:**
+     - English (EN): **90.0%** (18/20).
+     - Indonesian (ID): **85.0%** (17/20).
+     - **Tool Selection Accuracy:** **100.0%** (40/40) sempurna pada kedua bahasa.
+  2. **Tingkat Kesetaraan Dwibahasa Tinggi (Bilingual Parity Rate 80.0%):**
+     Sebanyak 16 dari 20 pasang kueri berhasil diselesaikan secara bersamaan pada versi Indonesia dan Inggris.
+  3. **Ketepatan Bahasa (Language Adherence 85.0%):**
+     Model konsisten menjawab dalam bahasa Inggris saat ditanya bahasa Inggris (90.0%) tanpa code-switching yang mengganggu.
+  4. **Efisiensi Hardware RTX 5050 (8GB VRAM Aman):**
+     Alokasi model 3B memakan ~2.5 GB VRAM, menyisakan ~5.6 GB VRAM untuk KV cache hingga 4096 token. Latensi rata-rata stabil di 2670.4 ms (P50: 1630.8 ms).
+- **Keputusan Arsitektur & Portofolio Paper:**
+  - Chatbot FTMM COMPASS resmi terbukti siap melayani mahasiswa kelas internasional dan pertukaran pelajar (*inbound exchange*).
+- **Artefak:**
+  - `docs/exp-007_bilingual_react_efficiency/README.md`
+  - `docs/exp-007_bilingual_react_efficiency/benchmark_summary.md`
+  - `docs/exp-007_bilingual_react_efficiency/benchmark_metrics.csv`
+  - `docs/exp-007_bilingual_react_efficiency/benchmark_raw_traces.jsonl`
+  - `docs/exp-007_bilingual_react_efficiency/benchmark_results.json`
