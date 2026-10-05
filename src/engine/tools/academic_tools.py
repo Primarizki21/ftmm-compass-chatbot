@@ -1,8 +1,51 @@
-from typing import Any
 import pickle
+import re
 from pathlib import Path
+from typing import Any
 from src.knowledge.hybrid_retriever import HybridCourseRetriever
 
+SLANG_LEXICON: dict[str, str] = {
+    "alpro": "algoritma dan pemrograman",
+    "alpro 1": "algoritma pemrograman i",
+    "alpro 2": "algoritma pemrograman ii",
+    "strukdat": "struktur data",
+    "basdat": "basis data",
+    "probstat": "probabilitas dan statistika",
+    "metstat": "metode statistika",
+    "visdat": "eksplorasi dan visualisasi data",
+    "jarkom": "jaringan komputer",
+    "sisop": "sistem operasi",
+    "pemweb": "pemrograman web",
+    "kalkulus 1": "kalkulus i",
+    "kalkulus 2": "kalkulus ii",
+    "pbo": "pemrograman berorientasi objek",
+    "ml": "pembelajaran mesin",
+    "machine learning": "pembelajaran mesin",
+    "ai": "kecerdasan buatan",
+    "artificial intelligence": "kecerdasan buatan",
+    "nlp": "pemrosesan bahasa alami",
+}
+
+STOP_TOKENS: set[str] = {
+    "dan", "di", "ke", "dari", "yang", "untuk", "pada", "1", "2", "i", "ii",
+    "dan/atau", "proses", "stokastik", "praktikum", "lanjut", "lanjutan"
+}
+
+GENERIC_MODIFIERS: set[str] = {
+    "dasar", "lanjut", "1", "2", "i", "ii", "pengantar", "rekayasa", "teknik"
+}
+
+
+def normalize_academic_text(text: str) -> str:
+    cleaned = str(text or "").lower().strip()
+    for slang, formal in SLANG_LEXICON.items():
+        cleaned = re.sub(rf"\b{re.escape(slang)}\b", formal, cleaned)
+    return cleaned
+
+
+def extract_content_tokens(text: str) -> set[str]:
+    tokens = re.findall(r"\w+", normalize_academic_text(text))
+    return {t for t in tokens if len(t) > 1 and t not in STOP_TOKENS}
 META_PATH = Path("data/faiss/ftmm_courses_meta.pkl")
 
 # Lazy-loaded singleton components
@@ -70,20 +113,36 @@ def validate_prerequisites_dag(
         passed_courses = []
     elif isinstance(passed_courses, str):
         passed_courses = [p.strip() for p in passed_courses.split(",") if p.strip()]
+
+    query_norm = normalize_academic_text(query)
+    query_tokens = extract_content_tokens(query_norm)
+
     target_course = None
     for c in catalog:
-        if c["kode_mk"].lower() == query or c["nama_mk"].lower() == query or query in c["nama_mk"].lower():
+        c_code_low = c["kode_mk"].lower()
+        c_name_norm = normalize_academic_text(c["nama_mk"])
+        if c_code_low == query_norm or c_name_norm == query_norm or query_norm in c_name_norm:
             target_course = c
             break
-            
-    # Fallback search if exact name/code not found (e.g. English term "Machine Learning" -> "Pembelajaran Mesin")
-    if not target_course:
-        retriever = _get_retriever()
-        search_hits, _ = retriever.retrieve_hybrid_rrf(course_code_or_name, top_k=1)
-        if search_hits:
-            best_did = search_hits[0].get("doc_idx", -1)
-            if 0 <= best_did < len(catalog):
-                target_course = catalog[best_did]
+
+    # Token-overlap ranking in catalog if exact match not found
+    if not target_course and query_tokens:
+        best_score = 0.0
+        best_c = None
+        for c in catalog:
+            c_tokens = extract_content_tokens(c["nama_mk"])
+            if not c_tokens:
+                continue
+            common = query_tokens.intersection(c_tokens)
+            non_generic = common - GENERIC_MODIFIERS
+            if not non_generic:
+                continue
+            score = len(common) / max(len(query_tokens), 1)
+            if score > best_score and score >= 0.5:
+                best_score = score
+                best_c = c
+        if best_c:
+            target_course = best_c
 
     if not target_course:
         return {
@@ -91,7 +150,7 @@ def validate_prerequisites_dag(
             "is_eligible": False,
             "message": f"Mata kuliah '{course_code_or_name}' tidak ditemukan di katalog kurikulum FTMM."
         }
-        
+
     prereqs = target_course.get("prasyarat", [])
     if not prereqs or prereqs == ["Tidak Ada"] or prereqs == ["-"]:
         return {
@@ -104,27 +163,41 @@ def validate_prerequisites_dag(
             "is_eligible": True,
             "explanation": f"Mata kuliah {target_course['nama_mk']} ({target_course['kode_mk']}) tidak memiliki prasyarat dan dapat langsung diambil."
         }
-        
-    passed_lower = [str(p).lower().strip() for p in passed_courses]
+
     missing = []
-    
     for req in prereqs:
         req_clean = str(req).strip()
-        req_lower = req_clean.lower()
-        
-        satisfied = any(
-            req_lower == p or req_lower in p or p in req_lower
-            for p in passed_lower
-        )
+        req_norm = normalize_academic_text(req_clean)
+        req_tokens = extract_content_tokens(req_norm)
+        if not req_tokens:
+            continue
+
+        satisfied = False
+        for p in passed_courses:
+            p_clean = str(p).strip()
+            p_norm = normalize_academic_text(p_clean)
+            # Substring match
+            if req_norm in p_norm or p_norm in req_norm:
+                satisfied = True
+                break
+            # Token overlap match
+            p_tokens = extract_content_tokens(p_norm)
+            if not p_tokens:
+                continue
+            common = req_tokens.intersection(p_tokens)
+            if len(common) / len(req_tokens) >= 0.5:
+                satisfied = True
+                break
+
         if not satisfied:
             missing.append(req_clean)
-            
+
     is_eligible = len(missing) == 0
     if is_eligible:
         expl = f"Mahasiswa memenuhi seluruh syarat prasyarat untuk {target_course['nama_mk']} ({', '.join(prereqs)})."
     else:
         expl = f"Mahasiswa belum memenuhi prasyarat untuk {target_course['nama_mk']}. Mata kuliah yang belum lulus: {', '.join(missing)}."
-        
+
     return {
         "found": True,
         "course": target_course["nama_mk"],
