@@ -71,7 +71,10 @@ class HybridRAGCAGEngine:
                 f"{self.cag_base_prompt}\n\n"
                 "## PERAN SAAT INI (CAG ROUTE):\n"
                 "Jawab pertanyaan mahasiswa mengenai regulasi akademik atau SOP administrasi FTMM secara tepat, "
-                "padat, dan lugas sesuai basis pengetahuan di atas."
+                "padat, dan lugas sesuai basis pengetahuan di atas. Jangan berhalusinasi. "
+                "Perhatikan dengan teliti perbedaan antara batas beban SKS semester (Pasal 5.4) "
+                "dan syarat SKS kumulatif kegiatan/mata kuliah (contoh: PKL minimal 80 SKS kumulatif, "
+                "Proposal Skripsi minimal 108 SKS kumulatif)."
             )
             
             messages = [{"role": "system", "content": system_prompt}]
@@ -83,7 +86,7 @@ class HybridRAGCAGEngine:
             resp = ollama.chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.2, "top_p": 0.9, "num_predict": 300}
+                options={"temperature": 0.0, "top_p": 0.9, "num_predict": 300}
             )
             generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
             total_latency_ms = (time.perf_counter() - t0) * 1000.0

@@ -5,6 +5,7 @@ from typing import Any
 from src.knowledge.hybrid_retriever import HybridCourseRetriever
 
 SLANG_LEXICON: dict[str, str] = {
+    # Indonesian student slang & abbreviations
     "alpro": "algoritma dan pemrograman",
     "alpro 1": "algoritma pemrograman i",
     "alpro 2": "algoritma pemrograman ii",
@@ -24,8 +25,49 @@ SLANG_LEXICON: dict[str, str] = {
     "ai": "kecerdasan buatan",
     "artificial intelligence": "kecerdasan buatan",
     "nlp": "pemrosesan bahasa alami",
+    # English academic course terms & mappings
+    "calculus": "kalkulus",
+    "calculus i": "kalkulus i",
+    "calculus ii": "kalkulus ii",
+    "calculus 1": "kalkulus i",
+    "calculus 2": "kalkulus ii",
+    "discrete math": "matematika diskrit",
+    "discrete mathematics": "matematika diskrit",
+    "linear algebra": "aljabar linier",
+    "probability": "probabilitas dan statistika",
+    "statistics": "statistika",
+    "physics": "fisika dasar",
+    "basic physics": "fisika dasar",
+    "chemistry": "kimia dasar",
+    "basic chemistry": "kimia dasar",
+    "biology": "biologi dasar",
+    "basic biology": "biologi dasar",
+    "data mining": "data mining",
+    "deep learning": "pembelajaran mendalam",
+    "computer vision": "visi komputer",
+    "operating systems": "sistem operasi",
+    "operating system": "sistem operasi",
+    "computer networks": "jaringan komputer",
+    "computer network": "jaringan komputer",
+    "database": "basis data",
+    "database systems": "basis data",
+    "cloud computing": "komputasi awan",
+    "internet of things": "internet of things",
+    "iot": "internet of things",
+    "robotics": "robotika",
+    "autonomous robotics": "robotika otonom",
+    "control systems": "sistem kontrol",
+    "electric circuits": "rangkaian listrik",
+    "electrical circuits": "rangkaian listrik",
+    "power systems": "sistem tenaga listrik",
+    "operations research": "riset operasi",
+    "supply chain": "rantai pasok",
+    "ergonomics": "ergonomi",
+    "nanotechnology": "nanoteknologi",
+    "nanomaterials": "nanomaterial",
+    "nanomedicine": "nanomedis",
+    "biomedical": "nanomedis",
 }
-
 STOP_TOKENS: set[str] = {
     "dan", "di", "ke", "dari", "yang", "untuk", "pada", "1", "2", "i", "ii",
     "dan/atau", "proses", "stokastik", "praktikum", "lanjut", "lanjutan"

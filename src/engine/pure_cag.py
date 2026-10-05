@@ -18,7 +18,7 @@ class PureCAGEngine:
     def __init__(self, model: str = DEFAULT_MODEL):
         self.model = model
         self.system_prompt = get_cag_system_prompt(
-            custom_instructions="Jawablah pertanyaan mahasiswa secara langsung dan lugas berbasis pengetahuan resmi yang telah dihafal di atas. Jangan melakukan pencarian eksternal."
+            custom_instructions="Jawablah pertanyaan mahasiswa secara langsung dan lugas berbasis pengetahuan resmi yang telah dihafal di atas. Jangan berhalusinasi. Perhatikan secara teliti perbedaan antara batas SKS semester (Pasal 5.4) dan syarat kumulatif kelulusan/kegiatan (contoh: PKL minimal 80 SKS kumulatif, Proposal Skripsi minimal 108 SKS)."
         )
 
     def generate_answer(
