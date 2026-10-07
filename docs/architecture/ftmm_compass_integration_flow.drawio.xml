@@ -1,0 +1,180 @@
+<mxfile host="app.diagrams.net" modified="2026-10-07T02:00:00.000Z" agent="Mozilla/5.0" version="24.7.17">
+  <diagram id="ftmm_compass_integration" name="End-to-End Integration Flow">
+    <mxGraphModel dx="1422" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1100" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- TITLE -->
+        <mxCell id="title" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;FTMM COMPASS — Arsitektur &amp;amp; Alur Integrasi End-to-End&lt;/font&gt;&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size: 13px; color: #666666;&quot;&gt;Interaksi Multi-Tier: Client / UI (Hans) ➔ API Gateway (Mantra) ➔ AI Engine (Nauval &amp;amp; Ario) ➔ Database PostgreSQL (Darryl)&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="250" y="20" width="1200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- SWIMLANES / ACTORS -->
+        <mxCell id="lane_user" value="&lt;b&gt;Mahasiswa&lt;/b&gt;&lt;br&gt;(Browser Client)" style="swimlane;startSize=50;fillColor=#e1f5fe;strokeColor=#0288d1;fontColor=#01579b;html=1;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="280" height="920" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lane_fe" value="&lt;b&gt;Frontend React&lt;/b&gt;&lt;br&gt;ftmm-compass-ui (Hans)&lt;br&gt;&lt;i&gt;Chatbot.tsx &amp;amp; DegreePlanner.tsx&lt;/i&gt;" style="swimlane;startSize=50;fillColor=#ede7f6;strokeColor=#7e57c2;fontColor=#4527a0;html=1;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="90" width="300" height="920" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lane_gw" value="&lt;b&gt;API Gateway Backend&lt;/b&gt;&lt;br&gt;FastAPI Core (Mantra)&lt;br&gt;&lt;i&gt;/api/v1/chat &amp;amp; /api/v1/planner&lt;/i&gt;" style="swimlane;startSize=50;fillColor=#fff8e1;strokeColor=#ffa000;fontColor=#ff6f00;html=1;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="90" width="300" height="920" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lane_ai" value="&lt;b&gt;AI Engine Microservice&lt;/b&gt;&lt;br&gt;ftmm-compass-chatbot (Nauval &amp;amp; Ario)&lt;br&gt;&lt;i&gt;Ollama Qwen2.5 + ReAct + FAISS&lt;/i&gt;" style="swimlane;startSize=50;fillColor=#e8f5e9;strokeColor=#43a047;fontColor=#1b5e20;html=1;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="90" width="320" height="920" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="lane_db" value="&lt;b&gt;Database PostgreSQL&lt;/b&gt;&lt;br&gt;schema_v2_1_rc1 (Darryl)&lt;br&gt;&lt;i&gt;Courses, Prerequisites, Sessions&lt;/i&gt;" style="swimlane;startSize=50;fillColor=#fbe9e7;strokeColor=#ff7043;fontColor=#bf360c;html=1;rounded=1;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="90" width="260" height="920" as="geometry"/>
+        </mxCell>
+
+        <!-- PHASE 1 DIVIDER -->
+        <mxCell id="phase1_box" value="FASE 1: KONSULTASI &amp;amp; STREAMING PERCAKAPAN (SSE)" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=12;fillColor=#eceff1;strokeColor=#b0bec5;rounded=1;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="50" y="155" width="1600" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- NODES IN LANE_USER -->
+        <mxCell id="u_msg" value="Ketik pesan konsultasi&lt;br&gt;(Contoh: &lt;i&gt;'Rekomendasikan matkul semester 3 TSD fokus ML'&lt;/i&gt;)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#0288d1;" vertex="1" parent="lane_user">
+          <mxGeometry x="20" y="110" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- NODES IN LANE_FE -->
+        <mxCell id="fe_send" value="Append bubble chat user &amp;amp;&lt;br&gt;Buka koneksi &lt;b&gt;POST /api/v1/chat/stream&lt;/b&gt;&lt;br&gt;&lt;i&gt;ReadableStream + AbortController&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7e57c2;" vertex="1" parent="lane_fe">
+          <mxGeometry x="20" y="110" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- NODES IN LANE_GW -->
+        <mxCell id="gw_auth" value="1. Validasi Token JWT&lt;br&gt;2. Cek Rate Limit &lt;b&gt;slowapi&lt;/b&gt; (max 20/min)&lt;br&gt;3. Proxy forward ke AI Engine port 8000" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ffa000;" vertex="1" parent="lane_gw">
+          <mxGeometry x="20" y="110" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- NODES IN LANE_AI -->
+        <mxCell id="ai_react" value="1. &lt;b&gt;System-1 Intent Router&lt;/b&gt; (Hybrid)&lt;br&gt;2. Ekstrak Entitas (Prodi, Sem, Minat)&lt;br&gt;3. &lt;b&gt;ReAct Tool-Calling&lt;/b&gt; (Ollama Qwen2.5)&lt;br&gt;   - search_courses (FAISS+BM25)&lt;br&gt;   - calculate_sks_limit (Pasal 5.4)&lt;br&gt;   - generate_degree_plan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#43a047;" vertex="1" parent="lane_ai">
+          <mxGeometry x="20" y="100" width="280" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ai_stream" value="&lt;b&gt;Async Token Generator&lt;/b&gt;&lt;br&gt;Yield chunk kata per kata &amp;amp;&lt;br&gt;Compile JSON DegreePlanPayload" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#43a047;" vertex="1" parent="lane_ai">
+          <mxGeometry x="20" y="240" width="280" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="gw_sse" value="&lt;b&gt;StreamingResponse (text/event-stream)&lt;/b&gt;&lt;br&gt;• event: token (live typing text)&lt;br&gt;• event: profile_update (slot badges)&lt;br&gt;• event: plan (DegreePlanPayload)&lt;br&gt;• event: done (latensi &amp;amp; routing)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ffa000;" vertex="1" parent="lane_gw">
+          <mxGeometry x="20" y="225" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="fe_render" value="1. Efek mengetik kata demi kata&lt;br&gt;2. Update badge profil mahasiswa&lt;br&gt;3. &lt;b&gt;Render Widget Kartu Aksi&lt;/b&gt;&lt;br&gt;   &lt;i&gt;DegreePlanCardWidget&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7e57c2;" vertex="1" parent="lane_fe">
+          <mxGeometry x="20" y="225" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="u_read" value="Melihat teks penjelasan AI &amp;amp;&lt;br&gt;Widget rekomendasi rencana studi" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#0288d1;" vertex="1" parent="lane_user">
+          <mxGeometry x="20" y="235" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- PHASE 2 DIVIDER -->
+        <mxCell id="phase2_box" value="FASE 2: EKSEKUSI TOMBOL 'TERAPKAN KE DEGREE PLANNER' &amp;amp; VALIDASI DETERMINISTIK" style="text;html=1;align=left;verticalAlign=middle;fontStyle=1;fontSize=12;fillColor=#eceff1;strokeColor=#b0bec5;rounded=1;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="50" y="490" width="1600" height="30" as="geometry"/>
+        </mxCell>
+
+        <!-- NODES IN PHASE 2 -->
+        <mxCell id="u_click" value="Klik tombol:&lt;br&gt;&lt;b&gt;[ Terapkan ke Degree Planner ]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#bbdefb;strokeColor=#1976d2;fontStyle=1;" vertex="1" parent="lane_user">
+          <mxGeometry x="20" y="440" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="fe_callback" value="Trigger &lt;b&gt;onApplyPlan(payload)&lt;/b&gt;&lt;br&gt;Kirim verifikasi ke backend:&lt;br&gt;&lt;b&gt;POST /api/v1/planner/validate&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7e57c2;" vertex="1" parent="lane_fe">
+          <mxGeometry x="20" y="440" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="gw_validator" value="&lt;b&gt;Degree Planner Validator&lt;/b&gt;&lt;br&gt;Ambil relasi kurikulum dari DB:&lt;br&gt;1. Cek DAG course_prerequisites&lt;br&gt;2. Cek paritas Ganjil/Genap&lt;br&gt;3. Cek batas SKS per semester" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ffa000;" vertex="1" parent="lane_gw">
+          <mxGeometry x="20" y="430" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="db_query" value="&lt;b&gt;Query Relasional PostgreSQL&lt;/b&gt;&lt;br&gt;SELECT * FROM courses;&lt;br&gt;SELECT * FROM course_prerequisites;&lt;br&gt;Validasi keterpenuhan prasyarat" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ff7043;" vertex="1" parent="lane_db">
+          <mxGeometry x="20" y="420" width="220" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="db_resp" value="Data relasi prasyarat &amp;amp;&lt;br&gt;Status mata kuliah valid" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ff7043;" vertex="1" parent="lane_db">
+          <mxGeometry x="20" y="560" width="220" height="50" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="gw_decision" value="Status validasi: &lt;b&gt;is_valid = true&lt;/b&gt;&lt;br&gt;violations: []&lt;br&gt;Simpan draft ke tabel &lt;i&gt;study_plans&lt;/i&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ffa000;" vertex="1" parent="lane_gw">
+          <mxGeometry x="20" y="555" width="260" height="60" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="fe_update_roadmap" value="1. Tampilkan toast sukses&lt;br&gt;2. Alihkan tab ke &lt;b&gt;DegreePlanner.tsx&lt;/b&gt;&lt;br&gt;3. Isi visual roadmap Semester 1-8&lt;br&gt;   dengan matkul rekomendasi AI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d1c4e9;strokeColor=#512da8;fontStyle=1;" vertex="1" parent="lane_fe">
+          <mxGeometry x="20" y="545" width="260" height="80" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="u_view_roadmap" value="&lt;b&gt;Selesai 🎉&lt;/b&gt;&lt;br&gt;Mahasiswa melihat roadmap visual&lt;br&gt;dan siap mengekspor jadwal (.ics/PDF)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#c8e6c9;strokeColor=#2e7d32;fontStyle=1;" vertex="1" parent="lane_user">
+          <mxGeometry x="20" y="555" width="240" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- EDGES PHASE 1 -->
+        <mxCell id="e1" edge="1" parent="1" source="u_msg" target="fe_send" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#0288d1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e2" edge="1" parent="1" source="fe_send" target="gw_auth" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#7e57c2;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint as="offset" y="-10"/>
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="e3" edge="1" parent="1" source="gw_auth" target="ai_react" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#ffa000;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e4" edge="1" parent="1" source="ai_react" target="ai_stream" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#43a047;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e5" edge="1" parent="1" source="ai_stream" target="gw_sse" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#43a047;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e6" edge="1" parent="1" source="gw_sse" target="fe_render" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#ffa000;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e7" edge="1" parent="1" source="fe_render" target="u_read" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#7e57c2;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- EDGES PHASE 2 -->
+        <mxCell id="e8" edge="1" parent="1" source="u_read" target="u_click" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;dashed=1;strokeColor=#0288d1;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e9" edge="1" parent="1" source="u_click" target="fe_callback" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#1976d2;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e10" edge="1" parent="1" source="fe_callback" target="gw_validator" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#7e57c2;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e11" edge="1" parent="1" source="gw_validator" target="db_query" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#ffa000;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e12" edge="1" parent="1" source="db_query" target="db_resp" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#ff7043;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e13" edge="1" parent="1" source="db_resp" target="gw_decision" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#ff7043;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e14" edge="1" parent="1" source="gw_decision" target="fe_update_roadmap" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#ffa000;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="e15" edge="1" parent="1" source="fe_update_roadmap" target="u_view_roadmap" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeWidth=2;strokeColor=#512da8;">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
