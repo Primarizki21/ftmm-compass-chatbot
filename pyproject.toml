@@ -8,11 +8,9 @@ dependencies = [
     "faiss-cpu>=1.15.1",
     "fastapi>=0.142.1",
     "httpx>=0.28.1",
-    "nemoguardrails>=0.24.1",
     "numpy>=2.5.3",
     "ollama>=0.6.3",
     "pydantic>=2.13.5",
-    "scikit-learn>=1.9.1",
     "uvicorn[standard]>=0.54.0",
 ]
 

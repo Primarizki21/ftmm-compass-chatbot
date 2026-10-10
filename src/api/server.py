@@ -4,6 +4,7 @@ Melayani antarmuka obrolan di ~/project/ftmm-compass-ui/src/pages/Chatbot.tsx.
 Menggunakan arsitektur Hybrid RAG-CAG (Ollama + FAISS + NLU Router).
 """
 
+import os
 import time
 import httpx
 from fastapi import FastAPI, HTTPException
@@ -37,13 +38,21 @@ app.add_middleware(
 engine = HybridRAGCAGEngine()
 
 
+def _get_ollama_base_url() -> str:
+    host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").strip()
+    if not host.startswith(("http://", "https://")):
+        return f"http://{host}"
+    return host.rstrip("/")
+
+
 @app.get("/api/health", response_model=HealthResponse)
 async def health_check():
     """Endpoint status kesehatan backend dan konektivitas Ollama."""
     ollama_online = False
+    base_url = _get_ollama_base_url()
     try:
         async with httpx.AsyncClient(timeout=2.0) as client:
-            resp = await client.get("http://127.0.0.1:11434/api/tags")
+            resp = await client.get(f"{base_url}/api/tags")
             if resp.status_code == 200:
                 ollama_online = True
     except Exception:

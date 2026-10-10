@@ -1,0 +1,51 @@
+# Version Control
+.git
+.gitignore
+.github
+
+# Virtual Environments & Build
+.venv
+env
+venv
+build
+dist
+*.egg-info
+
+# Python Cache & Bytecode
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+
+# Testing & Linting
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov
+tests
+
+# Secrets & Environment
+.env
+.env.*
+!.env.example
+
+# Confidential Documents & Knowledge Base
+*.pdf
+*.PDF
+papers
+DRIVE_KNOWLEDGE.md
+KNOWLEDGE_BASE.md
+TRELLO_KNOWLEDGE.md
+Ekstrak
+
+# Evaluation Traces & Large Logs
+*.log
+docs/exp-*
+data/*.faiss
+data/*.pkl
+
+# Docker Artifacts
+Dockerfile*
+docker-compose*.yml
+.dockerignore
