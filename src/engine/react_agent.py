@@ -78,14 +78,21 @@ class ReActAgentEngine:
         while step_count < self.max_steps:
             step_count += 1
             t_gen_start = time.perf_counter()
-            
-            resp = ollama.chat(
-                model=self.model,
-                messages=messages,
-                tools=ACADEMIC_TOOL_DEFINITIONS,
-                options={"temperature": 0.1, "top_p": 0.9, "num_predict": 450}
-            )
-            
+            resp = None
+            for attempt in range(2):
+                try:
+                    resp = ollama.chat(
+                        model=self.model,
+                        messages=messages,
+                        tools=ACADEMIC_TOOL_DEFINITIONS,
+                        options={"temperature": 0.1, "top_p": 0.9, "num_predict": 450}
+                    )
+                    break
+                except Exception as e:
+                    if attempt == 0:
+                        time.sleep(0.6)
+                        continue
+                    raise e
             gen_time = (time.perf_counter() - t_gen_start) * 1000.0
             total_gen_latency_ms += gen_time
             p_tokens = resp.get("prompt_eval_count", 0)

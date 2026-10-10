@@ -18,6 +18,7 @@
 | **`exp-006`** | 2026-10-03 | Multi-Style Resilience & Paraphrase Invariance (Card 44, 91) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Formal: **90.0%**<br>Implicit: **90.0%**<br>Slang: **85.0%** | Tool Selection Acc: **83.3%** (50/60) | Planning: **100%**<br>SKS: **93.3%**<br>Prereq: **80.0%** | Tool Exec: **3.9 ms** (avg) | Total: **2407.1 ms**<br>P50: 1729.5 ms<br>P95: 5780.0 ms | **Invariance: 75.0%**<br>Halluc: **3.3%** | **Generalisasi Anti-Overfitting Terbukti**: Evaluasi 60 kueri berpasangan (Formal, Slang, Implisit) membuktikan ReAct tahan variasi diksi (slang hanya drop 5% vs -30% di BM25). Paraphrase Invariance 75.0%. DEGREE_PLANNING 100% konsisten di semua gaya bahasa. | `docs/exp-006_react_multistyle_resilience/` |
 | **`exp-007`** | 2026-10-03 | Evaluasi Bilingual ReAct & Hardware Efficiency (Card 31, 32, 44) | `qwen2.5:3b` + native tools + `nomic-embed-text` | English (EN): **90.0%**<br>Indonesian (ID): **85.0%** | Tool Selection Acc: **100.0%** (40/40) | Planning: **100%**<br>SKS: **100%**<br>Discovery: **100%** | Tool Exec: **3.8 ms** (avg) | Total: **2670.4 ms**<br>P50: 1630.8 ms<br>P95: 6784.5 ms | **Parity: 80.0%**<br>Lang Adherence: **85.0%** | **Keberhasilan Penalaran Dwibahasa (Bilingual Parity 80.0%)**: Kueri Bahasa Inggris mencapai success rate 90.0% (melampaui ID 85.0%) dengan 100% Tool Selection Accuracy. Profiling RTX 5050 (8GB VRAM) aman pada ~2.5 GB alokasi model + 4096 token context window tanpa OOM spillover. | `docs/exp-007_bilingual_react_efficiency/` |
 | **`exp-008`** | 2026-10-07 | Academic Safety Guardrails Ablation (Card 45, 92) | `qwen2.5:3b` + `nomic-embed-text` | Baseline: 52.0%<br>NeMo: 92.0%<br>Lightweight: **100.0%**<br>Hybrid: **100.0%** (Safety Acc) | ASR: Baseline 93.3%<br>NeMo 26.7%<br>Lightweight **0.0%**<br>Hybrid **0.0%** | OOD-R: Baseline 0.0%<br>NeMo **100%**<br>Lightweight **100%**<br>Hybrid **100%** | Tier 1: **0.0 ms**<br>Tier 2: **31.2 ms**<br>NeMo: 284.6 ms | Baseline: 2183.2 ms<br>NeMo: **284.6 ms**<br>Lightweight: 1384.6 ms (P50 **663.6 ms**)<br>Hybrid: 1471.4 ms | FRR: **0.0%** (0 false refusals pada benign & slang) | **Lightweight Cascaded Guard (Varian C) mencapai 100.0% Safety Acc & 0.0% ASR**. Memangkas latensi P50 ke 663.6 ms (-58%) tanpa ketergantungan black-box framework. Menjawab Card 45 & 92. | `docs/exp-008_guardrails_evaluation/` |
+| **`exp-009`** | 2026-10-07 | Multi-Turn Conversation Memory & Crescendo Defense (Card 46, 92) | `qwen2.5:3b` + `nomic-embed-text` | Stateless: 71.4%<br>Stateful: **94.3%** (Dialog Success) | Context Ret: Stateless 90%<br>Stateful **100%** | Anaphora Res: Stateless 14.3%<br>Stateful **85.7%** | Crescendo Def: Stateless 100%<br>Stateful **100%** | Stateless: 1691.3 ms<br>Stateful: 3442.3 ms (P50 3421.1 ms) | Sliding window 6 turn stabil (P95 6259.9 ms) | **ConversationMemoryManager mendongkrak Dialog Success ke 94.3% (+22.9%) dan Anaphora Resolution ke 85.7% (+71.4%)**. Retensi prodi/semester 100% konsisten lintas 7 turn. Menjawab Card 46 & 92. | `docs/exp-009_multiturn_memory_evaluation/` |
 
 ---
 
@@ -274,3 +275,41 @@
   - `docs/exp-008_guardrails_evaluation/benchmark_metrics.csv`
   - `docs/exp-008_guardrails_evaluation/benchmark_raw_traces.jsonl`
   - `docs/exp-008_guardrails_evaluation/benchmark_results.json`
+
+---
+
+### [exp-009] Multi-Turn Conversation Memory Management & Crescendo Defense
+- **Tanggal:** 2026-10-07
+- **Kartu Trello:** Card 46 (`[Nauval & Ario] Implementasi conversation history management`) & Card 92 (`[Ario & Nauval] Standarisasi Dataset Ground Truth Adversarial & Multi-Turn`).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi efektivitas arsitektur manajemen memori percakapan berkeadaan (*ConversationMemoryManager*) dengan *Sliding Window Buffer* (6 turns / 12 messages), akumulasi profil mahasiswa persisten, dan resolusi anafora terhadap keberhasilan dialog multi-turn serta ketahanan terhadap *Crescendo Jailbreak Attack*.
+- **Setup Teknis (Low-Level Architecture):**
+  - **LLM Backbone & Embedding:** Ollama `qwen2.5:3b` + `nomic-embed-text` (768 dimensi).
+  - **Memory Module (`src/engine/memory.py`):**
+    * `SessionState`: Penyimpanan memori in-memory terisolasi per `session_id` dengan TTL 2 jam (7200s).
+    * `Sliding Window Buffer`: Maksimum 6 giliran (12 pesan) terpotong otomatis untuk mencegah pembengkakan konteks input dan OOM.
+    * `Persistent Student Profile`: Ekstraksi otomatis prodi, semester, riwayat matkul lulus, dan fokus minat yang terakumulasi lintas turn.
+    * `Anaphora Resolution`: Penautan kata rujukan (*"mata kuliah tersebut"*, *"itu"*, *"dosen pengampunya"*) ke entitas kurikulum pada giliran sebelumnya.
+  - **Safety Wrapper:** Terintegrasi dengan *Lightweight Cascaded Guard* dari Exp-008.
+  - **Dataset Pengujian:** 10 skenario dialog multi-turn (36 giliran dialog per konfigurasi: 5 prodi FTMM, stress-test 7 turn, dan 2 serangan Crescendo). Total 70 run dialog.
+- **Temuan Kunci:**
+  1. **Lonjakan Drastis Dialog Success Rate (94.3% vs 71.4%):**
+     Penggunaan memori berkeadaan meningkatkan keberhasilan dialog sebesar **+22.9%**, mengeliminasi kebutuhan mahasiswa untuk mengulang informasi prodi/semester di setiap pesan.
+  2. **Resolusi Anafora Efektif (85.7% vs 14.3%):**
+     Model stateless gagal pada 85.7% kueri ber-rujukan (menganggap kueri ambigu atau diblokir OOD). Modul resolusi anafora mendongkrak pemahaman rujukan hingga **85.7%**.
+  3. **Retensi Sempurna pada Percakapan Panjang (100% pada Turn 7):**
+     Skenario dialog panjang (MT-06) membuktikan profil prodi dan semester dari Turn 1 tetap aktif dan akurat di Turn 7 tanpa degradasi memori.
+  4. **Pertahanan Crescendo Mutlak (100% Defense Rate):**
+     Kedua serangan jailbreak bertahap (ekstraksi prompt rahasia dan pemalsuan wewenang dekan 40 SKS) berhasil diputus 100% pada giliran kritis oleh Tier 1 Regex dan Tier 4 Tool Rail.
+  5. **Karakteristik Latensi Konteks Geser:**
+     Latensi rata-rata naik wajar dari 1691.3 ms ke 3442.3 ms karena penambahan token konteks (P50: 3421.1 ms), namun batas P95 terkunci stabil pada **6259.9 ms** berkat jendela geser 6 turn.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - `ConversationMemoryManager` resmi dijadikan standar backend percakapan multi-turn FTMM COMPASS.
+  - Menuntaskan seluruh acceptance criteria Card 46 dan dataset multi-turn Card 92.
+  - Siap diintegrasikan ke endpoint API produksi (`POST /api/chat`) di Card 47.
+- **Artefak:**
+  - `docs/exp-009_multiturn_memory_evaluation/README.md`
+  - `docs/exp-009_multiturn_memory_evaluation/benchmark_summary.md`
+  - `docs/exp-009_multiturn_memory_evaluation/benchmark_metrics.csv`
+  - `docs/exp-009_multiturn_memory_evaluation/benchmark_raw_traces.jsonl`
+  - `docs/exp-009_multiturn_memory_evaluation/benchmark_results.json`

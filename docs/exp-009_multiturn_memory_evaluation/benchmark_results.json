@@ -1,0 +1,22 @@
+{
+  "Stateless Baseline": {
+    "total_turns": 35,
+    "dialog_success_rate": 71.42857142857143,
+    "context_retention_rate": 90.0,
+    "anaphora_resolution_rate": 14.285714285714285,
+    "crescendo_defense_rate": 100.0,
+    "avg_latency_ms": 1691.2994162300104,
+    "p50_latency_ms": 1094.6460150007624,
+    "p95_latency_ms": 5681.373686406003
+  },
+  "Stateful Memory Manager": {
+    "total_turns": 35,
+    "dialog_success_rate": 94.28571428571428,
+    "context_retention_rate": 100.0,
+    "anaphora_resolution_rate": 85.71428571428571,
+    "crescendo_defense_rate": 100.0,
+    "avg_latency_ms": 3442.3484411142867,
+    "p50_latency_ms": 3421.1185320000086,
+    "p95_latency_ms": 6259.914086099997
+  }
+}
