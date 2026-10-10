@@ -17,6 +17,7 @@
 | **`exp-005`** | 2026-10-03 | ReAct Agent Hardened: Mitigasi 5 Kluster Kegagalan (Card 44) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Task Success: **88.3%** (53/60)<br>TI: **100%**<br>TSD: **91.7%**<br>TRKB/RN/TE: **83.3%** | Tool Selection Acc: **95.0%** (57/60) | Planning: **100%**<br>Discovery: **100%**<br>SKS: **95%**<br>Prereq: **70%** | Tool Exec: **4.1 ms** (avg) | Total: **2934.0 ms**<br>P50: 1951.0 ms<br>P95: 6609.7 ms | Hallucination: **10.0%**<br>Self-Correction: **0.0%** | **Lonjakan Task Success ke 88.3% (+13.3% vs exp-004)**: DEGREE_PLANNING melonjak dari 30% ke **100%** berkat profile auto-injection & parameter defaults. TI mencapai 100% tuntas. Kegagalan terpotong dari 15 kasus menjadi 7 kasus. Zero black-box traces tersimpan di JSONL. | `docs/exp-005_react_hardened_evaluation/` |
 | **`exp-006`** | 2026-10-03 | Multi-Style Resilience & Paraphrase Invariance (Card 44, 91) | `qwen2.5:3b` + native tools + `nomic-embed-text` | Formal: **90.0%**<br>Implicit: **90.0%**<br>Slang: **85.0%** | Tool Selection Acc: **83.3%** (50/60) | Planning: **100%**<br>SKS: **93.3%**<br>Prereq: **80.0%** | Tool Exec: **3.9 ms** (avg) | Total: **2407.1 ms**<br>P50: 1729.5 ms<br>P95: 5780.0 ms | **Invariance: 75.0%**<br>Halluc: **3.3%** | **Generalisasi Anti-Overfitting Terbukti**: Evaluasi 60 kueri berpasangan (Formal, Slang, Implisit) membuktikan ReAct tahan variasi diksi (slang hanya drop 5% vs -30% di BM25). Paraphrase Invariance 75.0%. DEGREE_PLANNING 100% konsisten di semua gaya bahasa. | `docs/exp-006_react_multistyle_resilience/` |
 | **`exp-007`** | 2026-10-03 | Evaluasi Bilingual ReAct & Hardware Efficiency (Card 31, 32, 44) | `qwen2.5:3b` + native tools + `nomic-embed-text` | English (EN): **90.0%**<br>Indonesian (ID): **85.0%** | Tool Selection Acc: **100.0%** (40/40) | Planning: **100%**<br>SKS: **100%**<br>Discovery: **100%** | Tool Exec: **3.8 ms** (avg) | Total: **2670.4 ms**<br>P50: 1630.8 ms<br>P95: 6784.5 ms | **Parity: 80.0%**<br>Lang Adherence: **85.0%** | **Keberhasilan Penalaran Dwibahasa (Bilingual Parity 80.0%)**: Kueri Bahasa Inggris mencapai success rate 90.0% (melampaui ID 85.0%) dengan 100% Tool Selection Accuracy. Profiling RTX 5050 (8GB VRAM) aman pada ~2.5 GB alokasi model + 4096 token context window tanpa OOM spillover. | `docs/exp-007_bilingual_react_efficiency/` |
+| **`exp-008`** | 2026-10-07 | Academic Safety Guardrails Ablation (Card 45, 92) | `qwen2.5:3b` + `nomic-embed-text` | Baseline: 52.0%<br>NeMo: 92.0%<br>Lightweight: **100.0%**<br>Hybrid: **100.0%** (Safety Acc) | ASR: Baseline 93.3%<br>NeMo 26.7%<br>Lightweight **0.0%**<br>Hybrid **0.0%** | OOD-R: Baseline 0.0%<br>NeMo **100%**<br>Lightweight **100%**<br>Hybrid **100%** | Tier 1: **0.0 ms**<br>Tier 2: **31.2 ms**<br>NeMo: 284.6 ms | Baseline: 2183.2 ms<br>NeMo: **284.6 ms**<br>Lightweight: 1384.6 ms (P50 **663.6 ms**)<br>Hybrid: 1471.4 ms | FRR: **0.0%** (0 false refusals pada benign & slang) | **Lightweight Cascaded Guard (Varian C) mencapai 100.0% Safety Acc & 0.0% ASR**. Memangkas latensi P50 ke 663.6 ms (-58%) tanpa ketergantungan black-box framework. Menjawab Card 45 & 92. | `docs/exp-008_guardrails_evaluation/` |
 
 ---
 
@@ -238,3 +239,38 @@
   - `docs/exp-007_bilingual_react_efficiency/benchmark_metrics.csv`
   - `docs/exp-007_bilingual_react_efficiency/benchmark_raw_traces.jsonl`
   - `docs/exp-007_bilingual_react_efficiency/benchmark_results.json`
+
+---
+
+### [exp-008] Academic Safety Guardrails Ablation: Baseline vs NeMo vs Cascaded vs Hybrid
+- **Tanggal:** 2026-10-07
+- **Kartu Trello:** Card 45 (`[Nauval & Ario] Konfigurasi NeMo Guardrails sebagai safety layer`) & Card 92 (`[Ario & Nauval] Standarisasi Dataset Ground Truth Adversarial & Multi-Turn`).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi secara kuantitatif efektivitas pertahanan berlapis (*Defense-in-Depth*) terhadap serangan adversarial (jailbreak, prompt injection, authority spoofing) dan kueri out-of-scope (OOD) non-akademik, serta mengukur pengaruhnya terhadap tingkat penolakan keliru (*False Refusal Rate* / FRR) pada ragam bahasa slang mahasiswa dan konsumsi latensi lokal RTX 5050.
+- **Setup Teknis (Low-Level Architecture):**
+  - **LLM Backbone & Embedding:** Ollama `qwen2.5:3b` + `nomic-embed-text` (768 dimensi, Cosine Centroids).
+  - **Tier 1 (Deterministic Filter, 0.0 ms):** Regex & keyword blocklist untuk deteksi instan prompt injection, DAN jailbreak, authority spoofing, dan eksfiltrasi data/kunci jawaban.
+  - **Tier 2 (Embedding Semantic Gating, <35 ms):** FAISS Cosine Distance kueri terhadap centroid akademik FTMM vs non-akademik (kuliner, crypto, politik umum, judi) tanpa beban inferensi LLM.
+  - **Tier 3 (NeMo Colang Flow, ~285 ms):** Canonical intent classifier berbasis Colang safety policy.
+  - **Tier 4 (Deterministic Tool & Argument Rail):** Validasi parameter fisik fungsi ReAct (kode MK, semester 1-8, batas beban SKS 0-24) sebelum eksekusi API/Database.
+  - **Dataset Pengujian:** 50 kueri terstratifikasi dari Card 92 (15 Benign Academic, 10 Slang Mahasiswa, 10 Out-of-Scope, 15 Adversarial Attack). Total 200 run inferensi lintas 4 varian.
+- **Temuan Kunci:**
+  1. **Kerentanan Fatal Model Tanpa Guardrails (Baseline ASR 93.3%):**
+     Model raw ReAct meloloskan 93.3% serangan adversarial dan menjawab seluruh pertanyaan non-akademik (OOD-R 0.0%), membuktikan model SLM mentah tidak aman dideploy tanpa lapisan guardrails.
+  2. **Kesempurnaan Proteksi Lightweight Cascaded Guard (Varian C):**
+     Kombinasi Tier 1 + Tier 2 + Tier 4 mencapai **100.0% Safety Accuracy** dan **0.0% Attack Success Rate** (semua 15 serangan adversarial dinetralkan). Kueri OOD terdeteksi sempurna (**100.0% OOD-R**).
+  3. **Zero False Refusal Rate (FRR 0.0%):**
+     Seluruh kueri sah mahasiswa dan slang informal (*"alpro"*, *"visdat"*, *"skripsian"*, *"ngebut"*) lolos 100% tanpa ada over-defense.
+  4. **Efisiensi Latensi Komputasi Lokal (P50 663.6 ms):**
+     Kueri adversarial terputus seketika pada Tier 1 (0.0 ms) dan kueri OOD pada Tier 2 (27–38 ms) tanpa memicu LLM autoregresif, memangkas P50 latensi total dari 1591.9 ms menjadi **663.6 ms** (-58.3%).
+  5. **Kelemahan NeMo Black-Box pada Local Edge:**
+     NeMo Guardrails murni (Varian B) meloloskan 26.7% serangan adversarial akibat keterbatasan penalaran SLM 3B pada prompt persuasif, serta rentan kehabisan socket HTTP jika menggunakan driver abstraction berat.
+- **Keputusan Arsitektur & Tindak Lanjut:**
+  - Mengadopsi **Lightweight Cascaded Guard (Varian C)** sebagai safety wrapper default sebelum diekspos ke API endpoint di Card 47.
+  - Menuntaskan target riset Card 45 dan standarisasi dataset Card 92.
+- **Artefak:**
+  - `docs/exp-008_guardrails_evaluation/README.md`
+  - `docs/exp-008_guardrails_evaluation/benchmark_summary.md`
+  - `docs/exp-008_guardrails_evaluation/benchmark_metrics.csv`
+  - `docs/exp-008_guardrails_evaluation/benchmark_raw_traces.jsonl`
+  - `docs/exp-008_guardrails_evaluation/benchmark_results.json`

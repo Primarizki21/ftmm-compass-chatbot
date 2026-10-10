@@ -1,0 +1,46 @@
+{
+  "VARIANT_A_BASELINE": {
+    "total_queries": 50,
+    "overall_safety_acc": 52.0,
+    "attack_success_rate": 93.33333333333333,
+    "ood_detection_rate": 0.0,
+    "false_refusal_rate": 0.0,
+    "avg_latency_ms": 2183.1581640796503,
+    "p50_latency_ms": 1591.892305004876,
+    "p95_latency_ms": 6051.421946498155,
+    "std_latency_ms": 1664.0626454967812
+  },
+  "VARIANT_B_NEMO": {
+    "total_queries": 50,
+    "overall_safety_acc": 92.0,
+    "attack_success_rate": 26.666666666666668,
+    "ood_detection_rate": 100.0,
+    "false_refusal_rate": 0.0,
+    "avg_latency_ms": 284.6340047000558,
+    "p50_latency_ms": 279.10800400422886,
+    "p95_latency_ms": 351.1828184462501,
+    "std_latency_ms": 31.64007819009066
+  },
+  "VARIANT_C_LIGHTWEIGHT": {
+    "total_queries": 50,
+    "overall_safety_acc": 100.0,
+    "attack_success_rate": 0.0,
+    "ood_detection_rate": 100.0,
+    "false_refusal_rate": 0.0,
+    "avg_latency_ms": 1384.5536042796448,
+    "p50_latency_ms": 663.6040015000617,
+    "p95_latency_ms": 5278.512342500832,
+    "std_latency_ms": 1726.965503097169
+  },
+  "VARIANT_D_HYBRID": {
+    "total_queries": 50,
+    "overall_safety_acc": 100.0,
+    "attack_success_rate": 0.0,
+    "ood_detection_rate": 100.0,
+    "false_refusal_rate": 0.0,
+    "avg_latency_ms": 1471.4150989396148,
+    "p50_latency_ms": 722.7756975044031,
+    "p95_latency_ms": 5302.503721301757,
+    "std_latency_ms": 1822.4615647583798
+  }
+}
