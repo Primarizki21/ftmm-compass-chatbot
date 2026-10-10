@@ -27,6 +27,37 @@ graph LR
 | **Tier 3: AI Microservice** | `ftmm-compass-chatbot/src/` | Nauval & Ario (AI/NLP) | System-1 intent routing, Hybrid RAG-CAG, ReAct agent dengan 4 deterministic tools, dan compile `DegreePlanPayload`. |
 | **Tier 4: Relational DB** | PostgreSQL 16 (`schema_v2_1_rc1.sql`) | Darryl (Database) | Relasi prasyarat matkul (`course_prerequisites` DAG), paritas ganjil/genap, dan persistensi rencana studi. |
 
+
+### 1.1 Pipeline Internal AI Engine Microservice (Hasil Riset Exp-008 s.d. Exp-011)
+
+AI Engine mengimplementasikan arsitektur *Cascaded Defense-in-Depth* dan *System-1 Decider*:
+
+```mermaid
+graph TD
+    Query[Kueri Mahasiswa] --> T1[Tier 1: 0ms Deterministic Regex Filter]
+    T1 -- Blocked: Jailbreak / Prompt Injection --> RefusalT1[Refusal Keamanan Instan: 0 ms]
+    T1 -- Allowed --> T2[Tier 2: <35ms FAISS Cosine Centroid Gating]
+    T2 -- Blocked: Out-of-Scope Non-Akademik --> RefusalT2[Refusal Batasan Topik: ~30 ms]
+    T2 -- Allowed --> Mem[Conversation Memory Manager: Sliding Window & Anaphora Resolve]
+    Mem --> Decider[System-1 Decider: Embedding Centroid Tool Schema Pruning]
+    Decider -- CHAT_ONLY --> DirectLLM[ReAct Agent: Zero Tool Schema Overhead ~400-700 ms]
+    Decider -- PREREQUISITE / SKS / PLAN --> ToolsLLM[ReAct Agent: Injeksi Tool Spesifik Saja]
+    DirectLLM --> Out[Jawaban Akhir Teks]
+    ToolsLLM --> T4[Tier 4: Deterministic Argument & Physical Tool Rail]
+    T4 -- Parameter Valid --> Exec[Eksekusi Tool Database / DAG / Kurikulum]
+    T4 -- Parameter Melanggar SKS/Semester --> RefusalT4[Refusal Parameter Pelanggaran Aturan]
+    Exec --> Gen[Kompilasi Jawaban Akhir & DegreePlanPayload JSON]
+    Gen --> Out
+```
+
+| Komponen Pipeline | Modul Sumber | Mekanisme & Target Latensi | Status Validasi |
+|---|---|---|---|
+| **Tier 1 Security Filter** | `src/guardrails/tier1_filter.py` | Regex blocklist instan (0.0 ms) untuk cegah prompt injection & DAN jailbreak. | Tuntas (Exp-008, 0% ASR) |
+| **Tier 2 Semantic Gating** | `src/guardrails/tier2_semantic_gate.py` | FAISS Centroid Cosine Distance (<35 ms) mendeteksi kueri OOD tanpa beban LLM. | Tuntas (Exp-008, 100% OOD-R) |
+| **Memory Manager** | `src/engine/memory.py` | Sliding window 6 turn + persistensi profil mahasiswa & resolusi anafora (*itu, tersebut*). | Tuntas (Exp-009, 94.3% Success) |
+| **System-1 Decider** | `src/engine/decider.py` | BLAS Dot-product (34 ms) memangkas ~675 token skema JSON sebelum menyentuh LLM. | Tuntas (Exp-011, 96.7% Acc) |
+| **ReAct Agent Engine** | `src/engine/react_agent.py` | Qwen2.5-3B VRAM Pinned (`OLLAMA_MAX_LOADED_MODELS=2`) + DeepSeek-style prefix cache. | Tuntas (Exp-010, P50 1.39s) |
+| **Tier 4 Argument Rail** | `src/guardrails/tier4_tool_rail.py` | Validasi batas legal semester (1–8) dan SKS (0–24) sebelum pemanggilan tool. | Tuntas (Exp-008) |
 ---
 
 ## 2. Sequence Diagram Alur Integrasi End-to-End
