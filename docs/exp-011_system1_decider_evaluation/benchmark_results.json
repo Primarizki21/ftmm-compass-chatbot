@@ -1,0 +1,50 @@
+{
+  "total_queries": 60,
+  "overall_accuracy": 96.66666666666667,
+  "avg_latency_ms": 34.04544123337322,
+  "p50_latency_ms": 33.24156749999929,
+  "p95_latency_ms": 48.72710235003978,
+  "avg_tokens_saved_per_query": 675.0,
+  "style_metrics": {
+    "Formal": {
+      "total": 20,
+      "accuracy": 95.0,
+      "avg_latency_ms": 33.82892864999576,
+      "p50_latency_ms": 33.24156749999929
+    },
+    "Slang": {
+      "total": 20,
+      "accuracy": 95.0,
+      "avg_latency_ms": 34.571611650108025,
+      "p50_latency_ms": 33.34777099985331
+    },
+    "Implicit": {
+      "total": 20,
+      "accuracy": 100.0,
+      "avg_latency_ms": 33.73578340001586,
+      "p50_latency_ms": 33.496029999696475
+    }
+  },
+  "category_metrics": {
+    "CHAT_ONLY": {
+      "total": 12,
+      "accuracy": 100.0
+    },
+    "PREREQUISITE": {
+      "total": 12,
+      "accuracy": 91.66666666666666
+    },
+    "SKS_CALCULATION": {
+      "total": 12,
+      "accuracy": 100.0
+    },
+    "DEGREE_PLANNING": {
+      "total": 12,
+      "accuracy": 100.0
+    },
+    "COURSE_DISCOVERY": {
+      "total": 12,
+      "accuracy": 91.66666666666666
+    }
+  }
+}

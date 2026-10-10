@@ -3,8 +3,8 @@ import time
 from typing import Any
 import ollama
 from src.engine.base import EngineResult
+from src.engine.decider import System1Decider
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
-
 DEFAULT_MODEL = "qwen2.5:3b"
 
 REACT_SYSTEM_PROMPT = """Anda adalah Compass AI, agen penasihat akademik resmi Fakultas Teknologi Maju dan Multidisiplin (FTMM) Universitas Airlangga.
@@ -29,25 +29,26 @@ Prinsip Kerja Agen:
 """
 
 
-def select_relevant_tools(query: str) -> list[dict[str, Any]] | None:
-    q_lower = query.lower()
-    # 1. Degree planning
-    if any(k in q_lower for k in ["rencana studi", "degree plan", "plotting krs", "rekomendasi matkul", "paket semester", "ngebut lulus", "rancang"]):
-        return [t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] in {"generate_degree_plan", "search_courses"}]
-    # 2. Prerequisite verification
-    if any(k in q_lower for k in ["prasyarat", "syarat", "boleh ambil", "bisa ambil", "sudah lulus", "belum lulus", "ngulang", "dosen"]):
-        return [t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] in {"validate_prerequisites_dag", "search_courses"}]
-    # 3. SKS limit calculation
-    if any(k in q_lower for k in ["batas sks", "beban sks", "maksimal sks", "jatah sks", "ips", "ipk", "maruk"]):
-        return [t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] == "calculate_sks_limit"]
-    # 4. Course search / discovery
-    if any(k in q_lower for k in ["matkul", "mata kuliah", "silabus", "kurikulum"]):
-        return [t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] == "search_courses"]
-    # 5. Greetings / General Chitchat -> zero tool overhead
-    if any(k in q_lower for k in ["halo", "hai", "selamat", "pagi", "siang", "sore", "malam", "terima kasih", "thanks", "siapa kamu"]):
-        return None
-    # Default fallback
-    return ACADEMIC_TOOL_DEFINITIONS
+_decider_instance: System1Decider | None = None
+
+
+def get_system1_decider() -> System1Decider:
+    global _decider_instance
+    if _decider_instance is None:
+        _decider_instance = System1Decider()
+        _decider_instance.initialize()
+    return _decider_instance
+
+
+def select_relevant_tools(query: str) -> tuple[list[dict[str, Any]] | None, dict[str, Any]]:
+    decider = get_system1_decider()
+    res = decider.decide(query)
+    telemetry = {
+        "decider_category": res.category.value,
+        "decider_confidence": res.confidence,
+        "decider_latency_ms": res.latency_ms,
+    }
+    return res.selected_tools, telemetry
 
 
 class ReActAgentEngine:
@@ -62,8 +63,7 @@ class ReActAgentEngine:
         student_profile: dict[str, Any] | None = None,
     ) -> EngineResult:
         t0 = time.perf_counter()
-        active_tools = select_relevant_tools(query)
-        
+        active_tools, decider_telemetry = select_relevant_tools(query)
         # Build initial message stack
         messages: list[dict[str, Any]] = [
             {"role": "system", "content": REACT_SYSTEM_PROMPT}
@@ -241,5 +241,6 @@ class ReActAgentEngine:
                 "completion_tokens": total_completion_tokens,
                 "self_correction_triggered": self_correction_triggered,
                 "execution_traces": raw_execution_traces,
+                **decider_telemetry,
             }
         )

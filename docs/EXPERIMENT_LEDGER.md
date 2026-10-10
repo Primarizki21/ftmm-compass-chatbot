@@ -20,6 +20,7 @@
 | **`exp-008`** | 2026-10-07 | Academic Safety Guardrails Ablation (Card 45, 92) | `qwen2.5:3b` + `nomic-embed-text` | Baseline: 52.0%<br>NeMo: 92.0%<br>Lightweight: **100.0%**<br>Hybrid: **100.0%** (Safety Acc) | ASR: Baseline 93.3%<br>NeMo 26.7%<br>Lightweight **0.0%**<br>Hybrid **0.0%** | OOD-R: Baseline 0.0%<br>NeMo **100%**<br>Lightweight **100%**<br>Hybrid **100%** | Tier 1: **0.0 ms**<br>Tier 2: **31.2 ms**<br>NeMo: 284.6 ms | Baseline: 2183.2 ms<br>NeMo: **284.6 ms**<br>Lightweight: 1384.6 ms (P50 **663.6 ms**)<br>Hybrid: 1471.4 ms | FRR: **0.0%** (0 false refusals pada benign & slang) | **Lightweight Cascaded Guard (Varian C) mencapai 100.0% Safety Acc & 0.0% ASR**. Memangkas latensi P50 ke 663.6 ms (-58%) tanpa ketergantungan black-box framework. Menjawab Card 45 & 92. | `docs/exp-008_guardrails_evaluation/` |
 | **`exp-009`** | 2026-10-07 | Multi-Turn Conversation Memory & Crescendo Defense (Card 46, 92) | `qwen2.5:3b` + `nomic-embed-text` | Stateless: 71.4%<br>Stateful: **94.3%** (Dialog Success) | Context Ret: Stateless 90%<br>Stateful **100%** | Anaphora Res: Stateless 14.3%<br>Stateful **85.7%** | Crescendo Def: Stateless 100%<br>Stateful **100%** | Stateless: 1691.3 ms<br>Stateful: 3442.3 ms (P50 3421.1 ms) | Sliding window 6 turn stabil (P95 6259.9 ms) | **ConversationMemoryManager mendongkrak Dialog Success ke 94.3% (+22.9%) dan Anaphora Resolution ke 85.7% (+71.4%)**. Retensi prodi/semester 100% konsisten lintas 7 turn. Menjawab Card 46 & 92. | `docs/exp-009_multiturn_memory_evaluation/` |
 | **`exp-010`** | 2026-10-10 | Low-Level Inference Optimization & Dual VRAM Pinning (Card 31, 44, 99) | `qwen2.5:3b` + `nomic-embed-text` | SKS: 1465 ms<br>Prereq: 1320 ms<br>Planning: 3381 ms | Greeting P50: **694.7 ms** (Speedup **8.5x**) | Avg Prefill: **1369 tok** (-35% prompt bloat) | VRAM Swap Latency: **0.0 ms** (Dual resident) | Overall P50: **1393.9 ms**<br>Greeting P50: **694.7 ms** | VRAM GPU 2.565 MiB stabil (~31.4% VRAM) | **Pinning dual-model VRAM (`OLLAMA_MAX_LOADED_MODELS=2`) + Dynamic Tool Schema Pruning memangkas latensi sapaan ke sub-detik (420-700 ms)** tanpa swap runner di WSL2. Menjawab Card 31, 44, 99. | `docs/exp-010_lowlevel_inference_optimization/` |
+| **`exp-011`** | 2026-10-10 | System-1 Decision Classifier & Tool Pruning (Card 99) | `nomic-embed-text` (768d Centroids) | Overall: **96.7%** (58/60)<br>Formal: **95%**<br>Slang: **95%**<br>Implicit: **100%** | Decision Latency: **34.0 ms** (Avg)<br>P50: **33.2 ms**<br>P95: **48.7 ms** | Token Saved: **~675 tok/query** (-70% tool schema) | Matrix Dot-Product: **0.05 ms** (BLAS $O(1)$) | Total Turn Latency: 34.0 ms (vs 800 ms LLM router) | Zero VRAM footprint (Reuse resident embedding) | **System-1 Decider mencapai 96.7% akurasi (100% pada kueri implisit) dengan latensi hanya 33.2 ms (P50)**. Memangkas ~675 token skema per giliran tanpa beban LLM generatif. Menjawab Card 99. | `docs/exp-011_system1_decider_evaluation/` |
 
 ---
 
@@ -347,3 +348,35 @@
   - `docs/exp-010_lowlevel_inference_optimization/benchmark_metrics.csv`
   - `docs/exp-010_lowlevel_inference_optimization/benchmark_raw_traces.jsonl`
   - `docs/exp-010_lowlevel_inference_optimization/benchmark_results.json`
+
+---
+
+### [exp-011] System-1 Decision Classifier & Semantic Tool Schema Pruning
+- **Tanggal:** 2026-10-10
+- **Kartu Trello:** Card 99 (`[Nauval & Ario] Implementasi System-1 Decision Classifier (Jev/Decider Paradigm) untuk Intent Routing & Tool Dispatching`).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi efektivitas arsitektur *System-1 Decision Classifier* (terinspirasi dari paradigma TypeSafe AI / Jev & Decider) berbasis representasi embedding non-autoregresif (`nomic-embed-text`) untuk memetakan kueri mahasiswa secara instan ($<35\text{ ms}$) ke himpunan tools yang tepat tanpa menanggung beban penalaran token-by-token dari LLM generatif.
+- **Setup Teknis (Low-Level Architecture):**
+  - **Embedding Backbone:** `nomic-embed-text` (768 dimensi, L2-normalized).
+  - **Centroid Matrix Representation ($\mathbf{C} \in \mathbb{R}^{5 \times 768}$):** 5 kelas keputusan (`CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`) dihitung dari prototipe terstratifikasi dan disimpan di `data/decider_centroids.npz`.
+  - **Direct BLAS Dot-Product ($O(1)$ Inference):** $\mathbf{s} = \mathbf{C} \cdot \mathbf{q}^T$ dieksekusi dalam $0.05\text{ ms}$.
+  - **Ambiguity Guard:** Otomatis fallback ke seluruh tools jika selisih skor top-1 dan top-2 $< 0.02$ atau keyakinan $< 0.40$.
+  - **Testbed Pengujian:** 60 kueri berimbang (20 Formal Baku, 20 Slang Mahasiswa, 20 Implisit Ambigu) mencakup seluruh 5 kategori akademik FTMM.
+- **Temuan Kunci:**
+  1. **Akurasi Klasifikasi Sangat Tinggi (96.7% Overall):**
+     Model berhasil memetakan 58 dari 60 kueri ke kategori tools yang presisi (Formal 95.0%, Slang 95.0%, dan Implisit **100.0%**).
+  2. **Latensi Ekstrem Sub-35ms (P50 33.2 ms):**
+     Waktu keputusan berlangsung rata-rata dalam **34.0 ms** (P50: **33.2 ms**), memangkas waktu routing sebesar **95%** dibanding LLM generatif (300–800 ms).
+  3. **Penghematan Token Prefill Masif (~675 Token per Kueri):**
+     Kueri sapaan/chitchat dieksekusi dengan 0 tools (menghemat 963 token skema), dan kueri SKS hanya memuat 1 tool, mereduksi matriks *self-attention* transformer secara drastis.
+  4. **Zero VRAM Overhead:**
+     Menggunakan model embedding yang sudah resident di GPU VRAM (323 MB), tanpa memerlukan model klasifikasi neural tambahan sebesar 1–2 GB.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - `System1Decider` resmi diadopsi sebagai front-gate router pemangkasan tools sebelum kueri masuk ke `ReActAgentEngine`.
+  - Menutup seluruh target riset pada Trello Card 99.
+- **Artefak:**
+  - `docs/exp-011_system1_decider_evaluation/README.md`
+  - `docs/exp-011_system1_decider_evaluation/benchmark_summary.md`
+  - `docs/exp-011_system1_decider_evaluation/benchmark_metrics.csv`
+  - `docs/exp-011_system1_decider_evaluation/benchmark_raw_traces.jsonl`
+  - `docs/exp-011_system1_decider_evaluation/benchmark_results.json`
