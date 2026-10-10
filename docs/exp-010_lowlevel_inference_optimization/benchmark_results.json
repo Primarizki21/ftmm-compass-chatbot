@@ -1,0 +1,32 @@
+{
+  "total_queries": 20,
+  "avg_latency_ms": 2514.9155275999874,
+  "p50_latency_ms": 1393.8947895001093,
+  "p95_latency_ms": 4436.707294449761,
+  "std_latency_ms": 3509.6147862444595,
+  "avg_prompt_tokens": 1369.55,
+  "avg_completion_tokens": 141.45,
+  "vram_used_mib": 2543.0,
+  "categories": {
+    "GREETING": {
+      "avg_latency_ms": 3893.4089941999446,
+      "p50_latency_ms": 694.6989960001702,
+      "avg_prompt_tokens": 519.2
+    },
+    "SKS_LIMIT": {
+      "avg_latency_ms": 1465.2753395999753,
+      "p50_latency_ms": 1348.9446059998045,
+      "avg_prompt_tokens": 1443.6
+    },
+    "PREREQUISITE": {
+      "avg_latency_ms": 1319.9746614000105,
+      "p50_latency_ms": 1383.7865469999997,
+      "avg_prompt_tokens": 1587.8
+    },
+    "PLANNING": {
+      "avg_latency_ms": 3381.0031152000192,
+      "p50_latency_ms": 3701.6698470001757,
+      "avg_prompt_tokens": 1927.6
+    }
+  }
+}

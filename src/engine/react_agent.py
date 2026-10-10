@@ -29,6 +29,27 @@ Prinsip Kerja Agen:
 """
 
 
+def select_relevant_tools(query: str) -> list[dict[str, Any]] | None:
+    q_lower = query.lower()
+    # 1. Degree planning
+    if any(k in q_lower for k in ["rencana studi", "degree plan", "plotting krs", "rekomendasi matkul", "paket semester", "ngebut lulus", "rancang"]):
+        return [t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] in {"generate_degree_plan", "search_courses"}]
+    # 2. Prerequisite verification
+    if any(k in q_lower for k in ["prasyarat", "syarat", "boleh ambil", "bisa ambil", "sudah lulus", "belum lulus", "ngulang", "dosen"]):
+        return [t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] in {"validate_prerequisites_dag", "search_courses"}]
+    # 3. SKS limit calculation
+    if any(k in q_lower for k in ["batas sks", "beban sks", "maksimal sks", "jatah sks", "ips", "ipk", "maruk"]):
+        return [t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] == "calculate_sks_limit"]
+    # 4. Course search / discovery
+    if any(k in q_lower for k in ["matkul", "mata kuliah", "silabus", "kurikulum"]):
+        return [t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] == "search_courses"]
+    # 5. Greetings / General Chitchat -> zero tool overhead
+    if any(k in q_lower for k in ["halo", "hai", "selamat", "pagi", "siang", "sore", "malam", "terima kasih", "thanks", "siapa kamu"]):
+        return None
+    # Default fallback
+    return ACADEMIC_TOOL_DEFINITIONS
+
+
 class ReActAgentEngine:
     def __init__(self, model: str = DEFAULT_MODEL, max_steps: int = 5):
         self.model = model
@@ -41,6 +62,7 @@ class ReActAgentEngine:
         student_profile: dict[str, Any] | None = None,
     ) -> EngineResult:
         t0 = time.perf_counter()
+        active_tools = select_relevant_tools(query)
         
         # Build initial message stack
         messages: list[dict[str, Any]] = [
@@ -81,12 +103,14 @@ class ReActAgentEngine:
             resp = None
             for attempt in range(2):
                 try:
-                    resp = ollama.chat(
-                        model=self.model,
-                        messages=messages,
-                        tools=ACADEMIC_TOOL_DEFINITIONS,
-                        options={"temperature": 0.1, "top_p": 0.9, "num_predict": 450}
-                    )
+                    chat_kwargs: dict[str, Any] = {
+                        "model": self.model,
+                        "messages": messages,
+                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 256, "num_ctx": 2048},
+                    }
+                    if active_tools:
+                        chat_kwargs["tools"] = active_tools
+                    resp = ollama.chat(**chat_kwargs)
                     break
                 except Exception as e:
                     if attempt == 0:

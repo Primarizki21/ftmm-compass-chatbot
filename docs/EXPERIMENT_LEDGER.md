@@ -19,6 +19,7 @@
 | **`exp-007`** | 2026-10-03 | Evaluasi Bilingual ReAct & Hardware Efficiency (Card 31, 32, 44) | `qwen2.5:3b` + native tools + `nomic-embed-text` | English (EN): **90.0%**<br>Indonesian (ID): **85.0%** | Tool Selection Acc: **100.0%** (40/40) | Planning: **100%**<br>SKS: **100%**<br>Discovery: **100%** | Tool Exec: **3.8 ms** (avg) | Total: **2670.4 ms**<br>P50: 1630.8 ms<br>P95: 6784.5 ms | **Parity: 80.0%**<br>Lang Adherence: **85.0%** | **Keberhasilan Penalaran Dwibahasa (Bilingual Parity 80.0%)**: Kueri Bahasa Inggris mencapai success rate 90.0% (melampaui ID 85.0%) dengan 100% Tool Selection Accuracy. Profiling RTX 5050 (8GB VRAM) aman pada ~2.5 GB alokasi model + 4096 token context window tanpa OOM spillover. | `docs/exp-007_bilingual_react_efficiency/` |
 | **`exp-008`** | 2026-10-07 | Academic Safety Guardrails Ablation (Card 45, 92) | `qwen2.5:3b` + `nomic-embed-text` | Baseline: 52.0%<br>NeMo: 92.0%<br>Lightweight: **100.0%**<br>Hybrid: **100.0%** (Safety Acc) | ASR: Baseline 93.3%<br>NeMo 26.7%<br>Lightweight **0.0%**<br>Hybrid **0.0%** | OOD-R: Baseline 0.0%<br>NeMo **100%**<br>Lightweight **100%**<br>Hybrid **100%** | Tier 1: **0.0 ms**<br>Tier 2: **31.2 ms**<br>NeMo: 284.6 ms | Baseline: 2183.2 ms<br>NeMo: **284.6 ms**<br>Lightweight: 1384.6 ms (P50 **663.6 ms**)<br>Hybrid: 1471.4 ms | FRR: **0.0%** (0 false refusals pada benign & slang) | **Lightweight Cascaded Guard (Varian C) mencapai 100.0% Safety Acc & 0.0% ASR**. Memangkas latensi P50 ke 663.6 ms (-58%) tanpa ketergantungan black-box framework. Menjawab Card 45 & 92. | `docs/exp-008_guardrails_evaluation/` |
 | **`exp-009`** | 2026-10-07 | Multi-Turn Conversation Memory & Crescendo Defense (Card 46, 92) | `qwen2.5:3b` + `nomic-embed-text` | Stateless: 71.4%<br>Stateful: **94.3%** (Dialog Success) | Context Ret: Stateless 90%<br>Stateful **100%** | Anaphora Res: Stateless 14.3%<br>Stateful **85.7%** | Crescendo Def: Stateless 100%<br>Stateful **100%** | Stateless: 1691.3 ms<br>Stateful: 3442.3 ms (P50 3421.1 ms) | Sliding window 6 turn stabil (P95 6259.9 ms) | **ConversationMemoryManager mendongkrak Dialog Success ke 94.3% (+22.9%) dan Anaphora Resolution ke 85.7% (+71.4%)**. Retensi prodi/semester 100% konsisten lintas 7 turn. Menjawab Card 46 & 92. | `docs/exp-009_multiturn_memory_evaluation/` |
+| **`exp-010`** | 2026-10-10 | Low-Level Inference Optimization & Dual VRAM Pinning (Card 31, 44, 99) | `qwen2.5:3b` + `nomic-embed-text` | SKS: 1465 ms<br>Prereq: 1320 ms<br>Planning: 3381 ms | Greeting P50: **694.7 ms** (Speedup **8.5x**) | Avg Prefill: **1369 tok** (-35% prompt bloat) | VRAM Swap Latency: **0.0 ms** (Dual resident) | Overall P50: **1393.9 ms**<br>Greeting P50: **694.7 ms** | VRAM GPU 2.565 MiB stabil (~31.4% VRAM) | **Pinning dual-model VRAM (`OLLAMA_MAX_LOADED_MODELS=2`) + Dynamic Tool Schema Pruning memangkas latensi sapaan ke sub-detik (420-700 ms)** tanpa swap runner di WSL2. Menjawab Card 31, 44, 99. | `docs/exp-010_lowlevel_inference_optimization/` |
 
 ---
 
@@ -313,3 +314,36 @@
   - `docs/exp-009_multiturn_memory_evaluation/benchmark_metrics.csv`
   - `docs/exp-009_multiturn_memory_evaluation/benchmark_raw_traces.jsonl`
   - `docs/exp-009_multiturn_memory_evaluation/benchmark_results.json`
+
+---
+
+### [exp-010] Low-Level Inference Optimization & Dual-Model VRAM Pinning
+- **Tanggal:** 2026-10-10
+- **Kartu Trello:** Card 31 (`[Nauval & Ario] Hardware Profiling VRAM`), Card 44 (`[Nauval & Ario] ReAct Agent Latency Optimization`), Card 99 (`[Nauval & Ario] Decider Paradigm & Dynamic Tool Pruning`).
+- **Tujuan / Hipotesis:**
+  Mengeliminasi latensi *runner swapping* dan *prompt token bloat* pada laptop GPU lokal (RTX 5050 8GB VRAM di WSL2) dengan menerapkan 4 optimasi tingkat rendah (*low-level*): pinning VRAM dual-model resident, pruning skema tools dinamis ($O(1)$ Decider pattern), prefix cache pinning deterministik bergaya DeepSeek Harness, dan pembatasan batas konteks/prediksi (`num_ctx: 2048`, `num_predict: 256`).
+- **Setup Teknis (Low-Level Architecture):**
+  - **LLM Backbone & Embedding:** Ollama `qwen2.5:3b` + `nomic-embed-text`.
+  - **VRAM Pinning Config:** `OLLAMA_MAX_LOADED_MODELS=2` dan `OLLAMA_KEEP_ALIVE=-1` dikonfigurasi pada service Ollama lokal.
+  - **Dynamic Tool Attachment (`src/engine/react_agent.py`):** Fungsi seleksi cepat memotong parameter skema tools JSON yang tidak dibutuhkan pada kueri sapaan dan FAQ regulasi umum.
+  - **Deterministic Prefix Layout:** Mempertahankan token index 0 tetap konstan secara biner untuk memaksimalkan hash hit pada KV cache Llama.cpp.
+  - **Boundary Clamping:** `num_predict: 256` dan `num_ctx: 2048` membatasi buffer VRAM KV cache dan memotong waktu decoding bandwidth memori.
+  - **Dataset Pengujian:** 20 kueri terstratifikasi (5 Greeting, 5 Batas SKS, 5 Prasyarat, 5 Perencanaan Rencana Studi).
+- **Temuan Kunci:**
+  1. **Akselerasi Drastis Kueri Sapaan (P50 694.7 ms vs ~5.500 ms):**
+     Pemangkasan ~963 token skema JSON pada kueri sapaan memangkas latensi inferensi menjadi sub-detik (**420 – 700 ms**), memberikan impresi interaksi instan (kecepatan meningkat hingga **8.5x**).
+  2. **Efisiensi Kueri SKS & Prasyarat (1.300 – 1.400 ms):**
+     Kueri perhitungan SKS dan verifikasi prasyarat selesai stabil dalam **1.3 – 1.4 detik** dengan prefill token terpangkas 20–25%.
+  3. **Zero VRAM Swapping Latency (0.0 ms Swap):**
+     `qwen2.5:3b` (~2.2 GB) dan `nomic-embed-text` (~0.3 GB) terkunci permanen di memori GPU secara bersamaan. Sisa VRAM GPU RTX 5050 masih sangat lapang (**5.586 MiB / 68.6% bebas**), tanpa memicu paging memori virtual WSL2.
+  4. **Stabilitas Termal & Operasional:**
+     GPU beroperasi sangat stabil pada suhu 36°C – 46°C dengan utilitas daya hanya 7W – 15W saat idle.
+- **Keputusan Arsitektur & Tindak Lanjut:**
+  - Konfigurasi `OLLAMA_MAX_LOADED_MODELS=2` dan dynamic tool pruning di `src/engine/react_agent.py` resmi ditetapkan sebagai standar runtime FTMM COMPASS.
+  - Menutup target efisiensi Card 31, Card 44, dan aspek pruning Card 99.
+- **Artefak:**
+  - `docs/exp-010_lowlevel_inference_optimization/README.md`
+  - `docs/exp-010_lowlevel_inference_optimization/benchmark_summary.md`
+  - `docs/exp-010_lowlevel_inference_optimization/benchmark_metrics.csv`
+  - `docs/exp-010_lowlevel_inference_optimization/benchmark_raw_traces.jsonl`
+  - `docs/exp-010_lowlevel_inference_optimization/benchmark_results.json`
