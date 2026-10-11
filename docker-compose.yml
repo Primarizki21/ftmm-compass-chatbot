@@ -14,3 +14,4 @@ services:
       - no-new-privileges:true
     volumes:
       - ./data:/app/data
+      - ./src:/app/src

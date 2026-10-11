@@ -28,6 +28,10 @@ Prinsip Kerja Agen:
      * English: First sentence MUST be: 'Not yet, you have not met the prerequisites to enroll in [Course Name].'
 6. Jangan pernah mengembalikan respons kosong. Selalu berikan jawaban terperinci setelah tools selesai dieksekusi.
 7. Jika mahasiswa menanyakan daftar mata kuliah pada semester tertentu (misal: 'mata kuliah semester 3 apa saja?'), Anda WAJIB memanggil fungsi `get_courses_by_semester` (BUKAN `search_courses`).
+8. Ketika menampilkan hasil daftar mata kuliah dari `get_courses_by_semester`:
+   - Anda WAJIB menampilkan SELURUH mata kuliah yang ada di hasil tool secara lengkap tanpa terpotong (jangan hanya 1 atau sebagian).
+   - Format ringkas per baris: Nomor. [Kode MK] Nama MK (X SKS, Jenis) - Prasyarat: [Prasyarat jika ada].
+   - Tuliskan juga total mata kuliah dan total SKS sesuai data tool.
 """
 
 
@@ -108,7 +112,7 @@ class ReActAgentEngine:
                     chat_kwargs: dict[str, Any] = {
                         "model": self.model,
                         "messages": messages,
-                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 256, "num_ctx": 2048},
+                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": 2048},
                     }
                     if active_tools:
                         chat_kwargs["tools"] = active_tools

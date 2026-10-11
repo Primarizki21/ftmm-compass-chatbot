@@ -16,7 +16,12 @@ from src.knowledge.cag_store import get_cag_system_prompt
 from src.knowledge.retriever import get_course_retriever
 from src.engine.router import get_router, RoutingMode, RoutingDecision
 from src.engine.base import EngineResult
-
+from src.engine.tools.academic_tools import (
+    get_courses_by_semester,
+    normalize_program_studi,
+    extract_semester_from_text,
+)
+from src.engine.decider import SEMESTER_COURSE_FAST_PATH_REGEX
 DEFAULT_MODEL = "qwen2.5:3b"
 
 GUARDRAIL_REFUSAL_MESSAGE = (
@@ -110,18 +115,44 @@ class HybridRAGCAGEngine:
             if student_profile and not prodi_filter:
                 prodi_filter = student_profile.get("program_studi")
 
-            retrieval_results = self.retriever.retrieve(query, top_k=self.top_k, prodi_filter=prodi_filter)
-            retrieval_latency_ms = (time.perf_counter() - t_ret_start) * 1000.0
-            
-            chunks = [r["chunk"] for r in retrieval_results]
-            context_str = "\n\n---\n\n".join(chunks) if chunks else "Tidak ada silabus spesifik yang ditemukan."
+            sem_detected = extract_semester_from_text(query)
+            prodi_detected = normalize_program_studi(query)
+            if prodi_detected == query:
+                prodi_detected = prodi_filter or "Teknologi Sains Data"
 
-            system_prompt = (
-                f"{self.cag_base_prompt}\n\n"
-                "## PERAN SAAT INI (RAG ROUTE):\n"
-                "Gunakan potongan silabus mata kuliah resmi FTMM yang ditemukan di bawah ini untuk menjawab pertanyaan mahasiswa.\n\n"
-                f"[POTONGAN SILABUS HASIL RETRIEVAL]:\n{context_str}"
-            )
+            if SEMESTER_COURSE_FAST_PATH_REGEX.search(query) and sem_detected is not None:
+                course_data = get_courses_by_semester(program_studi=prodi_detected, semester=sem_detected)
+                retrieval_latency_ms = (time.perf_counter() - t_ret_start) * 1000.0
+                course_lines = [
+                    f"{i}. [{c['kode_mk']}] {c['nama_mk']} ({c['sks']} SKS, {c['jenis']}) - Prasyarat: {', '.join(c['prasyarat']) if c['prasyarat'] else 'Tidak ada'}"
+                    for i, c in enumerate(course_data.get("courses", []), start=1)
+                ]
+                context_str = (
+                    f"Program Studi: {course_data.get('program_studi')}\n"
+                    f"Semester: {sem_detected}\n"
+                    f"Total Mata Kuliah: {course_data.get('total_courses')}\n"
+                    f"Total SKS: {course_data.get('total_sks')}\n\n"
+                    f"Daftar Mata Kuliah:\n" + "\n".join(course_lines)
+                )
+                chunks = [f"Daftar Kurikulum Semester {sem_detected} {course_data.get('program_studi')} ({course_data.get('total_courses')} MK)"]
+                system_prompt = (
+                    f"{self.cag_base_prompt}\n\n"
+                    "## PERAN SAAT INI (SEMESTER COURSE DISCOVERY ROUTE):\n"
+                    "Gunakan data resmi kurikulum FTMM di bawah ini untuk menjawab pertanyaan mahasiswa.\n"
+                    "Anda WAJIB menampilkan SELURUH mata kuliah yang ada di daftar tanpa terpotong.\n\n"
+                    f"[DATA KURIKULUM RESMI]:\n{context_str}"
+                )
+            else:
+                retrieval_results = self.retriever.retrieve(query, top_k=self.top_k, prodi_filter=prodi_filter)
+                retrieval_latency_ms = (time.perf_counter() - t_ret_start) * 1000.0
+                chunks = [r["chunk"] for r in retrieval_results]
+                context_str = "\n\n---\n\n".join(chunks) if chunks else "Tidak ada silabus spesifik yang ditemukan."
+                system_prompt = (
+                    f"{self.cag_base_prompt}\n\n"
+                    "## PERAN SAAT INI (RAG ROUTE):\n"
+                    "Gunakan potongan silabus mata kuliah resmi FTMM yang ditemukan di bawah ini untuk menjawab pertanyaan mahasiswa.\n\n"
+                    f"[POTONGAN SILABUS HASIL RETRIEVAL]:\n{context_str}"
+                )
 
             messages = [{"role": "system", "content": system_prompt}]
             if history:
@@ -132,7 +163,7 @@ class HybridRAGCAGEngine:
             resp = ollama.chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.2, "top_p": 0.9}
+                options={"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": 2048}
             )
             generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
             total_latency_ms = (time.perf_counter() - t0) * 1000.0
