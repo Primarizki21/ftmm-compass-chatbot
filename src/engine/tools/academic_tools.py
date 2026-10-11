@@ -399,3 +399,117 @@ def generate_degree_plan(
         },
         "plan": plan
     }
+
+PRODI_CANONICAL_MAP: dict[str, str] = {
+    "tsd": "Teknologi Sains Data",
+    "sains data": "Teknologi Sains Data",
+    "teknologi sains data": "Teknologi Sains Data",
+    "data science": "Teknologi Sains Data",
+    "trkb": "Teknik Robotika dan Kecerdasan Buatan",
+    "robotika": "Teknik Robotika dan Kecerdasan Buatan",
+    "robotik": "Teknik Robotika dan Kecerdasan Buatan",
+    "robotics": "Teknik Robotika dan Kecerdasan Buatan",
+    "teknik robotika": "Teknik Robotika dan Kecerdasan Buatan",
+    "teknik robotika dan kecerdasan buatan": "Teknik Robotika dan Kecerdasan Buatan",
+    "rn": "S1 Rekayasa Nanoteknologi",
+    "nano": "S1 Rekayasa Nanoteknologi",
+    "nanoteknologi": "S1 Rekayasa Nanoteknologi",
+    "nanotek": "S1 Rekayasa Nanoteknologi",
+    "rekayasa nanoteknologi": "S1 Rekayasa Nanoteknologi",
+    "s1 rekayasa nanoteknologi": "S1 Rekayasa Nanoteknologi",
+    "ti": "Teknik Industri",
+    "industri": "Teknik Industri",
+    "industrial": "Teknik Industri",
+    "teknik industri": "Teknik Industri",
+    "te": "Teknik Elektro",
+    "elektro": "Teknik Elektro",
+    "electrical": "Teknik Elektro",
+    "teknik elektro": "Teknik Elektro",
+}
+
+
+def normalize_program_studi(raw: str) -> str:
+    cleaned = str(raw or "").lower().strip()
+    if cleaned in PRODI_CANONICAL_MAP:
+        return PRODI_CANONICAL_MAP[cleaned]
+    for alias in sorted(PRODI_CANONICAL_MAP.keys(), key=len, reverse=True):
+        if re.search(rf"\b{re.escape(alias)}\b", cleaned):
+            return PRODI_CANONICAL_MAP[alias]
+    return raw
+
+
+def extract_semester_from_text(text: str) -> int | None:
+    match = re.search(
+        r"(?:semester|smt|sem)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b",
+        str(text or ""),
+        re.IGNORECASE,
+    )
+    if match:
+        raw_val = match.group(1).lower()
+        roman_map = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7, "viii": 8}
+        if raw_val in roman_map:
+            return roman_map[raw_val]
+        try:
+            return int(raw_val)
+        except ValueError:
+            pass
+    return None
+
+
+def get_courses_by_semester(
+    program_studi: str,
+    semester: int,
+    jenis: str | None = None,
+) -> dict[str, Any]:
+    """
+    Mengambil daftar lengkap seluruh mata kuliah pada semester tertentu untuk program studi spesifik secara deterministik in-memory.
+    """
+    canonical_prodi = normalize_program_studi(program_studi)
+    try:
+        sem_int = int(semester)
+    except (ValueError, TypeError):
+        sem_int = 1
+
+    if sem_int < 1 or sem_int > 8:
+        return {
+            "error": f"Semester {sem_int} di luar rentang kurikulum resmi FTMM (semester 1-8).",
+            "program_studi": canonical_prodi,
+            "semester": sem_int,
+            "total_courses": 0,
+            "total_sks": 0,
+            "courses": [],
+        }
+
+    catalog = _get_catalog()
+    filtered: list[dict[str, Any]] = []
+    for c in catalog:
+        c_prodi = c.get("program_studi", "")
+        if c_prodi != canonical_prodi:
+            continue
+        if int(c.get("semester", 0)) != sem_int:
+            continue
+        if jenis:
+            j_clean = jenis.lower().strip()
+            c_jenis = str(c.get("jenis", "")).lower()
+            if "wajib" in j_clean and "wajib" not in c_jenis:
+                continue
+            if "pilih" in j_clean and ("pilih" not in c_jenis and "peminatan" not in c_jenis):
+                continue
+            if j_clean not in c_jenis and "wajib" not in j_clean and "pilih" not in j_clean:
+                continue
+        filtered.append({
+            "kode_mk": c["kode_mk"],
+            "nama_mk": c["nama_mk"],
+            "sks": int(c.get("sks", 0)),
+            "jenis": c.get("jenis", "wajib"),
+            "prasyarat": c.get("prasyarat", []),
+        })
+
+    total_sks = sum(c["sks"] for c in filtered)
+    return {
+        "program_studi": canonical_prodi,
+        "semester": sem_int,
+        "total_courses": len(filtered),
+        "total_sks": total_sks,
+        "courses": filtered,
+    }

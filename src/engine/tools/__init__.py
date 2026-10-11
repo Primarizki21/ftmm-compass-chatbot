@@ -4,6 +4,7 @@ from src.engine.tools.academic_tools import (
     validate_prerequisites_dag,
     calculate_sks_limit,
     generate_degree_plan,
+    get_courses_by_semester,
 )
 
 # Tool Schemas for native Ollama function-calling (OpenAI tool format)
@@ -12,7 +13,7 @@ ACADEMIC_TOOL_DEFINITIONS = [
         "type": "function",
         "function": {
             "name": "search_courses",
-            "description": "Mencari silabus dan data mata kuliah FTMM berdasarkan kesamaan kata kunci atau arti semantik.",
+            "description": "Mencari silabus dan data mata kuliah FTMM berdasarkan topik/kata kunci spesifik (untuk daftar lengkap mata kuliah per semester, gunakan get_courses_by_semester).",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -110,6 +111,31 @@ ACADEMIC_TOOL_DEFINITIONS = [
                 "required": ["current_semester"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_courses_by_semester",
+            "description": "Mengambil daftar lengkap seluruh mata kuliah untuk program studi dan semester tertentu di FTMM secara deterministik (100% akurat tanpa batas top_k).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "program_studi": {
+                        "type": "string",
+                        "description": "Program studi di FTMM (misal: 'TSD', 'TRKB', 'RN', 'TI', 'TE', 'Teknologi Sains Data', dll)."
+                    },
+                    "semester": {
+                        "type": "integer",
+                        "description": "Semester akademik yang dicari (1-8)."
+                    },
+                    "jenis": {
+                        "type": "string",
+                        "description": "Filter jenis mata kuliah opsional ('wajib', 'pilihan', atau kosongkan untuk semua)."
+                    }
+                },
+                "required": ["program_studi", "semester"]
+            }
+        }
     }
 ]
 
@@ -118,4 +144,5 @@ TOOL_REGISTRY: dict[str, Any] = {
     "validate_prerequisites_dag": validate_prerequisites_dag,
     "calculate_sks_limit": calculate_sks_limit,
     "generate_degree_plan": generate_degree_plan,
+    "get_courses_by_semester": get_courses_by_semester,
 }

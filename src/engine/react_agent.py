@@ -3,8 +3,9 @@ import time
 from typing import Any
 import ollama
 from src.engine.base import EngineResult
-from src.engine.decider import System1Decider
+from src.engine.decider import System1Decider, SEMESTER_COURSE_FAST_PATH_REGEX
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
+from src.engine.tools.academic_tools import normalize_program_studi, extract_semester_from_text
 DEFAULT_MODEL = "qwen2.5:3b"
 
 REACT_SYSTEM_PROMPT = """Anda adalah Compass AI, agen penasihat akademik resmi Fakultas Teknologi Maju dan Multidisiplin (FTMM) Universitas Airlangga.
@@ -26,6 +27,7 @@ Prinsip Kerja Agen:
      * Bahasa Indonesia: Kalimat pertama WAJIB: 'Belum bisa, Anda belum memenuhi prasyarat untuk mengambil [Nama Mata Kuliah].'
      * English: First sentence MUST be: 'Not yet, you have not met the prerequisites to enroll in [Course Name].'
 6. Jangan pernah mengembalikan respons kosong. Selalu berikan jawaban terperinci setelah tools selesai dieksekusi.
+7. Jika mahasiswa menanyakan daftar mata kuliah pada semester tertentu (misal: 'mata kuliah semester 3 apa saja?'), Anda WAJIB memanggil fungsi `get_courses_by_semester` (BUKAN `search_courses`).
 """
 
 
@@ -125,6 +127,16 @@ class ReActAgentEngine:
             total_completion_tokens += c_tokens
             msg = resp.message
             tool_calls = getattr(msg, "tool_calls", None)
+            if not tool_calls and step_count == 1 and not tools_executed and SEMESTER_COURSE_FAST_PATH_REGEX.search(query):
+                detected_p = normalize_program_studi(query)
+                detected_s = extract_semester_from_text(query)
+                if detected_p != query and detected_s is not None:
+                    class _Fn:
+                        name = "get_courses_by_semester"
+                        arguments = {"program_studi": detected_p, "semester": detected_s}
+                    class _TC:
+                        function = _Fn()
+                    tool_calls = [_TC()]
 
             # Case A: Model outputs tool calls -> execute tools
             if tool_calls:
@@ -155,6 +167,18 @@ class ReActAgentEngine:
                             if "passed_courses" not in args or not args.get("passed_courses"):
                                 args["passed_courses"] = student_profile.get("riwayat_matkul_lulus", [])
 
+                    if fn_name == "get_courses_by_semester":
+                        prodi_from_q = normalize_program_studi(query)
+                        if prodi_from_q != query:
+                            args["program_studi"] = prodi_from_q
+                        elif not args.get("program_studi") and student_profile and student_profile.get("program_studi"):
+                            args["program_studi"] = student_profile.get("program_studi")
+
+                        sem_from_q = extract_semester_from_text(query)
+                        if sem_from_q is not None:
+                            args["semester"] = sem_from_q
+                        elif not args.get("semester") and student_profile and student_profile.get("semester_saat_ini"):
+                            args["semester"] = student_profile.get("semester_saat_ini")
                     t_tool_start = time.perf_counter()
                     if fn_name in TOOL_REGISTRY:
                         tool_fn = TOOL_REGISTRY[fn_name]

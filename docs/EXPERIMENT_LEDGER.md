@@ -21,6 +21,7 @@
 | **`exp-009`** | 2026-10-07 | Multi-Turn Conversation Memory & Crescendo Defense (Card 46, 92) | `qwen2.5:3b` + `nomic-embed-text` | Stateless: 71.4%<br>Stateful: **94.3%** (Dialog Success) | Context Ret: Stateless 90%<br>Stateful **100%** | Anaphora Res: Stateless 14.3%<br>Stateful **85.7%** | Crescendo Def: Stateless 100%<br>Stateful **100%** | Stateless: 1691.3 ms<br>Stateful: 3442.3 ms (P50 3421.1 ms) | Sliding window 6 turn stabil (P95 6259.9 ms) | **ConversationMemoryManager mendongkrak Dialog Success ke 94.3% (+22.9%) dan Anaphora Resolution ke 85.7% (+71.4%)**. Retensi prodi/semester 100% konsisten lintas 7 turn. Menjawab Card 46 & 92. | `docs/exp-009_multiturn_memory_evaluation/` |
 | **`exp-010`** | 2026-10-10 | Low-Level Inference Optimization & Dual VRAM Pinning (Card 31, 44, 99) | `qwen2.5:3b` + `nomic-embed-text` | SKS: 1465 ms<br>Prereq: 1320 ms<br>Planning: 3381 ms | Greeting P50: **694.7 ms** (Speedup **8.5x**) | Avg Prefill: **1369 tok** (-35% prompt bloat) | VRAM Swap Latency: **0.0 ms** (Dual resident) | Overall P50: **1393.9 ms**<br>Greeting P50: **694.7 ms** | VRAM GPU 2.565 MiB stabil (~31.4% VRAM) | **Pinning dual-model VRAM (`OLLAMA_MAX_LOADED_MODELS=2`) + Dynamic Tool Schema Pruning memangkas latensi sapaan ke sub-detik (420-700 ms)** tanpa swap runner di WSL2. Menjawab Card 31, 44, 99. | `docs/exp-010_lowlevel_inference_optimization/` |
 | **`exp-011`** | 2026-10-10 | System-1 Decision Classifier & Tool Pruning (Card 99) | `nomic-embed-text` (768d Centroids) | Overall: **96.7%** (58/60)<br>Formal: **95%**<br>Slang: **95%**<br>Implicit: **100%** | Decision Latency: **34.0 ms** (Avg)<br>P50: **33.2 ms**<br>P95: **48.7 ms** | Token Saved: **~675 tok/query** (-70% tool schema) | Matrix Dot-Product: **0.05 ms** (BLAS $O(1)$) | Total Turn Latency: 34.0 ms (vs 800 ms LLM router) | Zero VRAM footprint (Reuse resident embedding) | **System-1 Decider mencapai 96.7% akurasi (100% pada kueri implisit) dengan latensi hanya 33.2 ms (P50)**. Memangkas ~675 token skema per giliran tanpa beban LLM generatif. Menjawab Card 99. | `docs/exp-011_system1_decider_evaluation/` |
+| **`exp-014`** | 2026-10-11 | Deterministic Semester Course Discovery (Card 44, 51) | In-memory catalog + System-1 Regex Fast-Path + `qwen2.5:3b` | Tool Selection: **100.0%** (40/40) | Param Extraction: **100.0%** | Recall: **100.0%**<br>Precision: **100.0%** | Tool Exec: **0.165 ms** (in-memory) | Turn E2E: **2972.0 ms** | Exact Set-Match: **100.0%** (40/40) | **Zero-Hallucination Course Retrieval Tuntas**: Mengeliminasi bottleneck top_k=3 pada semantik search. Menghasilkan recall 100% dan precision 100% pada 40 kombinasi (5 prodi x 8 semester). | `docs/exp-014_deterministic_semester_courses/` |
 
 ---
 
@@ -380,3 +381,29 @@
   - `docs/exp-011_system1_decider_evaluation/benchmark_metrics.csv`
   - `docs/exp-011_system1_decider_evaluation/benchmark_raw_traces.jsonl`
   - `docs/exp-011_system1_decider_evaluation/benchmark_results.json`
+
+---
+
+### [exp-014] Deterministic Semester Course Discovery & Zero-Hallucination Retrieval
+- **Tanggal:** 2026-10-11
+- **Kartu Trello:** Card 44 (`[Nauval & Ario] Implementasi ReAct Agent dengan tool-calling`) & Card 51 (`[Hans] Implementasi UI Module/Course Finder`).
+- **Tujuan / Hipotesis:**
+  Mengatasi kegagalan semantik search `search_courses` (top_k=3) yang memotong 80% daftar mata kuliah per semester, dengan mengimplementasikan tool deterministik in-memory `get_courses_by_semester` berkecepatan sub-milidetik (< 0.2 ms) yang menjamin zero hallucination (Recall 100%, Precision 100%, Exact Match 100%).
+- **Setup Teknis (Low-Level Architecture):**
+  - **Tool Implementation:** `get_courses_by_semester(program_studi, semester, jenis)` langsung menyaring in-memory catalog (369 matkul FTMM).
+  - **Prodi Normalization:** `normalize_program_studi` memetakan seluruh variasi akronim (TSD, TRKB, RN, TI, TE) dan istilah slang/Inggris (Data Science, Robotics, Nanoteknologi) secara kanonik.
+  - **System-1 Decider Regex Fast-Path:** Memotong latensi klasifikasi kueri semester menjadi < 0.01 ms (sub-millisecond) dan meloloskan tool `get_courses_by_semester`.
+  - **Testbed Pengujian:** 40 kasus uji ground truth (5 prodi x 8 semester) dengan variasi bahasa formal, semi-formal, dan slang.
+- **Temuan Kunci:**
+  1. **100.0% Tool Selection Accuracy:** Agen ReAct dan System-1 Decider secara sempurna mengidentifikasi kebutuhan kueri daftar matkul per semester pada seluruh 40 skenario.
+  2. **100.0% Parameter Extraction Accuracy:** Ekstraksi program studi dan nomor semester berjalan tanpa cacat lintas 3 variasi gaya bahasa.
+  3. **100.0% Course Set-Match Recall & Precision:** Seluruh 40 semester mengembalikan himpunan kode mata kuliah, total mata kuliah, dan total SKS yang 100% identik dengan silabus resmi fakultas.
+  4. **Ekstrem Sub-Milidetik Latensi (0.165 ms):** Waktu eksekusi fungsi deterministik rata-rata hanya 0.165 ms (mengeliminasi overhead FAISS retrieval).
+- **Keputusan Arsitektur & Rekomendasi:**
+  - `get_courses_by_semester` resmi diadopsi sebagai backend eksekutor untuk pencarian kurikulum per semester di FTMM COMPASS.
+- **Artefak:**
+  - `docs/exp-014_deterministic_semester_courses/README.md`
+  - `docs/exp-014_deterministic_semester_courses/benchmark_summary.md`
+  - `docs/exp-014_deterministic_semester_courses/benchmark_metrics.csv`
+  - `docs/exp-014_deterministic_semester_courses/benchmark_raw_traces.jsonl`
+  - `docs/exp-014_deterministic_semester_courses/benchmark_results.json`

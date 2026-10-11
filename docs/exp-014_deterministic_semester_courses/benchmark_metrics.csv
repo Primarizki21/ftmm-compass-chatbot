@@ -1,0 +1,41 @@
+sample_id,prodi_code,canonical_prodi,semester,style,decider_tool_allowed,tool_selected,param_prodi_acc,param_sem_acc,param_extraction_acc,precision,recall,f1,set_exact_match,total_courses_match,total_sks_match,expected_total_courses,returned_total_courses,expected_total_sks,returned_total_sks,tool_exec_latency_ms,e2e_latency_ms
+SEM_001,TSD,Teknologi Sains Data,1,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,14,14,29,29,2.634,3396.84
+SEM_002,TSD,Teknologi Sains Data,2,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,8,8,18,18,0.051,3209.33
+SEM_003,TSD,Teknologi Sains Data,3,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,10,27,27,0.049,3206.78
+SEM_004,TSD,Teknologi Sains Data,4,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,10,31,31,0.055,3251.77
+SEM_005,TSD,Teknologi Sains Data,5,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,8,8,25,25,0.064,3104.41
+SEM_006,TSD,Teknologi Sains Data,6,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,14,14,52,52,0.141,3279.1
+SEM_007,TSD,Teknologi Sains Data,7,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,3,3,7,7,0.05,2754.36
+SEM_008,TSD,Teknologi Sains Data,8,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1,1,4,4,0.076,1693.5
+SEM_009,TRKB,Teknik Robotika dan Kecerdasan Buatan,1,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,14,14,29,29,0.068,3209.55
+SEM_010,TRKB,Teknik Robotika dan Kecerdasan Buatan,2,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,9,9,19,19,0.087,3217.16
+SEM_011,TRKB,Teknik Robotika dan Kecerdasan Buatan,3,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,9,9,22,22,0.157,3110.01
+SEM_012,TRKB,Teknik Robotika dan Kecerdasan Buatan,4,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,8,8,21,21,0.167,3114.55
+SEM_013,TRKB,Teknik Robotika dan Kecerdasan Buatan,5,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,9,9,24,24,0.058,2219.94
+SEM_014,TRKB,Teknik Robotika dan Kecerdasan Buatan,6,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,9,9,23,23,0.097,3189.97
+SEM_015,TRKB,Teknik Robotika dan Kecerdasan Buatan,7,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,10,27,27,0.052,3232.38
+SEM_016,TRKB,Teknik Robotika dan Kecerdasan Buatan,8,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,4,4,12,12,0.148,2327.41
+SEM_017,RN,S1 Rekayasa Nanoteknologi,1,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,16,16,29,29,0.175,3275.21
+SEM_018,RN,S1 Rekayasa Nanoteknologi,2,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,10,19,19,0.062,1377.31
+SEM_019,RN,S1 Rekayasa Nanoteknologi,3,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,11,11,23,23,0.177,3276.55
+SEM_020,RN,S1 Rekayasa Nanoteknologi,4,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,11,11,26,26,0.06,3237.32
+SEM_021,RN,S1 Rekayasa Nanoteknologi,5,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,11,11,27,27,0.101,3240.07
+SEM_022,RN,S1 Rekayasa Nanoteknologi,6,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,14,14,29,29,0.245,3324.67
+SEM_023,RN,S1 Rekayasa Nanoteknologi,7,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,5,5,13,13,0.083,3321.14
+SEM_024,RN,S1 Rekayasa Nanoteknologi,8,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1,1,6,6,0.192,1426.57
+SEM_025,TI,Teknik Industri,1,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,9,9,19,19,0.048,3115.92
+SEM_026,TI,Teknik Industri,2,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,9,9,19,19,0.047,3234.57
+SEM_027,TI,Teknik Industri,3,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,8,8,19,19,0.049,3132.75
+SEM_028,TI,Teknik Industri,4,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,7,7,18,18,0.15,3160.81
+SEM_029,TI,Teknik Industri,5,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,6,17,17,0.051,3099.49
+SEM_030,TI,Teknik Industri,6,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,6,16,16,0.149,3169.29
+SEM_031,TI,Teknik Industri,7,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,6,6,14,14,0.14,2858.75
+SEM_032,TI,Teknik Industri,8,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,3,3,10,10,0.061,2124.24
+SEM_033,TE,Teknik Elektro,1,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,15,15,32,32,0.055,3168.65
+SEM_034,TE,Teknik Elektro,2,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,11,11,23,23,0.089,3264.16
+SEM_035,TE,Teknik Elektro,3,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,10,20,20,0.078,3255.26
+SEM_036,TE,Teknik Elektro,4,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,10,10,24,24,0.051,3221.1
+SEM_037,TE,Teknik Elektro,5,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,17,17,42,42,0.172,3290.08
+SEM_038,TE,Teknik Elektro,6,semi-formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,13,13,36,36,0.052,3531.57
+SEM_039,TE,Teknik Elektro,7,slang,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,19,19,46,46,0.174,3305.64
+SEM_040,TE,Teknik Elektro,8,formal,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1,1,6,6,0.175,1953.39

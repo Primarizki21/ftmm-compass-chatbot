@@ -18,6 +18,7 @@ class Tier4ToolRail:
         "validate_prerequisites_dag",
         "calculate_sks_limit",
         "generate_degree_plan",
+        "get_courses_by_semester",
     }
 
     VALID_PRODI = {
@@ -108,5 +109,23 @@ class Tier4ToolRail:
                     sanitized_args={},
                     error="Parameter nama mata kuliah kosong.",
                 )
+
+        elif tool_name == "get_courses_by_semester":
+            sem = args.get("semester")
+            if sem is not None:
+                try:
+                    sem_val = int(sem)
+                    if sem_val < 1 or sem_val > 8:
+                        return ToolValidationResult(
+                            is_valid=False,
+                            sanitized_args={},
+                            error=f"Target semester {sem_val} di luar rentang kurikulum (1 - 8).",
+                        )
+                except (ValueError, TypeError):
+                    return ToolValidationResult(
+                        is_valid=False,
+                        sanitized_args={},
+                        error=f"Format semester tidak valid: {sem}",
+                    )
 
         return ToolValidationResult(is_valid=True, sanitized_args=args)

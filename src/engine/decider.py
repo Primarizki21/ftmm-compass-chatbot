@@ -1,5 +1,6 @@
 from enum import Enum
 from pathlib import Path
+import re
 import time
 from typing import Any, NamedTuple
 import numpy as np
@@ -25,14 +26,26 @@ CATEGORY_TOOL_NAMES: dict[DecisionCategory, list[str]] = {
     DecisionCategory.PREREQUISITE: ["validate_prerequisites_dag", "search_courses"],
     DecisionCategory.SKS_CALCULATION: ["calculate_sks_limit"],
     DecisionCategory.DEGREE_PLANNING: ["generate_degree_plan", "search_courses"],
-    DecisionCategory.COURSE_DISCOVERY: ["search_courses"],
+    DecisionCategory.COURSE_DISCOVERY: ["search_courses", "get_courses_by_semester"],
     DecisionCategory.FALLBACK_ALL: [
         "search_courses",
         "validate_prerequisites_dag",
         "calculate_sks_limit",
         "generate_degree_plan",
+        "get_courses_by_semester",
     ],
 }
+
+SEMESTER_COURSE_FAST_PATH_REGEX = re.compile(
+    r"(?:mata\s*kuliah|matkul|daftar\s*(?:mata\s*kuliah|matkul)|courses?|list\s*courses?)"
+    r".*?"
+    r"(?:semester|smt|sem)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b"
+    r"|"
+    r"(?:semester|smt|sem)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b"
+    r".*?"
+    r"(?:mata\s*kuliah|matkul|daftar\s*(?:mata\s*kuliah|matkul)|courses?|list\s*courses?)",
+    re.IGNORECASE,
+)
 
 PROTOTYPES: dict[DecisionCategory, list[str]] = {
     DecisionCategory.CHAT_ONLY: [
@@ -167,9 +180,26 @@ class System1Decider:
 
     def decide(self, query: str) -> DecisionResult:
         t0 = time.perf_counter()
+        if SEMESTER_COURSE_FAST_PATH_REGEX.search(query):
+            tool_names = CATEGORY_TOOL_NAMES[DecisionCategory.COURSE_DISCOVERY]
+            selected_tools = [
+                t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] in tool_names
+            ]
+            total_dt = (time.perf_counter() - t0) * 1000
+            return DecisionResult(
+                category=DecisionCategory.COURSE_DISCOVERY,
+                confidence=1.0,
+                selected_tools=selected_tools,
+                latency_ms=total_dt,
+                embedding_latency_ms=0.0,
+                scores={
+                    cat.value: (1.0 if cat == DecisionCategory.COURSE_DISCOVERY else 0.0)
+                    for cat in self.categories
+                },
+            )
+
         if not self._initialized:
             self.initialize()
-
         # 1. Embed query
         t_embed_start = time.perf_counter()
         resp = ollama.embed(model=self.embed_model, input=query)
