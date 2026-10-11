@@ -2,7 +2,7 @@
 FROM python:3.12-slim-bookworm AS builder
 
 # Copy UV binary directly from official image
-COPY --from=ghcr.io/astral-sh/uv:0.6.5 /uv /bin/uv
+COPY --from=ghcr.io/astral-sh/uv:0.13.0 /uv /bin/uv
 
 WORKDIR /app
 
