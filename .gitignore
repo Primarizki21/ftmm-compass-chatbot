@@ -51,8 +51,25 @@ agents.md
 CLAUDE.md
 .agents/
 
+
+# Local Developer Knowledge Graphs & Code Indexing (Transient / Bloat)
+.codegraph/
+graphify-out/
+
+# SQLite databases & local DB files
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.db
+
+# Logs and coverage
+*.log
+.coverage
+htmlcov/
 # IDE & OS
 .vscode/
 .idea/
 .DS_Store
 *.swp
+Thumbs.db

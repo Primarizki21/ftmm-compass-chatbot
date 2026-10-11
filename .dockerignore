@@ -3,6 +3,10 @@
 .gitignore
 .github
 
+# Developer Tooling & Knowledge Graphs
+.codegraph
+graphify-out
+
 # Virtual Environments & Build
 .venv
 env
