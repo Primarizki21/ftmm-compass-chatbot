@@ -5,20 +5,12 @@ services:
       dockerfile: Dockerfile
     container_name: ftmm-compass-chatbot
     restart: unless-stopped
-    ports:
-      - "${PORT:-8000}:8000"
+    network_mode: host
     env_file:
       - .env
     environment:
-      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
-    extra_hosts:
-      # Resolves host.docker.internal to the WSL2 host gateway on Linux
-      - "host.docker.internal:host-gateway"
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://127.0.0.1:11434}
     security_opt:
       - no-new-privileges:true
     volumes:
-      - chatbot_data:/app/data
-
-volumes:
-  chatbot_data:
-    name: ftmm_compass_chatbot_data
+      - ./data:/app/data
