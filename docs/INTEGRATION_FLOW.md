@@ -28,7 +28,7 @@ graph LR
 | **Tier 4: Relational DB** | PostgreSQL 16 (`schema_v2_1_rc1.sql`) | Darryl (Database) | Relasi prasyarat matkul (`course_prerequisites` DAG), paritas ganjil/genap, dan persistensi rencana studi. |
 
 
-### 1.1 Pipeline Internal AI Engine Microservice (Hasil Riset Exp-008 s.d. Exp-015)
+### 1.1 Pipeline Internal AI Engine Microservice (Hasil Riset Exp-008 s.d. Exp-017)
 
 AI Engine mengimplementasikan arsitektur *Cascaded Defense-in-Depth* dan *System-1 Decider*:
 
@@ -55,7 +55,7 @@ graph TD
 | **Tier 1 Security Filter** | `src/guardrails/tier1_filter.py` | Regex blocklist instan (0.0 ms) untuk cegah prompt injection & DAN jailbreak. | Tuntas (Exp-008, 0% ASR) |
 | **Tier 2 Semantic Gating** | `src/guardrails/tier2_semantic_gate.py` | FAISS Centroid Cosine Distance (<35 ms) mendeteksi kueri OOD tanpa beban LLM. | Tuntas (Exp-008, 100% OOD-R) |
 | **Memory Manager** | `src/engine/memory.py` | Sliding window 6 turn + persistensi profil mahasiswa & resolusi anafora (*itu, tersebut*). | Tuntas (Exp-009, 94.3% Success) |
-| **System-1 Decider** | `src/engine/decider.py` | BLAS Dot-product (34 ms) memangkas ~675 token skema JSON; multi-backend Ollama & EmbeddingGemma-2 + MRL truncation. | Tuntas (Exp-011 96.7% Acc, Exp-015 MRL 256d 95.0% Acc, Margin 0.0440) |
+| **System-1 Decider** | `src/engine/decider.py` | BLAS Dot-product (30-130 ms) memangkas ~675 token skema JSON; evaluasi 9 varian Ollama native (Nomic, Qwen3, BGE-M3) x 3 heads (Centroid, Logistic, k-NN). | Tuntas (Exp-011 96.7% Acc, Exp-015 95.0% Acc, Exp-017 Qwen3+kNN 100.0% Acc, Margin 0.3155, Nomic+Logistic 96.7% P50 30.5 ms) |
 | **ReAct Agent Engine** | `src/engine/react_agent.py` | Qwen2.5-3B VRAM Pinned (`OLLAMA_MAX_LOADED_MODELS=2`) + DeepSeek-style prefix cache. | Tuntas (Exp-010, P50 1.39s) |
 | **Tier 4 Argument Rail** | `src/guardrails/tier4_tool_rail.py` | Validasi batas legal semester (1–8) dan SKS (0–24) sebelum pemanggilan tool. | Tuntas (Exp-008) |
 ---
