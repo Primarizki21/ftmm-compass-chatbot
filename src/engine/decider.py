@@ -1,3 +1,5 @@
+import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from enum import Enum
 from pathlib import Path
 import re
@@ -5,11 +7,16 @@ import time
 from typing import Any, NamedTuple
 import numpy as np
 import ollama
+import torch
+torch.set_num_threads(4)
 
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS
 
 DEFAULT_EMBED_MODEL = "nomic-embed-text"
+DEFAULT_GEMMA2_MODEL = "google/embeddinggemma-2"
 CENTROIDS_PATH = Path("data/decider_centroids.npz")
+CENTROIDS_GEMMA2_PATH = Path("data/decider_centroids_gemma2.npz")
+_CACHED_GEMMA2_MODEL: Any = None
 
 
 class DecisionCategory(str, Enum):
@@ -125,22 +132,41 @@ class DecisionResult(NamedTuple):
     latency_ms: float
     embedding_latency_ms: float
     scores: dict[str, float]
+    margin: float = 0.0
 
 
 class System1Decider:
-    """System-1 Decision Classifier for Semantic Tool Schema Pruning (Card 99).
+    """System-1 Decision Classifier for Semantic Tool Schema Pruning (Card 99, Card 102).
 
     Uses L2-normalized embedding matrix dot-product against class centroids.
-    Executes in <30 ms (embedding time + 0.05 ms matrix dot product).
+    Supports both Ollama (nomic-embed-text) and SentenceTransformer (EmbeddingGemma-2)
+    with optional Matryoshka Representation Learning (MRL) dimension truncation in-memory.
     """
 
     def __init__(
         self,
         embed_model: str = DEFAULT_EMBED_MODEL,
+        backend: str | None = None,
+        centroids_path: Path | str | None = None,
+        mrl_dim: int | None = None,
         min_confidence_threshold: float = 0.40,
         margin_threshold: float = 0.02,
+        model_instance: Any = None,
     ):
         self.embed_model = embed_model
+        if backend is not None:
+            self.backend = backend.lower()
+        elif "gemma" in embed_model.lower():
+            self.backend = "gemma2"
+        else:
+            self.backend = "ollama"
+
+        if centroids_path is not None:
+            self.centroids_path = Path(centroids_path)
+        else:
+            self.centroids_path = CENTROIDS_GEMMA2_PATH if self.backend == "gemma2" else CENTROIDS_PATH
+
+        self.mrl_dim = mrl_dim
         self.min_confidence_threshold = min_confidence_threshold
         self.margin_threshold = margin_threshold
         self.categories = [
@@ -151,31 +177,82 @@ class System1Decider:
             DecisionCategory.COURSE_DISCOVERY,
         ]
         self.centroid_matrix: np.ndarray | None = None
+        self._raw_centroid_matrix: np.ndarray | None = None
         self._initialized = False
+        self._gemma_model = model_instance
+
+    def _get_gemma_model(self):
+        if self._gemma_model is not None:
+            return self._gemma_model
+        global _CACHED_GEMMA2_MODEL
+        if _CACHED_GEMMA2_MODEL is not None:
+            self._gemma_model = _CACHED_GEMMA2_MODEL
+            return self._gemma_model
+        from sentence_transformers import SentenceTransformer
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        _CACHED_GEMMA2_MODEL = SentenceTransformer(
+            self.embed_model if "gemma" in self.embed_model.lower() else DEFAULT_GEMMA2_MODEL,
+            model_kwargs={"torch_dtype": torch.bfloat16},
+            device=device,
+        )
+        self._gemma_model = _CACHED_GEMMA2_MODEL
+        return self._gemma_model
+
+    def _apply_mrl_truncation(self):
+        if self._raw_centroid_matrix is None:
+            return
+        if self.mrl_dim is not None and self.mrl_dim < self._raw_centroid_matrix.shape[1]:
+            truncated = self._raw_centroid_matrix[:, : self.mrl_dim].copy()
+            norms = np.linalg.norm(truncated, axis=1, keepdims=True)
+            self.centroid_matrix = truncated / np.maximum(norms, 1e-12)
+        else:
+            self.centroid_matrix = self._raw_centroid_matrix.copy()
+
+    def set_mrl_dim(self, mrl_dim: int | None):
+        """Dynamically update MRL dimension in-memory without re-reading centroids."""
+        self.mrl_dim = mrl_dim
+        self._apply_mrl_truncation()
 
     def initialize(self, force_recompute: bool = False):
         if self._initialized and not force_recompute:
             return
 
-        if CENTROIDS_PATH.exists() and not force_recompute:
-            data = np.load(CENTROIDS_PATH)
-            self.centroid_matrix = data["centroids"]
-            self._initialized = True
-            return
+        if self.centroids_path.exists() and not force_recompute:
+            data = np.load(self.centroids_path)
+            self._raw_centroid_matrix = np.array(data["centroids"], dtype=np.float32)
+        else:
+            centroids = []
+            if self.backend == "gemma2":
+                model = self._get_gemma_model()
+                with torch.inference_mode():
+                    for cat in self.categories:
+                        texts = PROTOTYPES[cat]
+                        vecs = model.encode(
+                            texts,
+                            prompt_name="Classification",
+                            normalize_embeddings=True,
+                            show_progress_bar=False,
+                        )
+                        vecs = np.array(vecs, dtype=np.float32)
+                        vecs = vecs / np.linalg.norm(vecs, axis=1, keepdims=True)
+                        centroid = np.mean(vecs, axis=0)
+                        centroid = centroid / np.linalg.norm(centroid)
+                        centroids.append(centroid)
+            else:
+                for cat in self.categories:
+                    texts = PROTOTYPES[cat]
+                    resp = ollama.embed(model=self.embed_model, input=texts)
+                    vecs = np.array(resp["embeddings"], dtype=np.float32)
+                    vecs = vecs / np.linalg.norm(vecs, axis=1, keepdims=True)
+                    centroid = np.mean(vecs, axis=0)
+                    centroid = centroid / np.linalg.norm(centroid)
+                    centroids.append(centroid)
 
-        centroids = []
-        for cat in self.categories:
-            texts = PROTOTYPES[cat]
-            resp = ollama.embed(model=self.embed_model, input=texts)
-            vecs = np.array(resp["embeddings"], dtype=np.float32)
-            vecs = vecs / np.linalg.norm(vecs, axis=1, keepdims=True)
-            centroid = np.mean(vecs, axis=0)
-            centroid = centroid / np.linalg.norm(centroid)
-            centroids.append(centroid)
+            self._raw_centroid_matrix = np.array(centroids, dtype=np.float32)
+            self.centroids_path.parent.mkdir(parents=True, exist_ok=True)
+            np.savez_compressed(self.centroids_path, centroids=self._raw_centroid_matrix)
 
-        self.centroid_matrix = np.array(centroids, dtype=np.float32)
-        CENTROIDS_PATH.parent.mkdir(parents=True, exist_ok=True)
-        np.savez_compressed(CENTROIDS_PATH, centroids=self.centroid_matrix)
+        self._apply_mrl_truncation()
         self._initialized = True
 
     def decide(self, query: str) -> DecisionResult:
@@ -196,14 +273,31 @@ class System1Decider:
                     cat.value: (1.0 if cat == DecisionCategory.COURSE_DISCOVERY else 0.0)
                     for cat in self.categories
                 },
+                margin=1.0,
             )
 
         if not self._initialized:
             self.initialize()
+
         # 1. Embed query
         t_embed_start = time.perf_counter()
-        resp = ollama.embed(model=self.embed_model, input=query)
-        q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
+        if self.backend == "gemma2":
+            model = self._get_gemma_model()
+            with torch.inference_mode():
+                vec = model.encode(
+                    query,
+                    prompt_name="Classification",
+                    normalize_embeddings=True,
+                    show_progress_bar=False,
+                )
+            q_vec = np.array(vec, dtype=np.float32)
+        else:
+            resp = ollama.embed(model=self.embed_model, input=query)
+            q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
+
+        if self.mrl_dim is not None and self.mrl_dim < len(q_vec):
+            q_vec = q_vec[: self.mrl_dim]
+
         norm = np.linalg.norm(q_vec)
         if norm > 0:
             q_vec = q_vec / norm
@@ -217,6 +311,7 @@ class System1Decider:
         sorted_indices = np.argsort(similarities)[::-1]
         best_score = float(similarities[best_idx])
         second_score = float(similarities[sorted_indices[1]])
+        margin = float(best_score - second_score)
 
         # 3. Ambiguity Guard
         is_ambiguous = (best_score < self.min_confidence_threshold) or (
@@ -246,4 +341,5 @@ class System1Decider:
             latency_ms=total_dt,
             embedding_latency_ms=t_embed_ms,
             scores=score_dict,
+            margin=margin,
         )

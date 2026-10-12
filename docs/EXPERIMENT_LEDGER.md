@@ -22,6 +22,8 @@
 | **`exp-010`** | 2026-10-10 | Low-Level Inference Optimization & Dual VRAM Pinning (Card 31, 44, 99) | `qwen2.5:3b` + `nomic-embed-text` | SKS: 1465 ms<br>Prereq: 1320 ms<br>Planning: 3381 ms | Greeting P50: **694.7 ms** (Speedup **8.5x**) | Avg Prefill: **1369 tok** (-35% prompt bloat) | VRAM Swap Latency: **0.0 ms** (Dual resident) | Overall P50: **1393.9 ms**<br>Greeting P50: **694.7 ms** | VRAM GPU 2.565 MiB stabil (~31.4% VRAM) | **Pinning dual-model VRAM (`OLLAMA_MAX_LOADED_MODELS=2`) + Dynamic Tool Schema Pruning memangkas latensi sapaan ke sub-detik (420-700 ms)** tanpa swap runner di WSL2. Menjawab Card 31, 44, 99. | `docs/exp-010_lowlevel_inference_optimization/` |
 | **`exp-011`** | 2026-10-10 | System-1 Decision Classifier & Tool Pruning (Card 99) | `nomic-embed-text` (768d Centroids) | Overall: **96.7%** (58/60)<br>Formal: **95%**<br>Slang: **95%**<br>Implicit: **100%** | Decision Latency: **34.0 ms** (Avg)<br>P50: **33.2 ms**<br>P95: **48.7 ms** | Token Saved: **~675 tok/query** (-70% tool schema) | Matrix Dot-Product: **0.05 ms** (BLAS $O(1)$) | Total Turn Latency: 34.0 ms (vs 800 ms LLM router) | Zero VRAM footprint (Reuse resident embedding) | **System-1 Decider mencapai 96.7% akurasi (100% pada kueri implisit) dengan latensi hanya 33.2 ms (P50)**. Memangkas ~675 token skema per giliran tanpa beban LLM generatif. Menjawab Card 99. | `docs/exp-011_system1_decider_evaluation/` |
 | **`exp-014`** | 2026-10-11 | Deterministic Semester Course Discovery (Card 44, 51) | In-memory catalog + System-1 Regex Fast-Path + `qwen2.5:3b` | Tool Selection: **100.0%** (40/40) | Param Extraction: **100.0%** | Recall: **100.0%**<br>Precision: **100.0%** | Tool Exec: **0.165 ms** (in-memory) | Turn E2E: **2972.0 ms** | Exact Set-Match: **100.0%** (40/40) | **Zero-Hallucination Course Retrieval Tuntas**: Mengeliminasi bottleneck top_k=3 pada semantik search. Menghasilkan recall 100% dan precision 100% pada 40 kombinasi (5 prodi x 8 semester). | `docs/exp-014_deterministic_semester_courses/` |
+| **`exp-012`** | 2026-10-12 | Benchmark Evaluasi EmbeddingGemma-2 vs nomic-embed-text (Card 102) | `google/embeddinggemma-2` (270M) vs `nomic-embed-text` | Nomic Dense: Hit@3 76.0%, Hit@1 50.4%<br>Gemma2 Dense: **Hit@3 85.3%**, **Hit@1 80.6%**<br>Gemma2 RRF: **Hit@3 86.8%**, **Hit@5 88.4%** | Nomic: MRR 0.6306, NDCG@5 0.5924<br>Gemma2: **MRR 0.8345**, **NDCG@5 0.8137** | Slang Nomic: Hit@3 61.9%, MRR 0.5675<br>Slang Gemma2: **Hit@3 76.2%**, **MRR 0.7238** | Nomic: 34.8 ms<br>Gemma2 768d: 96.3 ms (P50 63.9 ms)<br>Gemma2 256d: **70.1 ms** (P50 56.0 ms) | Nomic: 34.8 ms<br>Gemma2 768d: 96.3 ms<br>Gemma2 RRF: 92.2 ms | MRL 256d: Hit@3 84.5% (Hemat 66.7% storage)<br>VRAM Peak: 2415.0 MiB (~29.6% VRAM) | **EmbeddingGemma-2 (270M) mendominasi telak**: Hit@1 naik +30.2% (ke 80.6%), MRR naik +32.3% (ke 0.8345), dan kueri slang melonjak +14.3% (ke 76.2%). MRL 256d mempertahankan Hit@3 84.5% dengan 66.7% penghematan memori. Menjawab Card 102. | `docs/exp-012_embeddinggemma2_benchmark/` |
+| **`exp-015`** | 2026-10-12 | Evaluasi System-1 Decider dengan Centroid EmbeddingGemma-2 & MRL Truncation (Card 109) | `google/embeddinggemma-2` (270M) vs `nomic-embed-text` | Nomic: **96.7%** (58/60)<br>Gemma2 768d: 93.3%<br>Gemma2 512d: **95.0%**<br>Gemma2 256d: **95.0%**<br>Gemma2 128d: 93.3% | Margin (Top1-Top2):<br>Nomic: 0.0401<br>Gemma2 768d: 0.0427<br>Gemma2 256d: **0.0440** | Slang Acc: Nomic 95.0%, Gemma 256d **95.0%**<br>Implicit Acc: **100.0%** (All) | Matrix Dot-Product: **0.05 ms** (BLAS $O(1)$) | Nomic: **35.2 ms** (Ollama)<br>Gemma2: 97.0 ms (PyTorch CUDA) | MRL 256d: Hemat 66.7% dimensi tanpa degradasi akurasi | **Ketahanan MRL Terbukti (256d Optimal)**: Gemma-2 256d & 512d mencapai akurasi 95.0% dengan separabilitas margin lebih tinggi (0.0440 vs 0.0401) dibanding Nomic. Namun unifikasi runtime router terganjal limitasi GGUF Ollama (`unknown model architecture: 'gemma-embedding2'`), sehingga Nomic (Ollama) direkomendasikan tetap aktif untuk router sub-35ms hingga support runtime C++ tersedia. | `docs/exp-015_decider_gemma2_evaluation/` |
 
 ---
 
@@ -407,3 +409,72 @@
   - `docs/exp-014_deterministic_semester_courses/benchmark_metrics.csv`
   - `docs/exp-014_deterministic_semester_courses/benchmark_raw_traces.jsonl`
   - `docs/exp-014_deterministic_semester_courses/benchmark_results.json`
+
+---
+
+### [exp-012] Benchmark Evaluasi EmbeddingGemma-2 (270M) vs nomic-embed-text pada Dense & Hybrid RRF
+- **Tanggal:** 2026-10-12
+- **Kartu Trello:** Card 102 (`[Ario & Nauval] Benchmark Evaluasi EmbeddingGemma-2 (270M) vs nomic-embed-text pada Dense & Hybrid RRF`).
+- **Tujuan / Hipotesis:**
+  Menguji apakah arsitektur *EmbeddingGemma 2* (varian teks 270M dari Google DeepMind, native 768 dimensi, MRL, asymmetric task prefix) mampu melampaui baseline `nomic-embed-text` pada retrieval katalog 369 mata kuliah FTMM UNAIR tanpa membebani VRAM GPU NVIDIA RTX 5050 (8GB) dan tanpa memicu disk paging WSL2.
+- **Setup Teknis (Low-Level Architecture):**
+  - **Target Model:** `google/embeddinggemma-2` (270M parameter backbone teks, bfloat16 compute) vs `nomic-embed-text:latest` (Ollama 768d).
+  - **Asymmetric Prompting:** Kueri menggunakan `task: search result | query: {query}`, korpus menggunakan `title: none | text: {content}`.
+  - **Indeks FAISS:** Cosine Similarity `IndexFlatIP` (768d) terisolasi di `data/faiss/ftmm_courses_gemma2.faiss`.
+  - **Matryoshka MRL Ablasi:** In-memory vector truncation (768d vs 512d vs 256d vs 128d) dengan L2-renormalization.
+  - **Dataset Pengujian:** 129 ground truth queries terstratifikasi (108 Formal Subset A + 21 Slang/Informal Subset B lintas 5 prodi FTMM).
+- **Temuan Kunci:**
+  1. **Dominasi Signifikan Dense Retrieval Murni:**
+     - Hit@1 melonjak dari **50.4% ke 80.6% (+30.2%)**.
+     - Hit@3 meningkat dari **76.0% ke 85.3% (+9.3%)**.
+     - MRR melonjak dari **0.6306 ke 0.8345 (+32.3%)**.
+     - NDCG@5 melonjak dari **0.5924 ke 0.8137 (+37.4%)**.
+  2. **Resolusi Kueri Slang Mahasiswa Unggul:**
+     - Pada kueri informal/singkatan mahasiswa FTMM, Hit@3 melesat dari **61.9% ke 76.2% (+14.3%)** dan MRR dari **0.5675 ke 0.7238 (+27.5%)**.
+  3. **Ketahanan Matryoshka Representation Learning (MRL):**
+     - Truncation ke **512d** mempertahankan Hit@3 identik (**85.3%**) dengan penghematan storage indeks 33.3%.
+     - Truncation ke **256d** mempertahankan Hit@3 di **84.5%** (hanya drop 0.8%) dengan penghematan storage indeks **66.7%**.
+  4. **Stabilitas Hardware & I/O Protocol:**
+     - VRAM peak stabil pada **2.415,0 MiB** (~29.6% kapasitas GPU 8 GB), menyisakan >5.7 GB VRAM headroom.
+     - Eksekusi bebas dari disk thrashing dan swapping WSL2 berkat `TOKENIZERS_PARALLELISM=false` dan in-memory vector batching.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - `EmbeddingGemma-2 (768d)` resmi direkomendasikan sebagai arsitektur embedding utama (primary retriever backbone) menggantikan `nomic-embed-text`.
+  - Skema **Hybrid RRF (BM25 + EmbeddingGemma-2)** mencapai akurasi tertinggi di sistem: **Hit@3 86.8% dan Hit@5 88.4%**.
+- **Artefak:**
+  - `docs/exp-012_embeddinggemma2_benchmark/README.md`
+  - `docs/exp-012_embeddinggemma2_benchmark/benchmark_summary.md`
+  - `docs/exp-012_embeddinggemma2_benchmark/benchmark_metrics.csv`
+  - `docs/exp-012_embeddinggemma2_benchmark/benchmark_raw_traces.jsonl`
+
+---
+
+### [exp-015] Evaluasi System-1 Decider dengan Centroid EmbeddingGemma-2 & MRL Truncation
+- **Tanggal:** 2026-10-12
+- **Kartu Trello:** Card 109 (`[Nauval & Ario] Evaluasi System-1 Decider dengan Centroid EmbeddingGemma-2 & MRL Truncation (Exp-015)`).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi kelayakan unifikasi embedding backbone (*Single-Model Residency*) pada System-1 Decision Classifier dengan menggantikan centroid `nomic-embed-text` menggunakan `google/embeddinggemma-2` (270M), serta menguji *task instruction prefix* (`task: classification`) dan *Matryoshka Representation Learning* (768d, 512d, 256d, 128d) terhadap akurasi tool routing dan separabilitas margin.
+- **Setup Teknis (Low-Level Architecture):**
+  - **Target Model:** `google/embeddinggemma-2` (270M parameter, bfloat16, `prompt_name='Classification'`) vs `nomic-embed-text:latest` (Ollama 768d).
+  - **Centroid Matrix Representation ($\mathbf{C} \in \mathbb{R}^{5 \times 768}$):** 5 kelas keputusan (`CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`) disimpan di `data/decider_centroids_gemma2.npz`.
+  - **Matryoshka MRL Ablasi In-Memory:** Truncation dimensi vektor $\mathbf{v}_{d} = \mathbf{v}[:d] / \|\mathbf{v}[:d]\|_2$ pada dimensi 768d, 512d, 256d, dan 128d dieksekusi secara in-memory BLAS tanpa intermediate disk thrashing.
+  - **Testbed Pengujian:** 60 kueri terstratifikasi (20 Formal Baku, 20 Slang Mahasiswa, 20 Implisit Ambigu) mencakup 5 kategori akademik FTMM.
+- **Temuan Kunci:**
+  1. **Separabilitas Margin Unggul pada EmbeddingGemma-2**:
+     - Margin rata-rata (selisih skor Top-1 vs Top-2) pada `Gemma-2 (768d)` mencapai **0.0427** dan meningkat pada `Gemma-2 (256d)` hingga **0.0440**, lebih tajam dibandingkan `nomic-embed-text` (**0.0401**).
+     - Task instruction prefix `task: classification | query: {query}` berhasil memproyeksikan intensi akademik ke kluster semantik yang sangat terpisah.
+  2. **Ketahanan MRL (Matryoshka Representation Learning) Sempurna di 256d & 512d**:
+     - Pemangkasan dimensi ke **512d** dan **256d** justru menghasilkan akurasi yang lebih tinggi (**95.0%**) dibandingkan 768d penuh (**93.3%**).
+     - Pada dimensi **256d**, penghematan memori vektor mencapai **66.7%** tanpa kehilangan akurasi sama sekali (Akurasi Slang 95.0%, Implisit 100.0%).
+  3. **Trade-off Latensi & Model Residency (Hardware Reality)**:
+     - `nomic-embed-text` via daemon Ollama unggul mutlak dalam latensi keputusan per-kueri (**35.2 ms** vs **97.0 ms** pada PyTorch CUDA).
+     - Daemon Ollama saat ini belum mendukung arsitektur `gemma-embedding2` pada runtime GGUF (`unknown model architecture: 'gemma-embedding2'`), sehingga pemuatan Gemma-2 saat ini wajib melewati PyTorch dengan overhead Host RAM CPU ~1.8 GB.
+     - Karena itu, unifikasi total ke Gemma-2 di System-1 Router membutuhkan dukungan runtime C++ GGUF Ollama agar tidak membebani Host RAM CPU Python.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - **Rekomendasi Router Aktif**: Untuk mode produksi real-time berlatensi sub-35ms, pertahankan `nomic-embed-text` (Ollama) sebagai backend aktif router, ATAU gunakan `EmbeddingGemma-2 (256d)` saat server Ollama telah mengintegrasikan arsitektur gemma-embedding2 GGUF.
+  - **Rekomendasi MRL**: Jika EmbeddingGemma-2 diadopsi untuk intent decider, dimensi **256d** adalah sweet spot optimal (Akurasi 95.0%, Margin 0.0440, Hemat 66.7% memori).
+- **Artefak:**
+  - `docs/exp-015_decider_gemma2_evaluation/README.md`
+  - `docs/exp-015_decider_gemma2_evaluation/benchmark_summary.md`
+  - `docs/exp-015_decider_gemma2_evaluation/benchmark_metrics.csv`
+  - `docs/exp-015_decider_gemma2_evaluation/benchmark_results.json`
+  - `docs/exp-015_decider_gemma2_evaluation/benchmark_raw_traces.jsonl`

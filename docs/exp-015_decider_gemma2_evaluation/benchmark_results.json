@@ -1,0 +1,302 @@
+{
+  "Nomic Baseline (768d)": {
+    "variant": "Nomic Baseline (768d)",
+    "dim": 768,
+    "total_queries": 60,
+    "correct_queries": 58,
+    "overall_accuracy": 96.66666666666667,
+    "avg_margin": 0.04009685516357422,
+    "min_margin": 0.0026689767837524414,
+    "max_margin": 0.08675181865692139,
+    "avg_latency_ms": 36.46677171666681,
+    "p50_latency_ms": 35.24481799999535,
+    "p95_latency_ms": 46.849932199970084,
+    "style_metrics": {
+      "Formal": {
+        "total": 20,
+        "correct": 19,
+        "accuracy": 95.0,
+        "avg_margin": 0.039350152015686035
+      },
+      "Slang": {
+        "total": 20,
+        "correct": 19,
+        "accuracy": 95.0,
+        "avg_margin": 0.03806994557380676
+      },
+      "Implicit": {
+        "total": 20,
+        "correct": 20,
+        "accuracy": 100.0,
+        "avg_margin": 0.04287046790122986
+      }
+    },
+    "category_metrics": {
+      "CHAT_ONLY": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "PREREQUISITE": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      },
+      "SKS_CALCULATION": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "DEGREE_PLANNING": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "COURSE_DISCOVERY": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      }
+    }
+  },
+  "Gemma-2 (768d)": {
+    "variant": "Gemma-2 (768d)",
+    "dim": 768,
+    "total_queries": 60,
+    "correct_queries": 56,
+    "overall_accuracy": 93.33333333333333,
+    "avg_margin": 0.04266242484251658,
+    "min_margin": 0.0007128715515136719,
+    "max_margin": 0.1173558235168457,
+    "avg_latency_ms": 96.96974449999513,
+    "p50_latency_ms": 96.96974449999516,
+    "p95_latency_ms": 96.96974449999516,
+    "style_metrics": {
+      "Formal": {
+        "total": 20,
+        "correct": 18,
+        "accuracy": 90.0,
+        "avg_margin": 0.048099538683891295
+      },
+      "Slang": {
+        "total": 20,
+        "correct": 18,
+        "accuracy": 90.0,
+        "avg_margin": 0.038865065574645995
+      },
+      "Implicit": {
+        "total": 20,
+        "correct": 20,
+        "accuracy": 100.0,
+        "avg_margin": 0.04102267026901245
+      }
+    },
+    "category_metrics": {
+      "CHAT_ONLY": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      },
+      "PREREQUISITE": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      },
+      "SKS_CALCULATION": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "DEGREE_PLANNING": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "COURSE_DISCOVERY": {
+        "total": 12,
+        "correct": 10,
+        "accuracy": 83.33333333333334
+      }
+    }
+  },
+  "Gemma-2 (512d)": {
+    "variant": "Gemma-2 (512d)",
+    "dim": 512,
+    "total_queries": 60,
+    "correct_queries": 57,
+    "overall_accuracy": 95.0,
+    "avg_margin": 0.042180366317431134,
+    "min_margin": 0.00034606456756591797,
+    "max_margin": 0.11708569526672363,
+    "avg_latency_ms": 96.96974449999513,
+    "p50_latency_ms": 96.96974449999516,
+    "p95_latency_ms": 96.96974449999516,
+    "style_metrics": {
+      "Formal": {
+        "total": 20,
+        "correct": 19,
+        "accuracy": 95.0,
+        "avg_margin": 0.04787628948688507
+      },
+      "Slang": {
+        "total": 20,
+        "correct": 18,
+        "accuracy": 90.0,
+        "avg_margin": 0.03823328316211701
+      },
+      "Implicit": {
+        "total": 20,
+        "correct": 20,
+        "accuracy": 100.0,
+        "avg_margin": 0.04043152630329132
+      }
+    },
+    "category_metrics": {
+      "CHAT_ONLY": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "PREREQUISITE": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      },
+      "SKS_CALCULATION": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "DEGREE_PLANNING": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "COURSE_DISCOVERY": {
+        "total": 12,
+        "correct": 10,
+        "accuracy": 83.33333333333334
+      }
+    }
+  },
+  "Gemma-2 (256d)": {
+    "variant": "Gemma-2 (256d)",
+    "dim": 256,
+    "total_queries": 60,
+    "correct_queries": 57,
+    "overall_accuracy": 95.0,
+    "avg_margin": 0.04403962294260661,
+    "min_margin": 0.0005369186401367188,
+    "max_margin": 0.12525641918182373,
+    "avg_latency_ms": 96.96974449999513,
+    "p50_latency_ms": 96.96974449999516,
+    "p95_latency_ms": 96.96974449999516,
+    "style_metrics": {
+      "Formal": {
+        "total": 20,
+        "correct": 18,
+        "accuracy": 90.0,
+        "avg_margin": 0.04973696172237396
+      },
+      "Slang": {
+        "total": 20,
+        "correct": 19,
+        "accuracy": 95.0,
+        "avg_margin": 0.039731374382972716
+      },
+      "Implicit": {
+        "total": 20,
+        "correct": 20,
+        "accuracy": 100.0,
+        "avg_margin": 0.04265053272247314
+      }
+    },
+    "category_metrics": {
+      "CHAT_ONLY": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      },
+      "PREREQUISITE": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      },
+      "SKS_CALCULATION": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "DEGREE_PLANNING": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "COURSE_DISCOVERY": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      }
+    }
+  },
+  "Gemma-2 (128d)": {
+    "variant": "Gemma-2 (128d)",
+    "dim": 128,
+    "total_queries": 60,
+    "correct_queries": 56,
+    "overall_accuracy": 93.33333333333333,
+    "avg_margin": 0.028535649180412292,
+    "min_margin": 0.00010991096496582031,
+    "max_margin": 0.09084641933441162,
+    "avg_latency_ms": 96.96974449999513,
+    "p50_latency_ms": 96.96974449999516,
+    "p95_latency_ms": 96.96974449999516,
+    "style_metrics": {
+      "Formal": {
+        "total": 20,
+        "correct": 18,
+        "accuracy": 90.0,
+        "avg_margin": 0.031209081411361694
+      },
+      "Slang": {
+        "total": 20,
+        "correct": 18,
+        "accuracy": 90.0,
+        "avg_margin": 0.024770736694335938
+      },
+      "Implicit": {
+        "total": 20,
+        "correct": 20,
+        "accuracy": 100.0,
+        "avg_margin": 0.029627129435539246
+      }
+    },
+    "category_metrics": {
+      "CHAT_ONLY": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      },
+      "PREREQUISITE": {
+        "total": 12,
+        "correct": 10,
+        "accuracy": 83.33333333333334
+      },
+      "SKS_CALCULATION": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "DEGREE_PLANNING": {
+        "total": 12,
+        "correct": 12,
+        "accuracy": 100.0
+      },
+      "COURSE_DISCOVERY": {
+        "total": 12,
+        "correct": 11,
+        "accuracy": 91.66666666666666
+      }
+    }
+  }
+}
