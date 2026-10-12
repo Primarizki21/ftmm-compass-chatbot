@@ -18,7 +18,7 @@ from src.api.schemas import (
     DegreePlanPayload,
     DegreePlanSummary,
 )
-from src.engine import HybridRAGCAGEngine, RoutingMode
+from src.engine import UnifiedChatEngine, RoutingMode
 
 app = FastAPI(
     title="FTMM COMPASS Chatbot Backend",
@@ -35,7 +35,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-engine = HybridRAGCAGEngine()
+engine = UnifiedChatEngine()
 
 
 def _get_ollama_base_url() -> str:
@@ -60,7 +60,7 @@ async def health_check():
 
     return HealthResponse(
         status="healthy",
-        service="FTMM COMPASS Chatbot Backend (Hybrid RAG-CAG)",
+        service="FTMM COMPASS Chatbot Backend (Unified ReAct & Guardrails)",
         ollama_online=ollama_online,
         default_model=engine.model,
     )
@@ -75,33 +75,55 @@ async def chat(request: ChatRequest):
     msg = request.message.strip()
     profile = request.student_profile
     history = [{"role": m.role, "content": m.content} for m in request.history]
+    if not request.history:
+        engine.memory.clear_session("client_session")
 
-    # Slot-filling update dari NLU Router entity extractor
-    entities = engine.router.extractor.extract(msg)
-    if entities.program_studi:
-        profile.program_studi = entities.program_studi
-    if entities.semester:
-        profile.semester_saat_ini = entities.semester
-    if entities.career_interests:
-        for ci in entities.career_interests:
-            if ci not in profile.minat_fokus:
-                profile.minat_fokus.append(ci.title())
 
-    # Eksekusi engine Hybrid RAG-CAG
+    # Eksekusi engine terpadu UnifiedChatEngine
     result = engine.generate_answer(
         query=msg,
         history=history,
         student_profile=profile.model_dump(),
+        session_id="client_session",
     )
     latency_ms = (time.perf_counter() - t0) * 1000.0
 
-    action_type = "GENERAL"
-    plan_payload: DegreePlanPayload | None = None
+    # Sync updated profile dari metadata engine
+    updated_prof_data = result.metadata.get("updated_profile", {})
+    if updated_prof_data:
+        if updated_prof_data.get("program_studi"):
+            profile.program_studi = updated_prof_data["program_studi"]
+        if updated_prof_data.get("semester_saat_ini"):
+            profile.semester_saat_ini = updated_prof_data["semester_saat_ini"]
+        if updated_prof_data.get("minat_fokus"):
+            profile.minat_fokus = updated_prof_data["minat_fokus"]
+        if updated_prof_data.get("riwayat_matkul_lulus"):
+            profile.riwayat_matkul_lulus = updated_prof_data["riwayat_matkul_lulus"]
 
-    # Jika mode adalah HYBRID (Study Planning) dan mahasiswa memiliki profil dasar
-    if result.routing_mode == "HYBRID" and profile.program_studi and profile.semester_saat_ini:
+    # Action type & Plan Payload
+    action_type = result.metadata.get("action_type", "GENERAL")
+    plan_raw = result.metadata.get("plan_payload")
+    plan_payload: DegreePlanPayload | None = None
+    if plan_raw and isinstance(plan_raw, dict) and "summary" in plan_raw and "plan" in plan_raw:
+        try:
+            summary_raw = plan_raw.get("summary", {})
+            plan_payload = DegreePlanPayload(
+                action="APPLY_DEGREE_PLAN",
+                summary=DegreePlanSummary(
+                    program_studi=summary_raw.get("program_studi", profile.program_studi or "Teknologi Sains Data"),
+                    current_semester=summary_raw.get("current_semester", profile.semester_saat_ini or 1),
+                    target_semester=summary_raw.get("target_semester", profile.target_kelulusan_semester),
+                    total_credits=summary_raw.get("total_credits", 144),
+                    focus_tracks=summary_raw.get("focus_tracks", profile.minat_fokus or ["Umum"]),
+                    note=summary_raw.get("note", "Rencana studi rekomendasi AI berdasarkan kurikulum resmi dan prasyarat FTMM."),
+                ),
+                plan={int(k): v for k, v in plan_raw.get("plan", {}).items()},
+            )
+            action_type = "PLAN_GENERATED"
+        except Exception:
+            plan_payload = None
+    elif result.routing_mode == "HYBRID" and profile.program_studi and profile.semester_saat_ini:
         action_type = "PLAN_GENERATED"
-        # Buat dummy/valid structured plan payload agar frontend bisa merender tombol Apply Plan
         plan_payload = DegreePlanPayload(
             action="APPLY_DEGREE_PLAN",
             summary=DegreePlanSummary(
@@ -110,16 +132,10 @@ async def chat(request: ChatRequest):
                 target_semester=profile.target_kelulusan_semester,
                 total_credits=144,
                 focus_tracks=profile.minat_fokus or ["Umum"],
-                note="Rencana studi rekomendasi AI berdasarkan kurikulum resmi dan prasyarat FTMM."
+                note="Rencana studi rekomendasi AI berdasarkan kurikulum resmi dan prasyarat FTMM.",
             ),
-            plan={
-                profile.semester_saat_ini + 1: [
-                    {"code": r.get("course", {}).get("kode_mk", "MK"), "name": r.get("course", {}).get("nama_mk", "Mata Kuliah Pilihan"), "credits": 3}
-                    for r in engine.retriever.retrieve(msg, top_k=4, prodi_filter=profile.program_studi)
-                ]
-            }
+            plan={profile.semester_saat_ini + 1: []},
         )
-
     return ChatResponse(
         reply=result.answer,
         updated_profile=profile,

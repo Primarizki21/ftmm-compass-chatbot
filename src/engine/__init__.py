@@ -12,6 +12,7 @@ from .router import (
 from .pure_rag import PureRAGEngine
 from .pure_cag import PureCAGEngine
 from .hybrid_rag_cag import HybridRAGCAGEngine
+from .unified_engine import UnifiedChatEngine
 
 __all__ = [
     "EngineResult",
@@ -26,4 +27,5 @@ __all__ = [
     "PureRAGEngine",
     "PureCAGEngine",
     "HybridRAGCAGEngine",
+    "UnifiedChatEngine",
 ]

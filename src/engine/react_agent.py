@@ -10,7 +10,6 @@ DEFAULT_MODEL = "qwen2.5:3b"
 
 REACT_SYSTEM_PROMPT = """Anda adalah Compass AI, agen penasihat akademik resmi Fakultas Teknologi Maju dan Multidisiplin (FTMM) Universitas Airlangga.
 Tugas Anda adalah membantu mahasiswa dengan informasi akurat, perencanaan studi, dan pengecekan regulasi akademik.
-
 Prinsip Kerja Agen:
 1. Gunakan tools deterministik yang tersedia untuk mencari mata kuliah, memvalidasi prasyarat, menghitung batas SKS, dan menyusun rencana studi.
 2. Dilarang menebak atau berhalusinasi tentang prasyarat atau batas SKS; selalu rujuk data hasil tools.
@@ -112,7 +111,7 @@ class ReActAgentEngine:
                     chat_kwargs: dict[str, Any] = {
                         "model": self.model,
                         "messages": messages,
-                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": 2048},
+                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": 4096},
                     }
                     if active_tools:
                         chat_kwargs["tools"] = active_tools

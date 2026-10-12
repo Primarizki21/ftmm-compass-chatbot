@@ -51,8 +51,9 @@ class SessionState:
         }
     )
     last_discussed_course: str | None = None
+    last_discussed_semester: int | None = None
+    last_intent_topic: str | None = None
     cumulative_risk: float = 0.0
-
 
 class ConversationMemoryManager:
     """Manages multi-turn conversation history, sliding window buffers,
@@ -171,6 +172,32 @@ class ConversationMemoryManager:
 
         return resolved
 
+    def contextualize_query(self, session_id: str, query: str) -> str:
+        session = self.get_or_create_session(session_id)
+        resolved = self.resolve_anaphora(session_id, query)
+
+        active_sem = session.last_discussed_semester or session.student_profile.get("semester_saat_ini")
+        
+        prodi_mentioned = re.search(
+            r"\b(teknologi\s+sains\s+data|sains\s+data|data\s+science|tsd|ds|"
+            r"teknik\s+robotika(\s+dan\s+kecerdasan\s+buatan)?|robotika|trkb|robotics|"
+            r"rekayasa\s+nanoteknologi|nanoteknologi|rn|nano|"
+            r"teknik\s+industri|industrial|ti|"
+            r"teknik\s+elektro|electrical|te)\b",
+            resolved,
+            re.IGNORECASE,
+        )
+        has_semester = SEMESTER_PATTERN.search(resolved)
+
+        if prodi_mentioned and not has_semester and active_sem is not None:
+            if session.last_intent_topic == "SEMESTER_COURSES":
+                if not re.search(r"\b(mata\s*kuliah|matkul|courses?)\b", resolved, re.IGNORECASE):
+                    resolved = f"{resolved} (mata kuliah semester {active_sem})"
+                else:
+                    resolved = f"{resolved} semester {active_sem}"
+
+        return resolved
+
     def add_turn(
         self,
         session_id: str,
@@ -194,6 +221,19 @@ class ConversationMemoryManager:
             curr_passed.update(prof_updates["riwayat_matkul_lulus"])
             session.student_profile["riwayat_matkul_lulus"] = sorted(list(curr_passed))
 
+
+        # Update semester & topic tracking
+        if "semester_saat_ini" in prof_updates:
+            session.last_discussed_semester = prof_updates["semester_saat_ini"]
+
+        if re.search(r"(?:mata\s*kuliah|matkul|courses?).*?(?:semester|sem|smt)\s*[1-8]|(?:semester|sem|smt)\s*[1-8].*?(?:mata\s*kuliah|matkul)", user_message, re.IGNORECASE):
+            session.last_intent_topic = "SEMESTER_COURSES"
+        elif re.search(r"\b(prasyarat|syarat)\b", user_message, re.IGNORECASE):
+            session.last_intent_topic = "PREREQUISITE"
+        elif re.search(r"\b(batas\s+sks|jatah\s+sks|beban\s+sks|maksimal\s+sks)\b", user_message, re.IGNORECASE):
+            session.last_intent_topic = "SKS_LIMIT"
+        elif re.search(r"\b(rencana\s+studi|degree\s+plan|plotting\s+krs)\b", user_message, re.IGNORECASE):
+            session.last_intent_topic = "DEGREE_PLAN"
         # Update entity tracking
         entity = self.extract_course_entity(user_message)
         if entity:
