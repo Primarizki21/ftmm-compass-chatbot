@@ -17,8 +17,11 @@ from src.api.schemas import (
     StudentProfile,
     DegreePlanPayload,
     DegreePlanSummary,
+    CourseItem,
+    CourseCatalogResponse,
 )
 from src.engine import UnifiedChatEngine, RoutingMode
+from src.engine.tools.academic_tools import _get_catalog, normalize_program_studi
 
 app = FastAPI(
     title="FTMM COMPASS Chatbot Backend",
@@ -63,6 +66,72 @@ async def health_check():
         service="FTMM COMPASS Chatbot Backend (Unified ReAct & Guardrails)",
         ollama_online=ollama_online,
         default_model=engine.model,
+    )
+
+
+def _normalize_course_type(jenis: str | None) -> str:
+    j = str(jenis or "").lower()
+    if not j or "wajib" in j:
+        return "Wajib"
+    if "pilih" in j or "pengayaan" in j or "peminatan" in j:
+        return "Pilihan"
+    return "Wajib"
+
+
+@app.get("/api/courses", response_model=CourseCatalogResponse)
+async def list_courses(program_studi: str | None = None, semester: int | None = None):
+    """
+    Mengambil katalog mata kuliah resmi FTMM dari SSOT kurikulum.
+    Dapat difilter berdasarkan nama program studi dan semester.
+    """
+    raw_catalog = _get_catalog()
+    programs_set = sorted(list(set(c.get("program_studi", "") for c in raw_catalog if c.get("program_studi"))))
+
+    canonical_prodi = normalize_program_studi(program_studi) if program_studi else None
+
+    courses: list[CourseItem] = []
+    for c in raw_catalog:
+        c_prodi = c.get("program_studi", "")
+        if canonical_prodi:
+            if c_prodi != canonical_prodi and normalize_program_studi(c_prodi) != canonical_prodi:
+                continue
+
+        c_sem = int(c.get("semester", 1) or 1)
+        if semester is not None and c_sem != semester:
+            continue
+
+        c_id = str(c.get("id") or c.get("kode_mk") or "")
+        code = str(c.get("kode_mk") or "").strip() or None
+        name = str(c.get("nama_mk") or "").strip()
+        if not name:
+            continue
+
+        credits = int(c.get("sks", 3) or 3)
+        c_type = _normalize_course_type(c.get("jenis"))
+        parity = "odd" if c_sem % 2 == 1 else "even"
+        desc = str(c.get("deskripsi") or "").strip()
+        prereqs = [str(p) for p in c.get("prasyarat", []) if p]
+
+        courses.append(
+            CourseItem(
+                id=c_id,
+                code=code,
+                name=name,
+                credits=credits,
+                semester=c_sem,
+                type=c_type,  # type: ignore[arg-type]
+                parity=parity,  # type: ignore[arg-type]
+                desc=desc,
+                program=c_prodi,
+                prerequisites=prereqs,
+            )
+        )
+
+    return CourseCatalogResponse(
+        program_studi=canonical_prodi,
+        total_courses=len(courses),
+        programs=programs_set,
+        courses=courses,
     )
 
 

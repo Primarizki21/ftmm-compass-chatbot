@@ -83,3 +83,21 @@ def test_chat_guarded_query():
     data = response.json()
     assert data["routing_mode"] == "GUARDED"
     assert "FTMM" in data["reply"]
+
+
+def test_courses_catalog_endpoint():
+    response = client.get("/api/courses?program_studi=Teknologi%20Sains%20Data")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["program_studi"] == "Teknologi Sains Data"
+    assert data["total_courses"] > 0
+    assert len(data["courses"]) == data["total_courses"]
+    assert len(data["programs"]) == 5
+    assert data["courses"][0]["name"]
+
+    # Test all programs
+    response_all = client.get("/api/courses")
+    assert response_all.status_code == 200
+    data_all = response_all.json()
+    assert data_all["total_courses"] == 369
+    assert len(data_all["programs"]) == 5

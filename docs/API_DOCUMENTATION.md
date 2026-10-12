@@ -177,9 +177,60 @@ Endpoint dialog utama yang menerima pesan pengguna, riwayat percakapan (*sliding
 | `routing_mode` | `string` | Mode penalaran yang dieksekusi: `"CAG"`, `"RAG"`, `"HYBRID"`, atau `"GUARDED"`. |
 | `latency_ms` | `float` | Total latensi pemrosesan turn dalam milidetik ($ms$). |
 
+
 ---
 
-## 4. Spesifikasi Kontrak `DegreePlanPayload`
+## 4. Endpoint Katalog Kurikulum Resmi
+
+### `GET /api/courses`
+Endpoint Single Source of Truth (SSOT) yang menyajikan katalog kurikulum resmi 5 program studi FTMM (369 mata kuliah). Digunakan oleh frontend `ftmm-compass-ui` (halaman `CourseFinder` dan `DegreePlanner`) dan API Gateway.
+
+#### Request
+- **Method:** `GET`
+- **Path:** `/api/courses`
+- **Query Parameters:**
+  - `program_studi` *(opsional, string)*: Filter nama program studi resmi FTMM (e.g. `"Teknologi Sains Data"`, `"Teknik Elektro"`, `"Teknik Industri"`, `"Teknik Robotika dan Kecerdasan Buatan"`, `"S1 Rekayasa Nanoteknologi"`). Mendukung alias santai seperti `"tsd"`, `"robotika"`, `"elektro"`.
+  - `semester` *(opsional, integer)*: Filter nomor semester target (`1` s.d. `8`).
+
+#### Response (`200 OK`)
+```json
+{
+  "program_studi": "Teknologi Sains Data",
+  "total_courses": 68,
+  "programs": [
+    "S1 Rekayasa Nanoteknologi",
+    "Teknik Elektro",
+    "Teknik Industri",
+    "Teknik Robotika dan Kecerdasan Buatan",
+    "Teknologi Sains Data"
+  ],
+  "courses": [
+    {
+      "id": "MK-001",
+      "code": "AGI101",
+      "name": "Agama Islam I",
+      "credits": 2,
+      "semester": 1,
+      "type": "Wajib",
+      "parity": "odd",
+      "desc": "Silabus ringkas mata kuliah...",
+      "program": "Teknologi Sains Data",
+      "prerequisites": []
+    }
+  ]
+}
+```
+
+#### Deskripsi Field Response
+| Field | Tipe Data | Keterangan |
+|---|---|---|
+| `program_studi` | `string \| null` | Nama program studi kanonik yang difilter, atau `null` jika meminta seluruh katalog. |
+| `total_courses` | `integer` | Jumlah total mata kuliah yang memenuhi filter kueri. |
+| `programs` | `array[string]` | Daftar lengkap nama program studi resmi yang tersedia di FTMM. |
+| `courses` | `array[object]` | Daftar objek mata kuliah dengan atribut kode, SKS, semester, jenis (`Wajib`/`Pilihan`), paritas (`odd`/`even`), deskripsi, dan prasyarat. |
+---
+
+## 5. Spesifikasi Kontrak `DegreePlanPayload`
 
 Jika `action_type` bernilai `"PLAN_GENERATED"`, objek `plan_payload` dikirimkan secara terstruktur agar komponen frontend `DegreePlanner.tsx` dapat merender kartu pratinjau rencana studi (*Degree Plan Card Widget*) dan mengeksekusi callback `onApplyPlan`.
 
@@ -213,7 +264,7 @@ Jika `action_type` bernilai `"PLAN_GENERATED"`, objek `plan_payload` dikirimkan 
 
 ---
 
-## 5. Penanganan Error & Guardrail Refusal
+## 6. Penanganan Error & Guardrail Refusal
 
 Backend mengimplementasikan *Cascaded Defense-in-Depth* (Tier 1 s.d. Tier 4). Jika input melanggar batasan keamanan atau berada di luar cakupan akademik, API tetap merespons status `200 OK` dengan pesan penolakan formal dan `routing_mode: "GUARDED"` (atau `"REFUSED"`).
 
@@ -243,7 +294,7 @@ Backend mengimplementasikan *Cascaded Defense-in-Depth* (Tier 1 s.d. Tier 4). Ji
 
 ---
 
-## 6. Contoh Integrasi Client
+## 7. Contoh Integrasi Client
 
 ### A. Contoh Fetch JavaScript / TypeScript (Frontend React)
 ```typescript

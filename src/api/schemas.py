@@ -57,3 +57,23 @@ class HealthResponse(BaseModel):
     service: str = "FTMM COMPASS Chatbot Backend"
     ollama_online: bool = True
     default_model: str = "qwen2.5:3b"
+
+
+class CourseItem(BaseModel):
+    id: str
+    code: str | None = None
+    name: str
+    credits: int = 3
+    semester: int = 1
+    type: Literal["Wajib", "Pilihan"] = "Pilihan"
+    parity: Literal["odd", "even"] = "odd"
+    desc: str = ""
+    program: str
+    prerequisites: list[str] = Field(default_factory=list)
+
+
+class CourseCatalogResponse(BaseModel):
+    program_studi: str | None = None
+    total_courses: int
+    programs: list[str]
+    courses: list[CourseItem]
