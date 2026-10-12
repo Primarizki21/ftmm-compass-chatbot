@@ -7,6 +7,37 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
+class ErrorDetail(BaseModel):
+    field: str | None = None
+    message: str
+    code: str = "invalid_input"
+
+
+class ErrorPayload(BaseModel):
+    code: str
+    message: str
+    details: list[ErrorDetail] = Field(default_factory=list)
+
+
+class ApiErrorResponse(BaseModel):
+    error: ErrorPayload
+
+
+class PaginationMeta(BaseModel):
+    total: int
+    page: int
+    per_page: int
+    total_pages: int
+
+
+class PaginationLinks(BaseModel):
+    self: str
+    next: str | None = None
+    prev: str | None = None
+    first: str | None = None
+    last: str | None = None
+
+
 class StudentProfile(BaseModel):
     program_studi: str | None = None
     semester_saat_ini: int | None = None
@@ -52,11 +83,18 @@ class ChatResponse(BaseModel):
     latency_ms: float = 0.0
 
 
+class OllamaHealthDetail(BaseModel):
+    online: bool
+    host: str
+    default_model: str
+
+
 class HealthResponse(BaseModel):
     status: str = "healthy"
     service: str = "FTMM COMPASS Chatbot Backend"
     ollama_online: bool = True
     default_model: str = "qwen2.5:3b"
+    ollama: OllamaHealthDetail | None = None
 
 
 class CourseItem(BaseModel):
@@ -78,6 +116,12 @@ class CourseCatalogResponse(BaseModel):
     programs: list[str]
     courses: list[CourseItem]
 
+
+class PaginatedCourseResponse(BaseModel):
+    data: list[CourseItem]
+    meta: PaginationMeta
+    links: PaginationLinks
+    program_studi: str | None = None
 
 class PlanValidationRequest(BaseModel):
     plan: dict[int, list[dict[str, Any]]] = Field(

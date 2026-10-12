@@ -13,8 +13,9 @@ ENV UV_COMPILE_BYTECODE=1 \
 # Copy dependency definition files
 COPY pyproject.toml uv.lock ./
 
-# Install production dependencies only into /app/.venv
-RUN uv sync --frozen --no-dev --no-install-project
+# Install production dependencies with build cache mount
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv sync --frozen --no-dev --no-install-project
 
 
 # Stage 2: Minimal runtime image

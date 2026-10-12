@@ -1,7 +1,7 @@
 """
 FastAPI Backend Server untuk Chatbot FTMM COMPASS.
 Melayani antarmuka obrolan di ~/project/ftmm-compass-ui/src/pages/Chatbot.tsx.
-Menggunakan arsitektur Hybrid RAG-CAG (Ollama + FAISS + NLU Router).
+Menerapkan arsitektur RESTful modern (v1 canonical + legacy alias) dan error handling semantik.
 """
 
 import os
@@ -10,23 +10,29 @@ import json
 import asyncio
 from typing import Any, AsyncGenerator
 import httpx
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from src.api.schemas import (
     ChatRequest,
     ChatResponse,
     HealthResponse,
+    OllamaHealthDetail,
     StudentProfile,
     DegreePlanPayload,
     DegreePlanSummary,
     CourseItem,
     CourseCatalogResponse,
+    PaginatedCourseResponse,
+    PaginationMeta,
+    PaginationLinks,
     PlanValidationRequest,
     PlanValidationResponse,
     CourseSearchItem,
     CourseSearchResponse,
+    ApiErrorResponse,
 )
 from src.engine import UnifiedChatEngine, RoutingMode
 from src.engine.tools.academic_tools import (
@@ -38,6 +44,7 @@ from src.engine.tools.academic_tools import (
     get_courses_by_semester,
     search_courses,
 )
+
 app = FastAPI(
     title="FTMM COMPASS Chatbot Backend",
     description="Backend API untuk Chatbot Akademik FTMM COMPASS dengan arsitektur Hybrid RAG-CAG.",
@@ -63,9 +70,90 @@ def _get_ollama_base_url() -> str:
     return host.rstrip("/")
 
 
-@app.get("/api/health", response_model=HealthResponse)
-async def health_check():
-    """Endpoint status kesehatan backend dan konektivitas Ollama."""
+def _normalize_course_type(jenis: str | None) -> str:
+    j = str(jenis or "").lower()
+    if not j or "wajib" in j:
+        return "Wajib"
+    if "pilih" in j or "pengayaan" in j or "peminatan" in j:
+        return "Pilihan"
+    return "Wajib"
+
+
+# ============================================================================
+# Global Exception Handlers (skill://api-design)
+# ============================================================================
+
+@app.exception_handler(ConnectionError)
+async def connection_error_handler(request: Request, exc: ConnectionError):
+    return JSONResponse(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        headers={"Retry-After": "5"},
+        content={
+            "error": {
+                "code": "upstream_service_unavailable",
+                "message": "Layanan Ollama tidak dapat dihubungi. Pastikan daemon Ollama aktif pada host port 11434.",
+                "details": [{"message": str(exc)}],
+            }
+        },
+    )
+
+
+@app.exception_handler(httpx.ConnectError)
+async def httpx_connect_error_handler(request: Request, exc: httpx.ConnectError):
+    return JSONResponse(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        headers={"Retry-After": "5"},
+        content={
+            "error": {
+                "code": "upstream_service_unavailable",
+                "message": "Gagal terhubung ke upstream service.",
+                "details": [{"message": str(exc)}],
+            }
+        },
+    )
+
+
+@app.exception_handler(httpx.TimeoutException)
+async def httpx_timeout_handler(request: Request, exc: httpx.TimeoutException):
+    return JSONResponse(
+        status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+        content={
+            "error": {
+                "code": "upstream_timeout",
+                "message": "Waktu tunggu layanan upstream habis.",
+                "details": [{"message": str(exc)}],
+            }
+        },
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "error": {
+                "code": "validation_error",
+                "message": "Request validation failed",
+                "details": [
+                    {
+                        "field": ".".join(str(loc) for loc in err["loc"]),
+                        "message": err["msg"],
+                        "code": err["type"],
+                    }
+                    for err in exc.errors()
+                ],
+            }
+        },
+    )
+
+
+# ============================================================================
+# Core Handlers (Reused across Canonical v1 & Legacy routes)
+# ============================================================================
+
+async def handle_health_check(strict: bool = False) -> HealthResponse:
+    """Status kesehatan backend dan konektivitas Ollama."""
     ollama_online = False
     base_url = _get_ollama_base_url()
     try:
@@ -76,37 +164,54 @@ async def health_check():
     except Exception:
         ollama_online = False
 
+    service_status = "healthy" if ollama_online else "degraded"
+    if strict and not ollama_online:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Ollama daemon is offline",
+        )
+
     return HealthResponse(
-        status="healthy",
-        service="FTMM COMPASS Chatbot Backend (Unified ReAct & Guardrails)",
+        status=service_status,
+        service="FTMM COMPASS Chatbot Backend",
         ollama_online=ollama_online,
         default_model=engine.model,
+        ollama=OllamaHealthDetail(
+            online=ollama_online,
+            host=base_url,
+            default_model=engine.model,
+        ),
     )
 
 
-def _normalize_course_type(jenis: str | None) -> str:
-    j = str(jenis or "").lower()
-    if not j or "wajib" in j:
-        return "Wajib"
-    if "pilih" in j or "pengayaan" in j or "peminatan" in j:
-        return "Pilihan"
-    return "Wajib"
-
-
-@app.get("/api/courses", response_model=CourseCatalogResponse)
-async def list_courses(
-    program_studi: str | None = Query(None, description="Nama program studi FTMM."),
-    prodi: str | None = Query(None, description="Alias nama prodi dari frontend UI."),
-    semester: int | None = Query(None, description="Filter semester (1-8)."),
-):
+async def handle_list_courses(
+    program_studi: str | None = None,
+    prodi: str | None = None,
+    semester: int | None = None,
+    q: str | None = None,
+    page: int | None = None,
+    per_page: int | None = None,
+) -> CourseCatalogResponse | PaginatedCourseResponse:
     """
     Mengambil katalog mata kuliah resmi FTMM dari SSOT kurikulum.
-    Mendukung filter program studi via parameter 'program_studi' maupun alias 'prodi'.
+    Mendukung filtering prodi/semester, pencarian semantik (q), dan paginasi adaptif.
     """
     target_prodi = prodi or program_studi
     canonical_prodi = normalize_program_studi(target_prodi) if target_prodi else None
     raw_catalog = _get_catalog()
     programs_set = sorted(list(set(c.get("program_studi", "") for c in raw_catalog if c.get("program_studi"))))
+
+    # Jika query q disediakan, gunakan pencarian semantik cerdas
+    if q and q.strip():
+        search_hits = search_courses(query=q.strip(), prodi=canonical_prodi or "", top_k=50)
+        catalog_map = {c["kode_mk"].strip().upper(): c for c in raw_catalog if c.get("kode_mk")}
+        matched_catalog = []
+        for hit in search_hits:
+            c_code = str(hit.get("kode_mk") or "").strip().upper()
+            ref = catalog_map.get(c_code)
+            if ref:
+                matched_catalog.append(ref)
+        raw_catalog = matched_catalog
 
     courses: list[CourseItem] = []
     for c in raw_catalog:
@@ -146,6 +251,41 @@ async def list_courses(
             )
         )
 
+    # Mode Paginasi Adaptif (jika parameter page atau per_page diberikan)
+    if page is not None or per_page is not None:
+        p = max(page or 1, 1)
+        pp = max(per_page or 20, 1)
+        total = len(courses)
+        total_pages = (total + pp - 1) // pp if total > 0 else 0
+        sliced = courses[(p - 1) * pp : p * pp]
+
+        prefix = f"/api/v1/courses?per_page={pp}"
+        if canonical_prodi:
+            prefix += f"&prodi={canonical_prodi}"
+        if semester:
+            prefix += f"&semester={semester}"
+        if q:
+            prefix += f"&q={q}"
+
+        return PaginatedCourseResponse(
+            data=sliced,
+            meta=PaginationMeta(
+                total=total,
+                page=p,
+                per_page=pp,
+                total_pages=total_pages,
+            ),
+            links=PaginationLinks(
+                self=f"{prefix}&page={p}",
+                next=f"{prefix}&page={p + 1}" if p < total_pages else None,
+                prev=f"{prefix}&page={p - 1}" if p > 1 else None,
+                first=f"{prefix}&page=1",
+                last=f"{prefix}&page={total_pages}" if total_pages > 0 else None,
+            ),
+            program_studi=canonical_prodi,
+        )
+
+    # Mode Default Kompatibel Flat (untuk pemanggilan frontend eksisting)
     return CourseCatalogResponse(
         program_studi=canonical_prodi,
         total_courses=len(courses),
@@ -154,12 +294,8 @@ async def list_courses(
     )
 
 
-@app.post("/api/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
-    """
-    Endpoint dialog chat utama yang melayani pesan dari frontend ftmm-compass-ui.
-    Mendukung isolasi multi-sesi via parameter request.session_id.
-    """
+async def handle_chat(request: ChatRequest) -> ChatResponse:
+    """Dialog chat utama yang melayani pesan dari frontend ftmm-compass-ui."""
     t0 = time.perf_counter()
     msg = request.message.strip()
     profile = request.student_profile
@@ -168,14 +304,16 @@ async def chat(request: ChatRequest):
     if not request.history:
         engine.memory.clear_session(session_id)
 
-    # Eksekusi engine terpadu UnifiedChatEngine
-    result = engine.generate_answer(
+    # Eksekusi sinkron engine pada thread pool agar non-blocking
+    result = await asyncio.to_thread(
+        engine.generate_answer,
         query=msg,
         history=history,
         student_profile=profile.model_dump(),
         session_id=session_id,
     )
     latency_ms = (time.perf_counter() - t0) * 1000.0
+
     # Sync updated profile dari metadata engine
     updated_prof_data = result.metadata.get("updated_profile", {})
     if updated_prof_data:
@@ -224,6 +362,7 @@ async def chat(request: ChatRequest):
             ),
             plan={profile.semester_saat_ini + 1: []},
         )
+
     return ChatResponse(
         reply=result.answer,
         updated_profile=profile,
@@ -234,15 +373,8 @@ async def chat(request: ChatRequest):
     )
 
 
-@app.post("/api/plan/validate", response_model=PlanValidationResponse)
-async def validate_degree_plan_endpoint(request: PlanValidationRequest):
-    """
-    Memvalidasi seluruh urutan rencana studi mahasiswa terhadap aturan:
-    1. Graf dependensi prasyarat (Prerequisite DAG kurikulum resmi FTMM)
-    2. Paritas semester (Ganjil/Genap)
-    3. Batas beban SKS maksimum per semester
-    4. Integritas duplikasi mata kuliah
-    """
+async def handle_validate_plan(request: PlanValidationRequest) -> PlanValidationResponse:
+    """Memvalidasi seluruh urutan rencana studi mahasiswa terhadap aturan akademik FTMM."""
     catalog = _get_catalog()
     course_lookup = {c["kode_mk"].strip().upper(): c for c in catalog if c.get("kode_mk")}
     name_lookup = {c["nama_mk"].strip().lower(): c for c in catalog if c.get("nama_mk")}
@@ -337,12 +469,8 @@ async def validate_degree_plan_endpoint(request: PlanValidationRequest):
     )
 
 
-@app.post("/api/plan/generate", response_model=DegreePlanPayload)
-async def generate_plan_direct_endpoint(profile: StudentProfile):
-    """
-    Menghasilkan rancangan rencana studi (DegreePlanPayload) secara deterministik
-    langsung dari profil mahasiswa tanpa melalui proses chat LLM.
-    """
+async def handle_generate_plan(profile: StudentProfile) -> DegreePlanPayload:
+    """Menghasilkan rancangan rencana studi secara deterministik."""
     prodi = profile.program_studi or "Teknologi Sains Data"
     cur_sem = profile.semester_saat_ini or 1
     target_sem = profile.target_kelulusan_semester or 8
@@ -372,64 +500,8 @@ async def generate_plan_direct_endpoint(profile: StudentProfile):
     )
 
 
-@app.get("/api/courses/search", response_model=CourseSearchResponse)
-async def search_courses_endpoint(
-    q: str = Query(..., min_length=1, description="Kata kunci, silabus, atau nama mata kuliah."),
-    program_studi: str | None = Query(None, description="Filter program studi opsional."),
-    prodi: str | None = Query(None, description="Alias prodi opsional."),
-    top_k: int = Query(5, ge=1, le=20, description="Jumlah hasil pencarian."),
-):
-    """
-    Pencarian semantik cerdas silabus mata kuliah menggunakan Hybrid RRF (Exp-002)
-    yang tahan terhadap variasi slang mahasiswa (seperti 'alpro', 'visdat', 'jarkom').
-    """
-    target_prodi = prodi or program_studi
-    canonical_prodi = normalize_program_studi(target_prodi) if target_prodi else None
-
-    search_hits = search_courses(query=q, prodi=canonical_prodi or "", top_k=top_k)
-    raw_catalog = _get_catalog()
-    catalog_map = {c["kode_mk"].strip().upper(): c for c in raw_catalog if c.get("kode_mk")}
-
-    results: list[CourseSearchItem] = []
-    for hit in search_hits:
-        c_code = str(hit.get("kode_mk") or "").strip()
-        ref = catalog_map.get(c_code.upper()) or hit
-        c_sem = int(ref.get("semester", 1) or 1)
-        c_type = _normalize_course_type(ref.get("jenis"))
-        parity = "odd" if c_sem % 2 == 1 else "even"
-        c_id = str(ref.get("id") or c_code)
-
-        results.append(
-            CourseSearchItem(
-                id=c_id,
-                code=c_code or None,
-                name=str(ref.get("nama_mk") or hit.get("nama_mk") or ""),
-                credits=int(ref.get("sks", 3) or 3),
-                semester=c_sem,
-                type=c_type,  # type: ignore[arg-type]
-                parity=parity,  # type: ignore[arg-type]
-                desc=str(ref.get("deskripsi") or ""),
-                program=str(ref.get("program_studi") or ""),
-                prerequisites=[str(p) for p in ref.get("prasyarat", []) if p],
-                score=float(hit.get("score", 0.0)),
-            )
-        )
-
-    return CourseSearchResponse(
-        query=q,
-        program_studi=canonical_prodi,
-        total_hits=len(results),
-        results=results,
-    )
-
-
-@app.post("/api/chat/stream")
-async def chat_stream_endpoint(request: ChatRequest):
-    """
-    Endpoint Server-Sent Events (SSE) streaming untuk antarmuka chat frontend.
-    Mengalirkan potongan teks respons (live typing) ke UI dan mengirimkan payload
-    DegreePlanPayload pada chunk selesai.
-    """
+async def handle_chat_stream(request: ChatRequest) -> StreamingResponse:
+    """Endpoint Server-Sent Events (SSE) streaming untuk live typing UI."""
     async def event_generator() -> AsyncGenerator[str, None]:
         t0 = time.perf_counter()
         msg = request.message.strip()
@@ -439,7 +511,6 @@ async def chat_stream_endpoint(request: ChatRequest):
         if not request.history:
             engine.memory.clear_session(session_id)
 
-        # Eksekusi sinkron engine pada thread pool agar non-blocking
         result = await asyncio.to_thread(
             engine.generate_answer,
             query=msg,
@@ -502,3 +573,157 @@ async def chat_stream_endpoint(request: ChatRequest):
         yield f"data: {json.dumps(final_payload, ensure_ascii=False)}\n\n"
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+# ============================================================================
+# Canonical Router: /api/v1 (RESTful Modern Standard)
+# ============================================================================
+
+v1_router = APIRouter(prefix="/api/v1", tags=["v1"])
+
+
+@v1_router.get("/health", response_model=HealthResponse)
+async def v1_health(strict: bool = Query(False, description="Fail with 503 if Ollama is offline")):
+    return await handle_health_check(strict=strict)
+
+
+@v1_router.get("/courses", response_model=Any)
+async def v1_list_courses(
+    program_studi: str | None = Query(None, description="Nama program studi FTMM."),
+    prodi: str | None = Query(None, description="Alias nama prodi."),
+    semester: int | None = Query(None, description="Filter semester (1-8)."),
+    q: str | None = Query(None, description="Pencarian semantik silabus atau nama mata kuliah."),
+    page: int | None = Query(None, ge=1, description="Nomor halaman (1-based)."),
+    per_page: int | None = Query(None, ge=1, le=100, description="Jumlah item per halaman."),
+):
+    return await handle_list_courses(
+        program_studi=program_studi,
+        prodi=prodi,
+        semester=semester,
+        q=q,
+        page=page,
+        per_page=per_page,
+    )
+
+
+@v1_router.post("/chat", response_model=ChatResponse)
+async def v1_chat(request: ChatRequest):
+    return await handle_chat(request)
+
+
+@v1_router.post("/chat/stream")
+async def v1_chat_stream(request: ChatRequest):
+    return await handle_chat_stream(request)
+
+
+@v1_router.post("/plans/validations", response_model=PlanValidationResponse)
+async def v1_validate_plan(request: PlanValidationRequest):
+    return await handle_validate_plan(request)
+
+
+@v1_router.post("/plans", response_model=DegreePlanPayload)
+async def v1_generate_plan(profile: StudentProfile):
+    return await handle_generate_plan(profile)
+
+
+# ============================================================================
+# Legacy Router: /api (100% Backward-Compatibility for ftmm-compass-ui)
+# ============================================================================
+
+legacy_router = APIRouter(prefix="/api", tags=["legacy"])
+
+
+@legacy_router.get("/health", response_model=HealthResponse)
+async def legacy_health():
+    return await handle_health_check(strict=False)
+
+
+@legacy_router.get("/courses", response_model=Any)
+async def legacy_list_courses(
+    program_studi: str | None = Query(None, description="Nama program studi FTMM."),
+    prodi: str | None = Query(None, description="Alias nama prodi dari frontend UI."),
+    semester: int | None = Query(None, description="Filter semester (1-8)."),
+    q: str | None = Query(None, description="Query pencarian opsional."),
+    page: int | None = Query(None, description="Halaman paginasi opsional."),
+    per_page: int | None = Query(None, description="Limit per halaman opsional."),
+):
+    return await handle_list_courses(
+        program_studi=program_studi,
+        prodi=prodi,
+        semester=semester,
+        q=q,
+        page=page,
+        per_page=per_page,
+    )
+
+
+@legacy_router.get("/courses/search", response_model=CourseSearchResponse)
+async def legacy_search_courses(
+    q: str = Query(..., min_length=1, description="Kata kunci, silabus, atau nama mata kuliah."),
+    program_studi: str | None = Query(None, description="Filter program studi opsional."),
+    prodi: str | None = Query(None, description="Alias prodi opsional."),
+    top_k: int = Query(5, ge=1, le=20, description="Jumlah hasil pencarian."),
+):
+    target_prodi = prodi or program_studi
+    canonical_prodi = normalize_program_studi(target_prodi) if target_prodi else None
+
+    search_hits = search_courses(query=q, prodi=canonical_prodi or "", top_k=top_k)
+    raw_catalog = _get_catalog()
+    catalog_map = {c["kode_mk"].strip().upper(): c for c in raw_catalog if c.get("kode_mk")}
+
+    results: list[CourseSearchItem] = []
+    for hit in search_hits:
+        c_code = str(hit.get("kode_mk") or "").strip()
+        ref = catalog_map.get(c_code.upper()) or hit
+        c_sem = int(ref.get("semester", 1) or 1)
+        c_type = _normalize_course_type(ref.get("jenis"))
+        parity = "odd" if c_sem % 2 == 1 else "even"
+        c_id = str(ref.get("id") or c_code)
+
+        results.append(
+            CourseSearchItem(
+                id=c_id,
+                code=c_code or None,
+                name=str(ref.get("nama_mk") or hit.get("nama_mk") or ""),
+                credits=int(ref.get("sks", 3) or 3),
+                semester=c_sem,
+                type=c_type,  # type: ignore[arg-type]
+                parity=parity,  # type: ignore[arg-type]
+                desc=str(ref.get("deskripsi") or ""),
+                program=str(ref.get("program_studi") or ""),
+                prerequisites=[str(p) for p in ref.get("prasyarat", []) if p],
+                score=float(hit.get("score", 0.0)),
+            )
+        )
+
+    return CourseSearchResponse(
+        query=q,
+        program_studi=canonical_prodi,
+        total_hits=len(results),
+        results=results,
+    )
+
+
+@legacy_router.post("/chat", response_model=ChatResponse)
+async def legacy_chat(request: ChatRequest):
+    return await handle_chat(request)
+
+
+@legacy_router.post("/chat/stream")
+async def legacy_chat_stream(request: ChatRequest):
+    return await handle_chat_stream(request)
+
+
+@legacy_router.post("/plan/validate", response_model=PlanValidationResponse)
+async def legacy_validate_plan(request: PlanValidationRequest):
+    return await handle_validate_plan(request)
+
+
+@legacy_router.post("/plan/generate", response_model=DegreePlanPayload)
+async def legacy_generate_plan(profile: StudentProfile):
+    return await handle_generate_plan(profile)
+
+
+# Include both canonical v1 and legacy routers
+app.include_router(v1_router)
+app.include_router(legacy_router)

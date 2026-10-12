@@ -439,10 +439,9 @@
   4. **Stabilitas Hardware & I/O Protocol:**
      - VRAM peak stabil pada **2.415,0 MiB** (~29.6% kapasitas GPU 8 GB), menyisakan >5.7 GB VRAM headroom.
      - Eksekusi bebas dari disk thrashing dan swapping WSL2 berkat `TOKENIZERS_PARALLELISM=false` dan in-memory vector batching.
-- **Keputusan Arsitektur & Rekomendasi:**
-  - `EmbeddingGemma-2 (768d)` resmi direkomendasikan sebagai arsitektur embedding utama (primary retriever backbone) menggantikan `nomic-embed-text`.
-  - Skema **Hybrid RRF (BM25 + EmbeddingGemma-2)** mencapai akurasi tertinggi di sistem: **Hit@3 86.8% dan Hit@5 88.4%**.
-- **Artefak:**
+- **Keputusan Arsitektur & Rekomendasi (STATUS: CLOSED & PURGED):**
+  - *Update 2026-10-12*: EmbeddingGemma-2 **RESMI DITUTUP (CLOSED & PURGED)** dari basis kode produksi. Meskipun akurasi retrieval tinggi, model ini membutuhkan dependensi PyTorch CUDA (~5.3 GB) dan memori Host RAM CPU ~1.8 GB yang memicu disk thrashing / Hyper-V swapping parah di WSL2.
+  - Sistem produksi resmi distandarisasikan menggunakan **Native Ollama Embeddings (`nomic-embed-text` / `qwen3-embedding:0.6b`) + FAISS CPU** (dikonfirmasi pada Exp-016 & Exp-017).
   - `docs/exp-012_embeddinggemma2_benchmark/README.md`
   - `docs/exp-012_embeddinggemma2_benchmark/benchmark_summary.md`
   - `docs/exp-012_embeddinggemma2_benchmark/benchmark_metrics.csv`
@@ -471,10 +470,9 @@
      - `nomic-embed-text` via daemon Ollama unggul mutlak dalam latensi keputusan per-kueri (**35.2 ms** vs **97.0 ms** pada PyTorch CUDA).
      - Daemon Ollama saat ini belum mendukung arsitektur `gemma-embedding2` pada runtime GGUF (`unknown model architecture: 'gemma-embedding2'`), sehingga pemuatan Gemma-2 saat ini wajib melewati PyTorch dengan overhead Host RAM CPU ~1.8 GB.
      - Karena itu, unifikasi total ke Gemma-2 di System-1 Router membutuhkan dukungan runtime C++ GGUF Ollama agar tidak membebani Host RAM CPU Python.
-- **Keputusan Arsitektur & Rekomendasi:**
-  - **Rekomendasi Router Aktif**: Untuk mode produksi real-time berlatensi sub-35ms, pertahankan `nomic-embed-text` (Ollama) sebagai backend aktif router, ATAU gunakan `EmbeddingGemma-2 (256d)` saat server Ollama telah mengintegrasikan arsitektur gemma-embedding2 GGUF.
-  - **Rekomendasi MRL**: Jika EmbeddingGemma-2 diadopsi untuk intent decider, dimensi **256d** adalah sweet spot optimal (Akurasi 95.0%, Margin 0.0440, Hemat 66.7% memori).
-- **Artefak:**
+- **Keputusan Arsitektur & Rekomendasi (STATUS: CLOSED & PURGED):**
+  - *Update 2026-10-12*: Pilihan EmbeddingGemma-2 untuk System-1 Decider **RESMI DITUTUP (CLOSED)**. Dependensi SentenceTransformers dan PyTorch dihapus total dari `pyproject.toml` dan `src/engine/decider.py`.
+  - Produksi mengadopsi native Ollama decider (`qwen3-embedding` / `nomic-embed-text`) dengan in-memory BLAS matrix dot-product (<0.1 ms) yang terbukti mencapai akurasi 100.0% di Exp-017 tanpa alokasi Python Host RAM dan memangkas ukuran Docker image dari >6.5 GB menjadi 439 MB.
   - `docs/exp-015_decider_gemma2_evaluation/README.md`
   - `docs/exp-015_decider_gemma2_evaluation/benchmark_summary.md`
   - `docs/exp-015_decider_gemma2_evaluation/benchmark_metrics.csv`

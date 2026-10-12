@@ -52,9 +52,7 @@ _decider_instance: System1Decider | None = None
 def get_system1_decider() -> System1Decider:
     global _decider_instance
     if _decider_instance is None:
-        mrl_dim_env = os.getenv("DECIDER_MRL_DIM", "256")
-        mrl_dim = int(mrl_dim_env) if mrl_dim_env and mrl_dim_env.lower() != "none" else None
-        _decider_instance = System1Decider(backend="gemma2", mrl_dim=mrl_dim)
+        _decider_instance = System1Decider()
         _decider_instance.initialize()
     return _decider_instance
 

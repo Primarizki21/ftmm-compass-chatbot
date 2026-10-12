@@ -9,20 +9,14 @@ from pathlib import Path
 from typing import Any
 import numpy as np
 import faiss
-import torch
+import ollama
 
 INDEX_NOMIC_PATH = Path("data/faiss/ftmm_courses.faiss")
 META_NOMIC_PATH = Path("data/faiss/ftmm_courses_meta.pkl")
 
-INDEX_GEMMA2_768_PATH = Path("data/faiss/ftmm_courses_gemma2.faiss")
-INDEX_GEMMA2_256_PATH = Path("data/faiss/ftmm_courses_gemma2_256d.faiss")
-META_GEMMA2_PATH = Path("data/faiss/ftmm_courses_gemma2_meta.pkl")
-
-# Default constants
 INDEX_PATH = INDEX_NOMIC_PATH
 META_PATH = META_NOMIC_PATH
 DEFAULT_EMBED_MODEL = "nomic-embed-text"
-
 class CourseRetriever:
     def __init__(
         self,
@@ -32,32 +26,13 @@ class CourseRetriever:
         meta_path: Path | str | None = None,
         model_instance: Any = None,
     ):
-        raw_backend = backend or os.getenv("EMBED_BACKEND", "nomic")
-        self.backend = raw_backend.lower()
-        raw_dim = dimension if dimension is not None else int(os.getenv("EMBED_DIMENSION", "256"))
-        self.dimension = raw_dim
-
-        if self.backend == "gemma2":
-            if index_path is not None:
-                self.index_path = Path(index_path)
-            else:
-                self.index_path = INDEX_GEMMA2_256_PATH if self.dimension == 256 else INDEX_GEMMA2_768_PATH
-            self.meta_path = Path(meta_path) if meta_path is not None else META_GEMMA2_PATH
-        else:
-            self.index_path = Path(index_path) if index_path is not None else INDEX_NOMIC_PATH
-            self.meta_path = Path(meta_path) if meta_path is not None else META_NOMIC_PATH
-
+        self.backend = "nomic"
+        self.dimension = dimension if dimension is not None else 768
+        self.index_path = Path(index_path) if index_path is not None else INDEX_NOMIC_PATH
+        self.meta_path = Path(meta_path) if meta_path is not None else META_NOMIC_PATH
         self.index: faiss.IndexFlatIP | None = None
         self.metadata: dict[str, Any] = {}
         self._loaded = False
-        self._gemma_model = model_instance
-
-    def _get_gemma_model(self):
-        if self._gemma_model is not None:
-            return self._gemma_model
-        from src.engine.decider import get_shared_gemma2_model
-        self._gemma_model = get_shared_gemma2_model()
-        return self._gemma_model
 
     def load(self):
         """Memuat index FAISS dan metadata dari disk."""
@@ -78,30 +53,11 @@ class CourseRetriever:
         if not self._loaded:
             self.load()
 
-        if self.backend == "gemma2":
-            model = self._get_gemma_model()
-            with torch.inference_mode():
-                if self.dimension < 768:
-                    q_vec = model.encode(
-                        query,
-                        prompt_name="query",
-                        truncate_dim=self.dimension,
-                        normalize_embeddings=True,
-                    )
-                else:
-                    q_vec = model.encode(
-                        query,
-                        prompt_name="query",
-                        normalize_embeddings=True,
-                    )
-            q_vec = np.array(q_vec, dtype=np.float32).reshape(1, -1)
-        else:
-            import ollama
-            resp = ollama.embed(model="nomic-embed-text", input=query)
-            q_vec = np.array(resp["embeddings"][0], dtype=np.float32).reshape(1, -1)
-            norm = np.linalg.norm(q_vec)
-            if norm > 0:
-                q_vec = q_vec / norm
+        resp = ollama.embed(model=DEFAULT_EMBED_MODEL, input=query)
+        q_vec = np.array(resp["embeddings"][0], dtype=np.float32).reshape(1, -1)
+        norm = np.linalg.norm(q_vec)
+        if norm > 0:
+            q_vec = q_vec / norm
         # Fetch extra candidates if filtering by prodi
         search_k = top_k * 4 if prodi_filter else top_k
         scores, indices = self.index.search(q_vec, min(search_k, self.index.ntotal))

@@ -5,13 +5,21 @@ services:
       dockerfile: Dockerfile
     container_name: ftmm-compass-chatbot
     restart: unless-stopped
-    network_mode: host
+    ports:
+      - "127.0.0.1:8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     env_file:
       - .env
     environment:
-      - OLLAMA_HOST=${OLLAMA_HOST:-http://127.0.0.1:11434}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
     security_opt:
       - no-new-privileges:true
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1536M
     volumes:
       - ./data:/app/data
       - ./src:/app/src
