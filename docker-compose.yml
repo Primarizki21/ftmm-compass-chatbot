@@ -13,18 +13,16 @@ services:
       - ftmm-network
     env_file:
       - .env
-    environment:
-      - OLLAMA_HOST=http://host.docker.internal:11434
     security_opt:
       - no-new-privileges:true
-    deploy:
-      resources:
-        limits:
-          cpus: "2.0"
-          memory: 1536M
-    volumes:
-      - ./data:/app/data
-      - ./src:/app/src
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health')\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
 
 networks:
   ftmm-network:

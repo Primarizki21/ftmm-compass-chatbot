@@ -23,8 +23,8 @@ graph LR
 | Layer | Komponen & Repository | Penanggung Jawab | Peran Utama |
 |---|---|---|---|
 | **Tier 1: Client / UI** | `ftmm-compass-ui/src/pages/Chatbot.tsx`<br>`DegreePlanner.tsx` | Hans (Frontend) | Antarmuka obrolan responsif, konsumsi SSE live typing, visualisasi roadmap semester 1–8. |
-| **Tier 2: API Gateway** | `ftmm-compass-ui/backend` / FastAPI Core | Mantra (Backend) | Routing reverse proxy, validasi JWT Auth, rate limiting `slowapi`, SSE streaming relay (`/api/chat/stream`), dan logging sesi. |
-| **Tier 3: AI Microservice** | `ftmm-compass-chatbot/src/` | Nauval & Ario (AI/NLP) | System-1 intent routing, Hybrid RAG-CAG, ReAct agent dengan deterministic tools, SSE streaming, validasi DAG (`POST /api/plan/validate`), generate rencana studi (`POST /api/plan/generate`), dan Hybrid search (`GET /api/courses/search`). |
+| **Tier 2: API Gateway** | `ftmm-compass-ui/backend` / FastAPI Core | Mantra (Backend) | Routing reverse proxy, validasi JWT Auth, rate limiting `slowapi`, SSE streaming relay (`/api/v1/chat/stream`), dan logging sesi via `ftmm-network`. |
+| **Tier 3: AI Microservice** | `ftmm-compass-chatbot/src/` | Nauval & Ario (AI/NLP) | System-1 intent routing, Hybrid RAG-CAG, ReAct agent dengan deterministic tools, SSE streaming, validasi DAG (`POST /api/v1/plans/validations`), generate rencana studi (`POST /api/v1/plans`), dan Hybrid search (`GET /api/v1/courses/search`). |
 | **Tier 4: Relational DB** | PostgreSQL 16 (`schema_v2_1_rc1.sql`) | Darryl (Database) | Relasi prasyarat matkul (`course_prerequisites` DAG), paritas ganjil/genap, dan persistensi rencana studi. |
 
 

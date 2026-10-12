@@ -2,16 +2,20 @@
 
 Spesifikasi resmi antarmuka pemrograman aplikasi (REST API) untuk backend AI Chatbot FTMM COMPASS. Dokumen ini bertindak sebagai *Single Source of Truth (SSOT)* kontrak komunikasi data antara Tier 3 (AI Microservice di repositori ini) dengan Tier 1 (Frontend React `ftmm-compass-ui`) dan Tier 2 (API Gateway FastAPI).
 
+Menerapkan pola arsitektur **Dual-Tier REST API** (versi kanonik `/api/v1` dan alias kompatibilitas `/api`) sesuai standar `api-design`.
+
 ---
 
 ## 1. Overview & Service Discovery
 
-Backend FTMM COMPASS Chatbot menyediakan endpoint REST berbasis HTTP/JSON dengan dokumentasi OpenAPI interaktif bawaan.
+Backend FTMM COMPASS Chatbot menyediakan endpoint REST berbasis HTTP/JSON dan Server-Sent Events (SSE) dengan dokumentasi OpenAPI interaktif bawaan.
 
 ### Base URL & Lingkungan Eksekusi
-- **Docker Container (Rekomendasi):** `http://localhost:8000`
-- **Native Host (`uv run`):** `http://localhost:8000`
-- **Vite Dev Server Proxy (Repo UI):** `http://localhost:5173/api/*` (diteruskan otomatis ke `http://localhost:8000`)
+- **Docker Container (Port Publish Host):** `http://localhost:8000` (atau `http://127.0.0.1:8000`)
+- **Docker Multi-Container Network (`ftmm-network`):** `http://ftmm-compass-chatbot:8000`
+- **Native Host (`uv run`):** `http://127.0.0.1:8000`
+- **Gateway Reverse Proxy (Repo UI):** `http://localhost:8001/api/v1/*` (diteruskan via `ftmm-network`)
+- **Frontend Vite Dev Server (Repo UI):** `http://localhost:8443` (StrictPort)
 
 ### Interactive Documentation
 Saat server aktif, dokumentasi interaktif dapat diakses langsung via browser:
@@ -20,54 +24,75 @@ Saat server aktif, dokumentasi interaktif dapat diakses langsung via browser:
 - **OpenAPI JSON Schema:** `http://localhost:8000/openapi.json`
 
 ### Kebijakan CORS
-Middleware CORS telah dikonfigurasi terbuka (`allow_origins=["*"]`, `allow_methods=["*"]`, `allow_headers=["*"]`) untuk memudahkan integrasi langsung dengan dev server frontend Vite di port `5173` maupun staging server.
+Middleware CORS telah dikonfigurasi terbuka (`allow_origins=["*"]`, `allow_methods=["*"]`, `allow_headers=["*"]`) untuk memudahkan integrasi langsung dengan dev server frontend Vite di port `8443`, gateway di port `8001`, maupun staging server.
 
 ---
 
-## 2. Endpoint Health Check
+## 2. Matriks Rute Endpoint (Dual-Tier REST)
 
-### `GET /api/health`
+| Kategori | Canonical Endpoint (`/api/v1/`) | Legacy Alias (`/api/`) | HTTP Method | Keterangan |
+|---|---|---|---|---|
+| **Health** | `GET /api/v1/health` | `GET /api/health` | `GET` | Health check gateway & Ollama daemon connectivity |
+| **Catalog** | `GET /api/v1/courses` | `GET /api/courses` | `GET` | Katalog 369 mata kuliah resmi 5 prodi FTMM (+ paginasi) |
+| **Search** | `GET /api/v1/courses/search` | `GET /api/courses/search` | `GET` | Pencarian semantik & kata kunci silabus |
+| **Chat** | `POST /api/v1/chat` | `POST /api/chat` | `POST` | Dialog akademik utama (Hybrid RAG-CAG) |
+| **Streaming** | `POST /api/v1/chat/stream` | `POST /api/chat/stream` | `POST` | Server-Sent Events (SSE) streaming live tokens |
+| **Plan Validation** | `POST /api/v1/plans/validations` | `POST /api/plan/validate` | `POST` | Validasi DAG prasyarat & paritas semester rencana studi |
+| **Plan Generation** | `POST /api/v1/plans` | `POST /api/plan/generate` | `POST` | Pembuatan rencana studi deterministik otomatis |
+
+---
+
+## 3. Spesifikasi Endpoint
+
+### 3.1 Endpoint Health Check
+
+#### `GET /api/v1/health` (Alias: `GET /api/health`)
 Digunakan oleh container healthcheck, reverse proxy gateway, dan frontend untuk memverifikasi kesiapan operasional backend serta status konektivitas ke daemon Ollama host.
 
-#### Request
-- **Method:** `GET`
-- **Path:** `/api/health`
-- **Headers:** Tidak memerlukan autentikasi khusus.
+- **Query Parameters:**
+  - `strict` *(opsional, boolean, default: `false`)*: Jika bernilai `true`, endpoint akan melempar HTTP 503 jika daemon Ollama tidak dapat dihubungi.
 
-#### Response (`200 OK`)
+##### Response (`200 OK`)
 ```json
 {
   "status": "healthy",
-  "service": "FTMM COMPASS Chatbot Backend (Hybrid RAG-CAG)",
+  "service": "FTMM COMPASS Chatbot Backend",
   "ollama_online": true,
-  "default_model": "qwen2.5:3b"
+  "default_model": "qwen2.5:3b",
+  "ollama": {
+    "online": true,
+    "host": "http://host.docker.internal:11434",
+    "default_model": "qwen2.5:3b"
+  }
 }
 ```
 
-#### Deskripsi Field Response
-| Field | Tipe Data | Keterangan |
-|---|---|---|
-| `status` | `string` | Status kesehatan layanan (`"healthy"`). |
-| `service` | `string` | Nama identitas mikroservis. |
-| `ollama_online` | `boolean` | `true` jika backend berhasil menghubungi endpoint `/api/tags` pada daemon Ollama host. |
-| `default_model` | `string` | Model bahasa lokal aktif yang dikonfigurasi (`"qwen2.5:3b"`). |
+##### Response Saat Terdegradasi (`strict=false`, `200 OK`)
+```json
+{
+  "status": "degraded",
+  "service": "FTMM COMPASS Chatbot Backend",
+  "ollama_online": false,
+  "default_model": "qwen2.5:3b",
+  "ollama": {
+    "online": false,
+    "host": "http://host.docker.internal:11434",
+    "default_model": "qwen2.5:3b"
+  }
+}
+```
 
 ---
 
-## 3. Endpoint Chat Dialog Utama
+### 3.2 Endpoint Chat Dialog Utama
 
-### `POST /api/chat`
-Endpoint dialog utama yang menerima pesan pengguna, riwayat percakapan (*sliding window*), dan status profil mahasiswa (*slot-filling memory*). Endpoint ini mengembalikan jawaban terkurasi, pembaruan profil otomatis, serta struktur rencana studi (*degree plan*) jika kueri bertipe perencanaan akademik.
+#### `POST /api/v1/chat` (Alias: `POST /api/chat`)
+Endpoint dialog utama yang menerima pesan pengguna, riwayat percakapan (*sliding window*), dan status profil mahasiswa (*slot-filling memory*).
 
-#### Request
-- **Method:** `POST`
-- **Path:** `/api/chat`
-- **Content-Type:** `application/json`
-
-#### Request Payload (`ChatRequest`)
+##### Request Payload (`ChatRequest`)
 ```json
 {
-  "message": "Saya mahasiswa semester 4 prodi TSD minat machine learning, rekomendasikan matkul untuk semester 5",
+  "message": "Saya mahasiswa semester 4 prodi TSD minat machine learning, rekomendasikan matkul semester 5",
   "history": [
     {
       "role": "user",
@@ -75,9 +100,10 @@ Endpoint dialog utama yang menerima pesan pengguna, riwayat percakapan (*sliding
     },
     {
       "role": "assistant",
-      "content": "Halo! Saya Compass AI, asisten akademik pintar di FTMM UNAIR. Ada yang bisa saya bantu?"
+      "content": "Halo! Saya Compass AI, asisten akademik FTMM UNAIR. Ada yang bisa saya bantu?"
     }
   ],
+  "session_id": "user-sess-001",
   "student_profile": {
     "program_studi": "Teknologi Sains Data",
     "semester_saat_ini": 4,
@@ -90,47 +116,7 @@ Endpoint dialog utama yang menerima pesan pengguna, riwayat percakapan (*sliding
 }
 ```
 
-#### Deskripsi Field Request
-| Parameter | Tipe Data | Wajib | Keterangan |
-|---|---|---|---|
-| `message` | `string` | **Ya** | Pertanyaan atau pesan teks mahasiswa. |
-| `history` | `array[ChatMessageItem]` | Tidak | Riwayat obrolan sebelumnya untuk konteks dialog multi-turn. |
-| `history[].role` | `string` | Ya | Peran pengirim: `"user"`, `"assistant"`, atau `"system"`. |
-| `history[].content` | `string` | Ya | Teks percakapan giliran tersebut. |
-| `student_profile` | `object` | Tidak | State profil mahasiswa saat ini (default: objek kosong `{}`). |
-| `student_profile.program_studi` | `string \| null` | Tidak | Prodi mahasiswa: `"Teknologi Sains Data"`, `"Teknik Robotika dan Kecerdasan Buatan"`, `"Rekayasa Nanoteknologi"`, `"Teknik Industri"`, atau `"Teknik Elektro"`. |
-| `student_profile.semester_saat_ini`| `integer \| null` | Tidak | Angka semester mahasiswa saat ini (1–8). |
-| `student_profile.riwayat_matkul_lulus` | `array[string]` | Tidak | Daftar kode MK yang telah diselesaikan. |
-| `student_profile.minat_fokus` | `array[string]` | Tidak | Tag minat akademik (contoh: `["AI", "Robotics"]`). |
-| `student_profile.target_kelulusan_semester` | `integer` | Tidak | Target lulus (default: `8`). |
-| `student_profile.maks_sks_per_semester` | `integer` | Tidak | Beban SKS legal berdasarkan IPS (default: `24`). |
-| `student_profile.is_confirmed_by_user` | `boolean` | Tidak | Flag konfirmasi profil oleh user (default: `false`). |
-
----
-
-#### Response Payload (`ChatResponse`)
-
-##### Contoh A: Respons Pertanyaan Kebijakan / SOP Umum (Mode CAG)
-```json
-{
-  "reply": "Untuk mengambil Praktik Kerja Lapangan (PKL) di FTMM UNAIR, mahasiswa wajib telah menempuh beban studi kumulatif minimal 80 SKS tanpa nilai E pada mata kuliah prasyarat.",
-  "updated_profile": {
-    "program_studi": "Teknologi Sains Data",
-    "semester_saat_ini": 4,
-    "riwayat_matkul_lulus": ["SIA101", "SIA102"],
-    "minat_fokus": ["Machine Learning"],
-    "target_kelulusan_semester": 8,
-    "maks_sks_per_semester": 24,
-    "is_confirmed_by_user": false
-  },
-  "action_type": "GENERAL",
-  "plan_payload": null,
-  "routing_mode": "CAG",
-  "latency_ms": 384.25
-}
-```
-
-##### Contoh B: Respons Rekomendasi Rencana Studi (Mode HYBRID)
+##### Response Payload (`ChatResponse`)
 ```json
 {
   "reply": "Berdasarkan minat Machine Learning pada prodi Teknologi Sains Data semester 5, berikut adalah rekomendasi mata kuliah yang dapat Anda ambil...",
@@ -143,7 +129,6 @@ Endpoint dialog utama yang menerima pesan pengguna, riwayat percakapan (*sliding
     "maks_sks_per_semester": 24,
     "is_confirmed_by_user": false
   },
-  "action_type": "PLAN_GENERATED",
   "plan_payload": {
     "action": "APPLY_DEGREE_PLAN",
     "summary": {
@@ -157,44 +142,86 @@ Endpoint dialog utama yang menerima pesan pengguna, riwayat percakapan (*sliding
     "plan": {
       "5": [
         { "code": "SIA301", "name": "Pembelajaran Mesin Terapan", "credits": 3 },
-        { "code": "SIA303", "name": "Pemrosesan Bahasa Alami", "credits": 3 },
-        { "code": "SIA305", "name": "Sistem Temu Balik Informasi", "credits": 3 }
+        { "code": "SIA303", "name": "Pemrosesan Bahasa Alami", "credits": 3 }
       ]
     }
   },
+  "action_type": "PLAN_GENERATED",
+  "missing_slots": [],
   "routing_mode": "HYBRID",
   "latency_ms": 1420.80
 }
 ```
 
-#### Deskripsi Field Response
-| Field | Tipe Data | Keterangan |
-|---|---|---|
-| `reply` | `string` | Teks jawaban final dari asisten (format Markdown didukung). |
-| `updated_profile` | `object` | State profil mahasiswa terkini setelah diekstrak oleh modul entity slot-filling. |
-| `action_type` | `string` | Petunjuk aksi bagi UI frontend: `"GENERAL"`, `"NEED_INFO"`, `"INFO_CONFIRMED"`, atau `"PLAN_GENERATED"`. |
-| `plan_payload` | `object \| null` | Berisi struktur rencana studi jika `action_type == "PLAN_GENERATED"`. Bernilai `null` pada kueri reguler. |
-| `routing_mode` | `string` | Mode penalaran yang dieksekusi: `"CAG"`, `"RAG"`, `"HYBRID"`, atau `"GUARDED"`. |
-| `latency_ms` | `float` | Total latensi pemrosesan turn dalam milidetik ($ms$). |
+---
 
+### 3.3 Endpoint Real-Time Chat Streaming (SSE)
+
+#### `POST /api/v1/chat/stream` (Alias: `POST /api/chat/stream`)
+Menyediakan Server-Sent Events (SSE) streaming live token per token untuk rendering live typing di antarmuka obrolan React.
+
+- **Content-Type:** `text/event-stream`
+- **Format Event Stream:**
+  ```text
+  data: {"token": "Halo", "done": false}
+
+  data: {"token": "!", "done": false}
+
+  data: {"token": "", "done": true, "reply": "Halo!", "routing_mode": "DIRECT", "action_type": "GENERAL", "latency_ms": 420.5}
+  ```
 
 ---
 
-## 4. Endpoint Katalog Kurikulum Resmi
+### 3.4 Endpoint Katalog Kurikulum Resmi
 
-### `GET /api/courses`
-Endpoint Single Source of Truth (SSOT) yang menyajikan katalog kurikulum resmi 5 program studi FTMM (369 mata kuliah). Digunakan oleh frontend `ftmm-compass-ui` (halaman `CourseFinder` dan `DegreePlanner`) dan API Gateway.
+#### `GET /api/v1/courses` (Alias: `GET /api/courses`)
+Single Source of Truth (SSOT) katalog kurikulum 5 program studi FTMM (369 mata kuliah).
 
-#### Request
-- **Method:** `GET`
-- **Path:** `/api/courses`
 - **Query Parameters:**
-  - `program_studi` *(opsional, string)*: Filter nama program studi resmi FTMM (e.g. `"Teknologi Sains Data"`, `"Teknik Elektro"`, `"Teknik Industri"`, `"Teknik Robotika dan Kecerdasan Buatan"`, `"S1 Rekayasa Nanoteknologi"`). Mendukung alias santai seperti `"tsd"`, `"robotika"`, `"elektro"`.
-  - `semester` *(opsional, integer)*: Filter nomor semester target (`1` s.d. `8`).
+  - `program_studi` / `prodi` *(opsional, string)*: Filter prodi kanonik (`"Teknologi Sains Data"`, `"Teknik Elektro"`, dsb) atau alias (`"tsd"`, `"robotika"`).
+  - `semester` *(opsional, integer 1–8)*: Filter semester sasaran.
+  - `q` *(opsional, string)*: Pencarian semantik/silabus.
+  - `page` *(opsional, integer >= 1)*: Halaman aktif (mengaktifkan mode paginasi).
+  - `per_page` *(opsional, integer 1–100)*: Limit mata kuliah per halaman.
 
-#### Response (`200 OK`)
+##### Response Mode Paginasi (`page` atau `per_page` diberikan):
 ```json
 {
+  "data": [
+    {
+      "id": "MK-001",
+      "code": "SIA101",
+      "name": "Pengantar Sains Data",
+      "credits": 3,
+      "semester": 1,
+      "type": "Wajib",
+      "parity": "odd",
+      "desc": "Dasar konsep sains data...",
+      "program": "Teknologi Sains Data",
+      "prerequisites": []
+    }
+  ],
+  "meta": {
+    "total": 68,
+    "page": 1,
+    "per_page": 20,
+    "total_pages": 4
+  },
+  "links": {
+    "self": "/api/v1/courses?page=1&per_page=20",
+    "next": "/api/v1/courses?page=2&per_page=20",
+    "prev": null,
+    "first": "/api/v1/courses?page=1&per_page=20",
+    "last": "/api/v1/courses?page=4&per_page=20"
+  },
+  "program_studi": "Teknologi Sains Data"
+}
+```
+
+##### Response Mode Katalog Utuh (Unpaginated):
+```json
+{
+  "source": "chatbot_ssot",
   "program_studi": "Teknologi Sains Data",
   "total_courses": 68,
   "programs": [
@@ -204,159 +231,159 @@ Endpoint Single Source of Truth (SSOT) yang menyajikan katalog kurikulum resmi 5
     "Teknik Robotika dan Kecerdasan Buatan",
     "Teknologi Sains Data"
   ],
-  "courses": [
+  "courses": [ ... ]
+}
+```
+
+---
+
+### 3.5 Endpoint Pencarian Mata Kuliah
+
+#### `GET /api/v1/courses/search` (Alias: `GET /api/courses/search`)
+Endpoint pencarian semantik dan kata kunci silabus terindeks.
+
+- **Query Parameters:**
+  - `q` *(wajib, string, minLength: 1)*: Kata kunci atau topik (misal `"machine learning"`).
+  - `program_studi` / `prodi` *(opsional, string)*: Filter prodi.
+  - `top_k` *(opsional, integer 1–20, default: `5`)*: Batas jumlah pencarian.
+
+##### Response (`200 OK`):
+```json
+{
+  "source": "hybrid_faiss_bm25",
+  "query": "machine learning",
+  "program_studi": "Teknologi Sains Data",
+  "total_hits": 3,
+  "results": [
     {
-      "id": "MK-001",
-      "code": "AGI101",
-      "name": "Agama Islam I",
-      "credits": 2,
-      "semester": 1,
+      "id": "MK-042",
+      "code": "SIA301",
+      "name": "Pembelajaran Mesin Terapan",
+      "credits": 3,
+      "semester": 5,
       "type": "Wajib",
       "parity": "odd",
-      "desc": "Silabus ringkas mata kuliah...",
       "program": "Teknologi Sains Data",
-      "prerequisites": []
+      "score": 0.942
     }
   ]
 }
 ```
 
-#### Deskripsi Field Response
-| Field | Tipe Data | Keterangan |
-|---|---|---|
-| `program_studi` | `string \| null` | Nama program studi kanonik yang difilter, atau `null` jika meminta seluruh katalog. |
-| `total_courses` | `integer` | Jumlah total mata kuliah yang memenuhi filter kueri. |
-| `programs` | `array[string]` | Daftar lengkap nama program studi resmi yang tersedia di FTMM. |
-| `courses` | `array[object]` | Daftar objek mata kuliah dengan atribut kode, SKS, semester, jenis (`Wajib`/`Pilihan`), paritas (`odd`/`even`), deskripsi, dan prasyarat. |
 ---
 
-## 5. Spesifikasi Kontrak `DegreePlanPayload`
+### 3.6 Endpoint Validasi Rencana Studi (Prerequisite DAG)
 
-Jika `action_type` bernilai `"PLAN_GENERATED"`, objek `plan_payload` dikirimkan secara terstruktur agar komponen frontend `DegreePlanner.tsx` dapat merender kartu pratinjau rencana studi (*Degree Plan Card Widget*) dan mengeksekusi callback `onApplyPlan`.
+#### `POST /api/v1/plans/validations` (Alias: `POST /api/plan/validate`)
+Memvalidasi rencana studi terhadap directed acyclic graph (DAG) prasyarat mata kuliah, aturan paritas semester ganjil/genap, dan batas maksimum beban SKS legal.
 
+##### Request Payload (`PlanValidationRequest`):
 ```json
 {
-  "action": "APPLY_DEGREE_PLAN",
-  "summary": {
-    "program_studi": "Teknologi Sains Data",
-    "current_semester": 4,
-    "target_semester": 8,
-    "total_credits": 144,
-    "focus_tracks": ["Machine Learning"],
-    "note": "Rencana studi rekomendasi AI berdasarkan kurikulum resmi dan prasyarat FTMM."
-  },
   "plan": {
     "5": [
+      { "code": "SIA301", "name": "Pembelajaran Mesin Terapan", "credits": 3 },
+      { "code": "SIA303", "name": "Pemrosesan Bahasa Alami", "credits": 3 }
+    ]
+  },
+  "student_profile": {
+    "program_studi": "Teknologi Sains Data",
+    "semester_saat_ini": 4,
+    "riwayat_matkul_lulus": ["SIA101", "SIA201"],
+    "maks_sks_per_semester": 24
+  }
+}
+```
+
+##### Response Payload (`PlanValidationResponse`):
+```json
+{
+  "is_valid": true,
+  "violations": [],
+  "warnings": [],
+  "total_credits": 6,
+  "total_sks_planned": 6,
+  "details_per_semester": {
+    "5": {
+      "sks": 6,
+      "courses_count": 2
+    }
+  }
+}
+```
+
+---
+
+### 3.7 Endpoint Pembuatan Rencana Studi Instan
+
+#### `POST /api/v1/plans` (Alias: `POST /api/plan/generate`)
+Menghasilkan draft rencana studi 8 semester deterministik yang langsung tervalidasi prasyarat DAG.
+
+##### Request Payload: `StudentProfile`
+##### Response Payload: `DegreePlanPayload`
+
+---
+
+## 4. Standar Penanganan Error & Status Codes (API Design)
+
+Seluruh respons kegagalan API mengembalikan status HTTP semantik dan format envelope standar:
+
+### Skema Error Response
+```json
+{
+  "error": {
+    "code": "upstream_service_unavailable",
+    "message": "Layanan Ollama tidak dapat dihubungi. Pastikan daemon Ollama aktif pada host port 11434.",
+    "details": [
       {
-        "code": "SIA301",
-        "name": "Pembelajaran Mesin Terapan",
-        "credits": 3
+        "field": "ollama_connection",
+        "message": "Failed to connect to Ollama daemon on host port 11434",
+        "code": "connect_timeout"
       }
     ]
   }
 }
 ```
 
-### Struktur Objek:
-1. **`action`** (`string`): Wajib bernilai literal `"APPLY_DEGREE_PLAN"`.
-2. **`summary`** (`object`): Ringkasan rencana studi (program studi, semester saat ini, semester target kelulusan, total SKS kumulatif, dan daftar fokus track).
-3. **`plan`** (`map[semester, list[course]]`): Key berupa integer nomor semester tujuan (contoh: `5`), memetakan array objek mata kuliah dengan atribut `code`, `name`, dan `credits`.
-
----
-
-## 6. Penanganan Error & Guardrail Refusal
-
-Backend mengimplementasikan *Cascaded Defense-in-Depth* (Tier 1 s.d. Tier 4). Jika input melanggar batasan keamanan atau berada di luar cakupan akademik, API tetap merespons status `200 OK` dengan pesan penolakan formal dan `routing_mode: "GUARDED"` (atau `"REFUSED"`).
-
-### Contoh Respons Penolakan (Guardrail Triggered)
-```json
-{
-  "reply": "Permintaan tidak dapat diproses karena melanggar kebijakan keamanan sistem akademik FTMM UNAIR.",
-  "updated_profile": { ... },
-  "action_type": "GENERAL",
-  "plan_payload": null,
-  "routing_mode": "GUARDED",
-  "latency_ms": 1.2
-}
-```
-
-### Kategori Penolakan:
-- **Tier 1 (Adversarial Attack / Jailbreak):** Ditolak instan dalam $\approx 0\text{ ms}$ oleh regex blocklist.
-- **Tier 2 (Out-of-Scope Non-Akademik):** Ditolak dalam $\approx 30\text{ ms}$ oleh FAISS Centroid Semantic Gate (topik kuliner, crypto, politik, dsb).
-- **Tier 4 (Argument Constraint Violation):** Ditolak jika parameter melanggar regulasi (misal meminta semester $>8$ atau beban SKS melebihi batas legal IPS).
-
-### HTTP Error Codes
-| Status Code | Arti | Skenario Terjadinya |
+### Matriks HTTP Status Codes
+| Status Code | Code Identifier | Keterangan & Header |
 |---|---|---|
-| `200 OK` | Sukses | Request berhasil diproses (termasuk respons penolakan ramah pengguna). |
-| `422 Unprocessable Entity` | Validasi Schema Gagal | Payload JSON tidak sesuai tipe data Pydantic (misal `semester_saat_ini` berupa string huruf). |
-| `500 Internal Server Error` | Server Exception | Terjadi kegagalan kritis pada backend atau dependensi host tidak merespons. |
+| `200 OK` | - | Request berhasil diproses |
+| `422 Unprocessable Entity` | `validation_error` | Payload JSON tidak sesuai tipe data Pydantic |
+| `503 Service Unavailable` | `upstream_service_unavailable` | Daemon Ollama offline. Menyertakan header `Retry-After: 5` |
+| `504 Gateway Timeout` | `upstream_timeout` | Proses inferensi melebihi batas waktu toleransi |
 
 ---
 
-## 7. Contoh Integrasi Client
+## 5. Contoh Integrasi Client
 
-### A. Contoh Fetch JavaScript / TypeScript (Frontend React)
+### Contoh Fetch TypeScript (Frontend UI)
 ```typescript
-interface ChatPayload {
-  message: string;
-  history: Array<{ role: 'user' | 'assistant'; content: string }>;
-  student_profile: Record<string, any>;
-}
-
-async function sendChatMessage(payload: ChatPayload) {
-  const response = await fetch('http://localhost:8000/api/chat', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
+async function fetchCourses(page = 1, perPage = 20, prodi = "Teknologi Sains Data") {
+  const url = `/api/v1/courses?prodi=${encodeURIComponent(prodi)}&page=${page}&per_page=${perPage}`;
+  const response = await fetch(url, {
+    headers: { "Accept": "application/json" }
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    const errorBody = await response.json();
+    throw new Error(errorBody.error?.message || `HTTP ${response.status}`);
   }
 
-  const data = await response.json();
-  console.log('AI Reply:', data.reply);
-  console.log('Routing Mode:', data.routing_mode);
-  
-  if (data.action_type === 'PLAN_GENERATED' && data.plan_payload) {
-    console.log('Degree Plan Ready:', data.plan_payload);
-  }
-
-  return data;
+  return await response.json();
 }
 ```
 
-### B. Contoh Pengujian via cURL
-
-#### 1. Uji Healthcheck:
+### Contoh cURL Test Suite
 ```bash
-curl -X GET http://localhost:8000/api/health
-```
+# 1. Health check kanonik
+curl -s http://127.0.0.1:8000/api/v1/health | jq .
 
-#### 2. Uji Chat Sapaan (Chitchat):
-```bash
-curl -X POST http://localhost:8000/api/chat \
+# 2. Paginasi katalog kurikulum
+curl -s "http://127.0.0.1:8000/api/v1/courses?prodi=Teknologi%20Sains%20Data&page=1&per_page=5" | jq .
+
+# 3. Dialog chat
+curl -s -X POST http://127.0.0.1:8000/api/v1/chat \
   -H "Content-Type: application/json" \
-  -d '{
-    "message": "Halo Compass AI!",
-    "history": [],
-    "student_profile": {}
-  }'
-```
-
-#### 3. Uji Chat Regulasi Akademik (SOP PKL):
-```bash
-curl -X POST http://localhost:8000/api/chat \
-  -H "Content-Type: application/json" \
-  -d '{
-    "message": "Berapa syarat SKS minimal untuk mengambil PKL di FTMM?",
-    "history": [],
-    "student_profile": {
-      "program_studi": "Teknologi Sains Data",
-      "semester_saat_ini": 4
-    }
-  }'
+  -d '{"message": "Halo Compass AI", "history": []}' | jq .
 ```
