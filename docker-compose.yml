@@ -6,13 +6,15 @@ services:
     container_name: ftmm-compass-chatbot
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8000:8000"
+      - "8000:8000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - ftmm-network
     env_file:
       - .env
     environment:
-      - OLLAMA_HOST=${OLLAMA_HOST:-http://host.docker.internal:11434}
+      - OLLAMA_HOST=http://host.docker.internal:11434
     security_opt:
       - no-new-privileges:true
     deploy:
@@ -23,3 +25,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./src:/app/src
+
+networks:
+  ftmm-network:
+    external: true
