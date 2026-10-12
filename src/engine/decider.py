@@ -19,6 +19,22 @@ CENTROIDS_GEMMA2_PATH = Path("data/decider_centroids_gemma2.npz")
 _CACHED_GEMMA2_MODEL: Any = None
 
 
+def get_shared_gemma2_model(model_name: str = DEFAULT_GEMMA2_MODEL) -> Any:
+    """Shared singleton SentenceTransformer instance for EmbeddingGemma-2.
+    Reused across System-1 Decider and CourseRetriever to enforce Single-Model Residency.
+    """
+    global _CACHED_GEMMA2_MODEL
+    if _CACHED_GEMMA2_MODEL is not None:
+        return _CACHED_GEMMA2_MODEL
+    from sentence_transformers import SentenceTransformer
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    _CACHED_GEMMA2_MODEL = SentenceTransformer(
+        model_name,
+        model_kwargs={"torch_dtype": torch.bfloat16},
+        device=device,
+    )
+    return _CACHED_GEMMA2_MODEL
+
 class DecisionCategory(str, Enum):
     CHAT_ONLY = "CHAT_ONLY"
     PREREQUISITE = "PREREQUISITE"
@@ -160,7 +176,6 @@ class System1Decider:
             self.backend = "gemma2"
         else:
             self.backend = "ollama"
-
         if centroids_path is not None:
             self.centroids_path = Path(centroids_path)
         else:
@@ -184,20 +199,9 @@ class System1Decider:
     def _get_gemma_model(self):
         if self._gemma_model is not None:
             return self._gemma_model
-        global _CACHED_GEMMA2_MODEL
-        if _CACHED_GEMMA2_MODEL is not None:
-            self._gemma_model = _CACHED_GEMMA2_MODEL
-            return self._gemma_model
-        from sentence_transformers import SentenceTransformer
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        _CACHED_GEMMA2_MODEL = SentenceTransformer(
-            self.embed_model if "gemma" in self.embed_model.lower() else DEFAULT_GEMMA2_MODEL,
-            model_kwargs={"torch_dtype": torch.bfloat16},
-            device=device,
-        )
-        self._gemma_model = _CACHED_GEMMA2_MODEL
+        model_name = self.embed_model if "gemma" in self.embed_model.lower() else DEFAULT_GEMMA2_MODEL
+        self._gemma_model = get_shared_gemma2_model(model_name)
         return self._gemma_model
-
     def _apply_mrl_truncation(self):
         if self._raw_centroid_matrix is None:
             return

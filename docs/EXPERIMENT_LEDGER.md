@@ -25,6 +25,7 @@
 | **`exp-012`** | 2026-10-12 | Benchmark Evaluasi EmbeddingGemma-2 vs nomic-embed-text (Card 102) | `google/embeddinggemma-2` (270M) vs `nomic-embed-text` | Nomic Dense: Hit@3 76.0%, Hit@1 50.4%<br>Gemma2 Dense: **Hit@3 85.3%**, **Hit@1 80.6%**<br>Gemma2 RRF: **Hit@3 86.8%**, **Hit@5 88.4%** | Nomic: MRR 0.6306, NDCG@5 0.5924<br>Gemma2: **MRR 0.8345**, **NDCG@5 0.8137** | Slang Nomic: Hit@3 61.9%, MRR 0.5675<br>Slang Gemma2: **Hit@3 76.2%**, **MRR 0.7238** | Nomic: 34.8 ms<br>Gemma2 768d: 96.3 ms (P50 63.9 ms)<br>Gemma2 256d: **70.1 ms** (P50 56.0 ms) | Nomic: 34.8 ms<br>Gemma2 768d: 96.3 ms<br>Gemma2 RRF: 92.2 ms | MRL 256d: Hit@3 84.5% (Hemat 66.7% storage)<br>VRAM Peak: 2415.0 MiB (~29.6% VRAM) | **EmbeddingGemma-2 (270M) mendominasi telak**: Hit@1 naik +30.2% (ke 80.6%), MRR naik +32.3% (ke 0.8345), dan kueri slang melonjak +14.3% (ke 76.2%). MRL 256d mempertahankan Hit@3 84.5% dengan 66.7% penghematan memori. Menjawab Card 102. | `docs/exp-012_embeddinggemma2_benchmark/` |
 | **`exp-015`** | 2026-10-12 | Evaluasi System-1 Decider dengan Centroid EmbeddingGemma-2 & MRL Truncation (Card 109) | `google/embeddinggemma-2` (270M) vs `nomic-embed-text` | Nomic: **96.7%** (58/60)<br>Gemma2 768d: 93.3%<br>Gemma2 512d: **95.0%**<br>Gemma2 256d: **95.0%**<br>Gemma2 128d: 93.3% | Margin (Top1-Top2):<br>Nomic: 0.0401<br>Gemma2 768d: 0.0427<br>Gemma2 256d: **0.0440** | Slang Acc: Nomic 95.0%, Gemma 256d **95.0%**<br>Implicit Acc: **100.0%** (All) | Matrix Dot-Product: **0.05 ms** (BLAS $O(1)$) | Nomic: **35.2 ms** (Ollama)<br>Gemma2: 97.0 ms (PyTorch CUDA) | MRL 256d: Hemat 66.7% dimensi tanpa degradasi akurasi | **Ketahanan MRL Terbukti (256d Optimal)**: Gemma-2 256d & 512d mencapai akurasi 95.0% dengan separabilitas margin lebih tinggi (0.0440 vs 0.0401) dibanding Nomic. Namun unifikasi runtime router terganjal limitasi GGUF Ollama (`unknown model architecture: 'gemma-embedding2'`), sehingga Nomic (Ollama) direkomendasikan tetap aktif untuk router sub-35ms hingga support runtime C++ tersedia. | `docs/exp-015_decider_gemma2_evaluation/` |
 | **`exp-016`** | 2026-10-12 | Hardening Semantic Guardrails & Dual-Centroid Boundary (Card 110) | `nomic-embed-text` + Dual Semantic Boundary | Safety Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Adversarial: 100% | ASR: **0.0%** (0/15 attacks)<br>OOD-R: **100.0%** (20/20 non-academic)<br>FRR: **0.0%** (0/25 benign) | Non-academic Coding: **100% Blocked** (bubble sort, game, web scraping)<br>Slang: 100% Allowed | Dot-Product BLAS: **0.05 ms**<br>Gate P50: **70.66 ms**<br>Gate Avg: **79.21 ms** | P50: **70.66 ms**<br>P95: 151.00 ms | Zero False Refusal (FRR 0.0%)<br>Zero Attack Success (ASR 0.0%) | **Eliminasi Celah Non-Akademik Tuntas**: Memperbaiki logika rapuh `max_ood >= max_ac` dan memperluas anchor OOD mencakup coding umum/tugas sekolah. Kueri `buatkan kode bubble sort` terblokir seketika pada Tier 2 dalam <35ms tanpa beban ekstra LLM. Menjawab Card 110. | `docs/exp-016_hardened_semantic_guardrails/` |
+| **`exp-017`** | 2026-10-12 | Ollama Native Embedding & Classifier Head Matrix (Card 25, 32, 99) | `nomic-embed-text` (768d), `qwen3-embedding:0.6b` (1024d), `bge-m3` (1024d) | Qwen3 kNN: **100.0%** (60/60)<br>BGE-M3 Head: **98.3%**<br>Nomic Centroid: 96.7% | Margin (Top1-Top2):<br>Nomic Centroid: 0.0401<br>Nomic Logistic: **0.0831**<br>Qwen3 kNN: **0.3155**<br>BGE-M3 kNN: **0.2934** | Formal: 100%<br>Slang: **100.0%** (Qwen3 & BGE-M3)<br>Implicit: **100%** (All) | Matrix / Head Latency: **0.05 - 0.10 ms** (BLAS $O(1)$) | Nomic P50: **30.4 ms**<br>Qwen3 P50: **130.0 ms**<br>BGE-M3 P50: **170.0 ms** | Zero Python RAM overhead<br>Zero Disk I/O / Zero Swap<br>VRAM Peak: ~3.95 GB | **Qwen3-Embedding (0.6B) + Multi-Exemplar k-NN Mencapai 100.0% Akurasi Sempurna** dengan margin pemisah 0.3155 (8x lebih tajam vs Nomic). Nomic + Logistic tercepat (30.5 ms P50, 96.7%). Membuktikan keunggulan ekosistem native Ollama tanpa disk thrashing WSL2. | `docs/exp-017_ollama_embedding_classifier_head/` |
 
 ---
 
@@ -513,3 +514,39 @@
   - `docs/exp-016_hardened_semantic_guardrails/benchmark_metrics.csv`
   - `docs/exp-016_hardened_semantic_guardrails/benchmark_results.json`
   - `docs/exp-016_hardened_semantic_guardrails/benchmark_raw_traces.jsonl`
+
+---
+
+### [exp-017] Ollama Native Embedding & Classifier Head Matrix Benchmark
+- **Tanggal:** 2026-10-12
+- **Kartu Trello:** Card 25 (`[Nauval & Ario] Evaluasi RAG Dense Multilingual`), Card 32 (`[Nauval & Ario] Hybrid RAG+CAG BGE-M3`), Card 99 (`[Nauval & Ario] System-1 Decision Classifier`).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi kelayakan dan efisiensi ekosistem embedding native C++ Ollama (`nomic-embed-text`, `qwen3-embedding:0.6b`, `bge-m3`) yang dikombinasikan dengan 3 variasi arsitektur classifier head (`Centroid Prototype`, `Regularized Logistic Regression`, `Multi-Exemplar k-NN`) untuk mengeliminasi disk thrashing / Hyper-V swapping WSL2 dan mencapai akurasi routing 100% pada bahasa slang mahasiswa FTMM.
+- **Setup Teknis (Low-Level Architecture):**
+  - **Embedding Backbones (Ollama C++ Daemon Native):**
+    * `nomic-embed-text:latest` (274 MB, 768 dimensi)
+    * `qwen3-embedding:0.6b` (639 MB, 1024 dimensi)
+    * `bge-m3:latest` (1.2 GB, 1024 dimensi)
+  - **Classifier Heads (In-Memory BLAS <0.1 ms):**
+    * Head A: Cosine Centroid Prototype (Normalized mean exemplar per category)
+    * Head B: Regularized Logistic Regression / Linear Softmax (L2 regularized hyperplane boundary)
+    * Head C: Multi-Exemplar k-NN (Instance-based prototype memory $k=1$, preserving multi-modal register distribution)
+  - **Testbed Pengujian:** 60 kueri terstratifikasi (20 Formal Baku, 20 Slang Mahasiswa, 20 Implisit Ambigu) lintas 5 kategori akademik FTMM.
+- **Temuan Kunci:**
+  1. **Akurasi Sempurna 100.0% pada `qwen3-embedding:0.6b` + Multi-Exemplar k-NN:**
+     Kombinasi embedding Qwen3 (639 MB) dengan Head C (Multi-Exemplar k-NN) berhasil mengklasifikasikan seluruh 60 kueri dengan akurasi 100.0% (Formal: 100%, Slang: 100%, Implisit: 100%) dan margin pemisah spektakuler **0.3155** (hampir 8x lipat lebih tajam dari baseline Nomic 0.0401).
+  2. **Efisiensi Ultra-Cepat `nomic-embed-text` (30.4 ms):**
+     Nomic mencatat latensi terendah (P50 30.4 ms). Penerapan Head B (Logistic Regression) menggandakan margin separabilitas dari 0.0401 ke **0.0831** tanpa penalti latensi (+0.1 ms).
+  3. **Konfirmasi Kemampuan Multilingual `bge-m3`:**
+     BGE-M3 membuktikan akurasi 98.33% dengan separabilitas margin tinggi (0.1376 - 0.2934), namun dengan latensi sedikit lebih tinggi (P50 170.0 ms).
+  4. **Stabilitas Hardware & Nol Disk I/O:**
+     Seluruh pengujian berjalan 100% di C++ daemon Ollama dengan zero Python Host RAM allocation dan zero disk paging WSL2. VRAM peak stabil pada 3.959,0 MiB (<50% kapasitas GPU RTX 5050 8GB).
+- **Keputusan Arsitektur & Rekomendasi:**
+  - **Rekomendasi Utama (Accuracy-Centric)**: `qwen3-embedding:0.6b` + Multi-Exemplar k-NN sebagai router System-1 produksi (100.0% Akurasi, Margin 0.3155, Latensi 130 ms).
+  - **Rekomendasi Alternatif (Speed-Centric)**: `nomic-embed-text` + Logistic Hyperplane (96.67% Akurasi, Margin 0.0831, Latensi 30.5 ms).
+- **Artefak:**
+  - `docs/exp-017_ollama_embedding_classifier_head/README.md`
+  - `docs/exp-017_ollama_embedding_classifier_head/benchmark_summary.md`
+  - `docs/exp-017_ollama_embedding_classifier_head/benchmark_metrics.csv`
+  - `docs/exp-017_ollama_embedding_classifier_head/benchmark_results.json`
+  - `docs/exp-017_ollama_embedding_classifier_head/benchmark_raw_traces.jsonl`

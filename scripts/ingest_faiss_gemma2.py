@@ -15,8 +15,10 @@ from scripts.ingest_faiss import format_course_chunk, load_all_courses
 OUTPUT_DIR = Path("data/faiss")
 INDEX_PATH = OUTPUT_DIR / "ftmm_courses_gemma2.faiss"
 META_PATH = OUTPUT_DIR / "ftmm_courses_gemma2_meta.pkl"
+INDEX_256D_PATH = OUTPUT_DIR / "ftmm_courses_gemma2_256d.faiss"
 MODEL_ID = "google/embeddinggemma-2"
 EMBED_DIM = 768
+MRL_DIM = 256
 BATCH_SIZE = 16
 
 
@@ -58,6 +60,18 @@ def main():
     print(f"Indexed {index.ntotal} vectors to FAISS IndexFlatIP ({EMBED_DIM}d).")
 
     faiss.write_index(index, str(INDEX_PATH))
+
+    # Build FAISS IndexFlatIP for MRL 256d
+    embeddings_256d = embeddings[:, :MRL_DIM].copy()
+    norms = np.linalg.norm(embeddings_256d, axis=1, keepdims=True)
+    norms = np.where(norms == 0, 1.0, norms)
+    embeddings_256d = embeddings_256d / norms
+
+    index_256d = faiss.IndexFlatIP(MRL_DIM)
+    index_256d.add(embeddings_256d)
+    faiss.write_index(index_256d, str(INDEX_256D_PATH))
+    print(f"Indexed {index_256d.ntotal} vectors to FAISS IndexFlatIP MRL ({MRL_DIM}d).")
+    print(f"[SUCCESS] Index 256d saved to {INDEX_256D_PATH}")
     metadata = {
         "courses": courses,
         "chunks": chunks,

@@ -1,0 +1,10 @@
+Variant,Model,Classifier_Head,Overall_Acc,Formal_Acc,Slang_Acc,Implicit_Acc,Avg_Margin,P50_Latency_ms,Avg_Latency_ms,Avg_Embed_Latency_ms,Avg_Head_Latency_ms
+nomic-embed-text + Centroid,nomic-embed-text,Centroid,96.67,95.0,95.0,100.0,0.0401,30.45,32.27,32.23,0.0409
+nomic-embed-text + Logistic,nomic-embed-text,Logistic,96.67,95.0,95.0,100.0,0.0831,30.51,32.3,32.23,0.0724
+nomic-embed-text + kNN_1,nomic-embed-text,kNN_1,93.33,90.0,90.0,100.0,0.1724,30.45,32.24,32.23,0.0093
+qwen3-embedding:0.6b + Centroid,qwen3-embedding:0.6b,Centroid,98.33,95.0,100.0,100.0,0.1176,129.95,138.4,138.22,0.177
+qwen3-embedding:0.6b + Logistic,qwen3-embedding:0.6b,Logistic,98.33,95.0,100.0,100.0,0.211,130.08,138.46,138.22,0.2412
+qwen3-embedding:0.6b + kNN_1,qwen3-embedding:0.6b,kNN_1,100.0,100.0,100.0,100.0,0.3155,129.96,138.26,138.22,0.0402
+bge-m3 + Centroid,bge-m3,Centroid,98.33,95.0,100.0,100.0,0.1376,170.04,175.24,175.19,0.055
+bge-m3 + Logistic,bge-m3,Logistic,98.33,95.0,100.0,100.0,0.2338,170.09,175.26,175.19,0.076
+bge-m3 + kNN_1,bge-m3,kNN_1,98.33,100.0,95.0,100.0,0.2934,170.04,175.2,175.19,0.01
