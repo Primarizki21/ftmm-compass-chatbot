@@ -76,10 +76,29 @@ class UnifiedChatEngine:
 
         # Step 2: Session State Sync & Multi-Turn Contextualization
         session = self.memory.get_or_create_session(session_id)
+        if history and not session.messages:
+            for m in history:
+                session.messages.append(m)
+                if m.get("role") == "user":
+                    updates = self.memory.extract_profile_updates(m["content"])
+                    if "semester_saat_ini" in updates:
+                        session.last_discussed_semester = updates["semester_saat_ini"]
+                        session.student_profile["semester_saat_ini"] = updates["semester_saat_ini"]
+                    if "program_studi" in updates:
+                        session.student_profile["program_studi"] = updates["program_studi"]
+                    if re.search(
+                        r"(?:mata\s*kuliah|matkul|courses?).*?(?:semester|sem|smt)\s*[1-8]|(?:semester|sem|smt)\s*[1-8].*?(?:mata\s*kuliah|matkul)",
+                        m["content"],
+                        re.IGNORECASE,
+                    ):
+                        session.last_intent_topic = "SEMESTER_COURSES"
+
         if student_profile:
             for k, v in student_profile.items():
                 if v is not None and v != [] and not session.student_profile.get(k):
                     session.student_profile[k] = v
+            if student_profile.get("semester_saat_ini") and not session.last_discussed_semester:
+                session.last_discussed_semester = student_profile["semester_saat_ini"]
 
         contextualized_q = self.memory.contextualize_query(session_id, q_raw)
 
