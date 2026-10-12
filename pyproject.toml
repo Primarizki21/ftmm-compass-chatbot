@@ -5,12 +5,17 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "accelerate>=1.15.0",
+    "bitsandbytes>=0.50.2",
     "faiss-cpu>=1.15.1",
     "fastapi>=0.142.1",
     "httpx>=0.28.1",
     "numpy>=2.5.3",
     "ollama>=0.6.3",
+    "pillow>=12.3.0",
     "pydantic>=2.13.5",
+    "sentence-transformers>=3.0.0",
+    "torchvision>=0.29.1",
     "uvicorn[standard]>=0.54.0",
 ]
 
