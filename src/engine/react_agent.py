@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from typing import Any
 import ollama
@@ -8,6 +9,12 @@ from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
 from src.engine.tools.academic_tools import normalize_program_studi, extract_semester_from_text
 DEFAULT_MODEL = "qwen2.5:3b"
 
+
+def _get_ollama_client() -> ollama.Client:
+    host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").strip()
+    if not host.startswith(("http://", "https://")):
+        host = f"http://{host}"
+    return ollama.Client(host=host.rstrip("/"))
 REACT_SYSTEM_PROMPT = """Anda adalah Compass AI, agen penasihat akademik resmi Fakultas Teknologi Maju dan Multidisiplin (FTMM) Universitas Airlangga.
 Tugas Anda adalah membantu mahasiswa dengan informasi akurat, perencanaan studi, dan pengecekan regulasi akademik.
 Prinsip Kerja Agen:
@@ -31,6 +38,11 @@ Prinsip Kerja Agen:
    - Anda WAJIB menampilkan SELURUH mata kuliah yang ada di hasil tool secara lengkap tanpa terpotong (jangan hanya 1 atau sebagian).
    - Format ringkas per baris: Nomor. [Kode MK] Nama MK (X SKS, Jenis) - Prasyarat: [Prasyarat jika ada].
    - Tuliskan juga total mata kuliah dan total SKS sesuai data tool.
+9. BATASAN DOMAIN & REFUSAL POLICY (OUT-OF-SCOPE REFUSAL):
+   - Anda adalah asisten akademik institusional FTMM UNAIR, BUKAN asisten umum/coding umum.
+   - Jika pengguna meminta penulisan kode umum (seperti implementasi algoritma pemrograman lepas, pembuatan script/aplikasi di luar kurikulum FTMM), pengerjaan PR umum, atau topik non-akademik umum lainnya, Anda WAJIB MENOLAK secara sopan dan lugas:
+     * Bahasa Indonesia: 'Maaf, sebagai asisten akademik FTMM UNAIR, saya hanya melayani konsultasi kurikulum, prasyarat mata kuliah, beban SKS, dan perencanaan studi FTMM. Saya tidak dapat membuatkan kode program atau mengerjakan tugas di luar kurikulum resmi.'
+     * English: 'Sorry, as the official FTMM UNAIR academic assistant, I only handle inquiries related to the curriculum, course prerequisites, credit limits, and degree planning. I cannot write arbitrary code or complete general homework assignments outside our curriculum.'
 """
 
 
@@ -40,7 +52,9 @@ _decider_instance: System1Decider | None = None
 def get_system1_decider() -> System1Decider:
     global _decider_instance
     if _decider_instance is None:
-        _decider_instance = System1Decider()
+        mrl_dim_env = os.getenv("DECIDER_MRL_DIM", "256")
+        mrl_dim = int(mrl_dim_env) if mrl_dim_env and mrl_dim_env.lower() != "none" else None
+        _decider_instance = System1Decider(backend="gemma2", mrl_dim=mrl_dim)
         _decider_instance.initialize()
     return _decider_instance
 
@@ -115,7 +129,8 @@ class ReActAgentEngine:
                     }
                     if active_tools:
                         chat_kwargs["tools"] = active_tools
-                    resp = ollama.chat(**chat_kwargs)
+                    client = _get_ollama_client()
+                    resp = client.chat(**chat_kwargs)
                     break
                 except Exception as e:
                     if attempt == 0:

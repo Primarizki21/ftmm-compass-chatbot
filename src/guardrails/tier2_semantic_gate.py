@@ -1,3 +1,4 @@
+import os
 import time
 from pathlib import Path
 from typing import NamedTuple
@@ -5,8 +6,14 @@ import numpy as np
 import ollama
 
 DEFAULT_EMBED_MODEL = "nomic-embed-text"
-CACHE_PATH = Path("data/guardrails_centroids.npz")
+CACHE_PATH = Path("data/guardrails_centroids_v2.npz")
 
+
+def _get_ollama_client() -> ollama.Client:
+    host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").strip()
+    if not host.startswith(("http://", "https://")):
+        host = f"http://{host}"
+    return ollama.Client(host=host.rstrip("/"))
 
 class GateResult(NamedTuple):
     is_ood: bool
@@ -24,11 +31,23 @@ ACADEMIC_ANCHORS = [
     "silabus mata kuliah rekayasa nanoteknologi teknik industri teknik elektro ftmm",
     "dosen pengampu jadwal kuliah dan beban studi semester ganjil genap",
     "ketentuan perbaikan nilai remidi dan evaluasi putus studi drop out ftmm",
+    "info mata kuliah praktikum terintegrasi laboratorium alpro visdat strukdat jarkom sisop basdat kalkulus bobot sks",
+    "konsultasi akademik rencana studi krs sks semester mahasiswa ftmm",
+    "tata cara administrasi akademik ukt cuti kuliah yudisium skripsi pkl ftmm",
+    "salam sapaan konsultasi akademik halo selamat pagi asisten ftmm unair",
+    "perhitungan jatah beban sks jika nilai ips turun anjlok perbaikan nilai remidi",
+    "mata kuliah visdat alpro strukdat itu belajar apa aja sih topik materi dan pembahasannya",
+    "perbedaan komparasi silabus dan materi antara mata kuliah alpro 1 sama alpro 2 bedanya apa",
 ]
 
 NON_ACADEMIC_ANCHORS = [
+    "buatkan kode algoritma program python c java bubble sort quick sort binary tree script kodingan",
+    "tuliskan fungsi fungsi kodingan pembuatan website aplikasi mobile backend frontend database",
+    "bantu bikin kode pemrograman tugas membuat program aplikasi game web software",
+    "tuliskan esai artikel cerita makalah tentang sejarah perang dunia pemanasan global fotosintesis",
+    "bantu kerjakan tugas pekerjaan rumah pr matematika fisika sekolah sma smp umum",
     "resep cara memasak makanan dan bumbu dapur kuliner rendang kue",
-    "prediksi investasi harga cryptocurrency bitcoin trading saham dan keuangan pasar",
+    "prediksi investasi harga cryptocurrency bitcoin trading saham pasar modal",
     "analisis politik calon presiden pemilu partai politik dan hubungan internasional",
     "rekomendasi tempat wisata liburan tiket hotel dan estimasi biaya traveling",
     "judi taruhan bola online tips menang casino esport betting",
@@ -36,7 +55,7 @@ NON_ACADEMIC_ANCHORS = [
     "skor pertandingan sepak bola taktik formasi tim liga champions olahraga",
     "resep obat warung cara menyembuhkan penyakit flu batuk medis pengobatan",
     "spesifikasi harga hp smartphone gadget iphone android laptop elektronik",
-    "chord kunci gitar lirik lagu musik mp3 tangga nada",
+    "chord kunci gitar lirik lagu musik mp3 tangga nada film bioskop selebriti",
 ]
 
 
@@ -49,8 +68,8 @@ class Tier2SemanticGate:
     def __init__(
         self,
         embed_model: str = DEFAULT_EMBED_MODEL,
-        academic_threshold: float = 0.50,
-        margin: float = 0.05,
+        academic_threshold: float = 0.45,
+        margin: float = 0.02,
     ):
         self.embed_model = embed_model
         self.academic_threshold = academic_threshold
@@ -71,9 +90,9 @@ class Tier2SemanticGate:
             self._initialized = True
             return
 
-        # Compute embeddings via Ollama
-        academic_resp = ollama.embed(model=self.embed_model, input=ACADEMIC_ANCHORS)
-        ood_resp = ollama.embed(model=self.embed_model, input=NON_ACADEMIC_ANCHORS)
+        client = _get_ollama_client()
+        academic_resp = client.embed(model=self.embed_model, input=ACADEMIC_ANCHORS)
+        ood_resp = client.embed(model=self.embed_model, input=NON_ACADEMIC_ANCHORS)
 
         ac_vecs = np.array(academic_resp["embeddings"], dtype=np.float32)
         ood_vecs = np.array(ood_resp["embeddings"], dtype=np.float32)
@@ -95,7 +114,8 @@ class Tier2SemanticGate:
         if not self._initialized:
             self.initialize()
 
-        resp = ollama.embed(model=self.embed_model, input=query)
+        client = _get_ollama_client()
+        resp = client.embed(model=self.embed_model, input=query)
         q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
         norm = np.linalg.norm(q_vec)
         if norm > 0:
@@ -109,9 +129,10 @@ class Tier2SemanticGate:
         max_ood = float(np.max(ood_sims))
         dt_ms = (time.perf_counter() - t0) * 1000
 
-        # OOD condition: either higher similarity to OOD anchors, or significantly below academic threshold
-        is_ood = (max_ood > max_ac + self.margin) or (max_ac < self.academic_threshold and max_ood >= max_ac)
-
+        # Dual boundary decision logic (pure semantic vector boundary):
+        # 1. Out-of-scope dominance: Query similarity to non-academic prototypes exceeds academic margin
+        # 2. Strict academic outlier: Query similarity to FTMM academic scope is below valid threshold
+        is_ood = (max_ood > max_ac + self.margin) or (max_ac < self.academic_threshold)
         reason = None
         if is_ood:
             reason = (

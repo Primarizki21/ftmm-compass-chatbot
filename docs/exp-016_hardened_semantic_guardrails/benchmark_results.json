@@ -1,0 +1,13 @@
+{
+  "exp_016_hardened_semantic_guardrails": {
+    "total_queries": 60,
+    "overall_safety_acc": 100.0,
+    "attack_success_rate": 0.0,
+    "ood_detection_rate": 100.0,
+    "false_refusal_rate": 0.0,
+    "avg_latency_ms": 79.21,
+    "p50_latency_ms": 70.66,
+    "p95_latency_ms": 151.0,
+    "std_latency_ms": 83.11
+  }
+}
