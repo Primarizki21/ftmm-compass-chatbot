@@ -67,27 +67,52 @@ This microservice provides high-precision academic advising, course discovery, p
 
 ---
 
-## Docker Deployment
+## Docker Deployment (Multi-Container & ftmm-network)
 
-To run as a containerized service with Docker Compose:
+Layanan ini dirancang untuk berjalan sebagai kontainer terisolasi yang terhubung ke jaringan bersama `ftmm-network` agar dapat diakses oleh API Gateway dari `ftmm-compass-ui`:
 
+### 1. Inisialisasi Jaringan Host (Sekali Saja di Server Baru)
+```bash
+# Buat shared bridge network jika belum ada
+docker network create ftmm-network 2>/dev/null || true
+
+# Jika Ollama berjalan di host dengan firewall UFW aktif (misal Ubuntu/WSL2):
+sudo ufw allow 11434/tcp
+```
+
+### 2. Jalankan Kontainer
 ```bash
 docker compose up --build -d
 ```
 
-- API Base URL: `http://localhost:8000`
-- Interactive Swagger docs: `http://localhost:8000/docs`
-- Interactive ReDoc: `http://localhost:8000/redoc`
+### 3. URL Layanan & Healthcheck
+- **Endpoint Internal (dalam `ftmm-network`):** `http://ftmm-compass-chatbot:8000`
+- **Endpoint Publik Host:** `http://localhost:8000`
+- **Healthcheck Probe:** `curl -s http://localhost:8000/api/v1/health | jq .` (memverifikasi `status: healthy` dan `ollama_online: true`)
+- **Interactive Swagger Docs:** `http://localhost:8000/docs`
+- **Interactive ReDoc:** `http://localhost:8000/redoc`
+
+### 4. Skenario Server Baru (Alternative Full-Containerized Ollama)
+Di server VPS/Cloud tanpa instalasi Ollama lokal di host, daemon Ollama dapat dijalankan langsung di Docker dan digabungkan ke `ftmm-network`:
+```bash
+docker run -d --gpus=all -v ollama_data:/root/.ollama -p 11434:11434 --network ftmm-network --name ollama ollama/ollama
+```
+*(Cukup ubah `OLLAMA_HOST=http://ollama:11434` di `.env` tanpa perlu membuka port host UFW).*
 
 ---
 
-## API Endpoints
+## API Endpoints (Dual-Tier REST Architecture)
 
-- `GET /api/health` — Service readiness and Ollama connectivity probe.
-- `POST /api/chat` — Main conversation endpoint accepting `{ message, history, student_profile }` and returning structured responses, updated student profile, and action payloads (`DEGREE_PLAN` / `ANSWER`).
+Layanan mengekspos endpoint kanonik (`/api/v1/*`) dan alias kompatibilitas (`/api/*`):
+- `GET /api/v1/health` — Probe kesehatan layanan dan konektivitas daemon Ollama.
+- `GET /api/v1/courses` — Katalog 369 mata kuliah kurikulum 5 prodi FTMM dengan paginasi adaptif (`page`, `per_page`).
+- `GET /api/v1/courses/search` — Pencarian semantik dan kata kunci silabus via Hybrid FAISS + BM25.
+- `POST /api/v1/chat` — Dialog akademik interaktif dengan Intent Decider & Hybrid RAG-CAG engine.
+- `POST /api/v1/chat/stream` — Real-time Server-Sent Events (SSE) streaming token dialog.
+- `POST /api/v1/plans/validations` — Validasi rencana studi terhadap graf prasyarat (DAG) & paritas semester.
+- `POST /api/v1/plans` — Sintesis rencana studi deterministik 8 semester otomatis.
 
-Full endpoint schemas and integration contracts are documented in [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md).
-
+Spesifikasi lengkap schema, Pydantic contracts, dan panduan integrasi tersedia di [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md).
 ---
 
 ## Testing & Quality Assurance
