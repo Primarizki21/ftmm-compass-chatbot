@@ -322,13 +322,17 @@ def generate_degree_plan(
         c_sks = int(c.get("sks", 2))
         
         if c_sem < current_semester:
+            c_type_str = "Wajib" if "wajib" in str(c.get("jenis", "wajib")).lower() else "Pilihan"
             plan[c_sem].append({
-                "id": c_code,
-                "name": c_name,
+                "id": str(c.get("id") or c_code),
+                "code": str(c_code),
+                "name": str(c_name),
                 "credits": c_sks,
                 "semester": c_sem,
-                "type": c.get("jenis", "Wajib"),
-                "status": "completed"
+                "type": c_type_str,
+                "parity": "odd" if c_sem % 2 == 1 else "even",
+                "desc": str(c.get("deskripsi", "")),
+                "status": "completed",
             })
             total_credits += c_sks
             passed_set.add(c_name.lower())
@@ -349,12 +353,15 @@ def generate_degree_plan(
             if c_sem == sem and "wajib" in c_type:
                 if sem_sks + c_sks <= max_sks_per_sem:
                     plan[sem].append({
-                        "id": c_code,
-                        "name": c_name,
+                        "id": str(c.get("id") or c_code),
+                        "code": str(c_code),
+                        "name": str(c_name),
                         "credits": c_sks,
                         "semester": sem,
                         "type": "Wajib",
-                        "status": "planned"
+                        "parity": "odd" if sem % 2 == 1 else "even",
+                        "desc": str(c.get("deskripsi", "")),
+                        "status": "planned",
                     })
                     sem_sks += c_sks
                     total_credits += c_sks
@@ -375,12 +382,15 @@ def generate_degree_plan(
                 matches_track = any(t in c_name.lower() or t in c_desc for t in tracks_lower)
                 if matches_track and (sem_sks + c_sks <= max_sks_per_sem):
                     plan[sem].append({
-                        "id": c_code,
-                        "name": c_name,
+                        "id": str(c.get("id") or c_code),
+                        "code": str(c_code),
+                        "name": str(c_name),
                         "credits": c_sks,
                         "semester": sem,
                         "type": "Pilihan",
-                        "status": "planned"
+                        "parity": "odd" if sem % 2 == 1 else "even",
+                        "desc": str(c.get("deskripsi", "")),
+                        "status": "planned",
                     })
                     sem_sks += c_sks
                     total_credits += c_sks

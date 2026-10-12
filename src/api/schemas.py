@@ -41,7 +41,7 @@ class ChatRequest(BaseModel):
     message: str
     history: list[ChatMessageItem] = Field(default_factory=list)
     student_profile: StudentProfile = Field(default_factory=StudentProfile)
-
+    session_id: str | None = None
 
 class ChatResponse(BaseModel):
     reply: str
@@ -77,3 +77,51 @@ class CourseCatalogResponse(BaseModel):
     total_courses: int
     programs: list[str]
     courses: list[CourseItem]
+
+
+class PlanValidationRequest(BaseModel):
+    plan: dict[int, list[dict[str, Any]]] = Field(
+        default_factory=dict,
+        description="Rancangan mata kuliah semester 1-8 hasil plotting mahasiswa atau AI.",
+    )
+    riwayat_matkul_lulus: list[str] = Field(
+        default_factory=list,
+        description="Daftar nama/kode mata kuliah yang telah diselesaikan mahasiswa.",
+    )
+    maks_sks_per_semester: int = Field(
+        default=24,
+        description="Batas beban SKS maksimum yang diperbolehkan.",
+    )
+    program_studi: str | None = Field(
+        default=None,
+        description="Program studi mahasiswa untuk filter validasi kurikulum spesifik.",
+    )
+
+
+class PlanValidationResponse(BaseModel):
+    is_valid: bool
+    errors: list[str] = Field(default_factory=list)
+    warnings: list[str] = Field(default_factory=list)
+    total_sks_planned: int = 0
+    details_per_semester: dict[int, dict[str, Any]] = Field(default_factory=dict)
+
+
+class CourseSearchItem(BaseModel):
+    id: str
+    code: str | None = None
+    name: str
+    credits: int
+    semester: int
+    type: Literal["Wajib", "Pilihan"]
+    parity: Literal["odd", "even"]
+    desc: str = ""
+    program: str
+    prerequisites: list[str] = Field(default_factory=list)
+    score: float = 0.0
+
+
+class CourseSearchResponse(BaseModel):
+    query: str
+    program_studi: str | None = None
+    total_hits: int
+    results: list[CourseSearchItem]
