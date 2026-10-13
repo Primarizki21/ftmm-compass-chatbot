@@ -8,13 +8,16 @@ DEFAULT_MAX_WINDOW_TURNS = 6  # 6 turns = 12 messages
 
 PRODI_PATTERNS = [
     (r"\b(teknologi\s+sains\s+data|sains\s+data|data\s+science|tsd)\b", "Teknologi Sains Data"),
-    (r"\b(teknik\s+robotika(\s+dan\s+kecerdasan\s+buatan)?|robotika|trkb|robotics)\b", "Teknik Robotika dan Kecerdasan Buatan"),
-    (r"\b(rekayasa\s+nanoteknologi|nanoteknologi|rn|nano)\b", "Rekayasa Nanoteknologi"),
-    (r"\b(teknik\s+industri|industrial(\s+engineering)?|ti)\b", "Teknik Industri"),
-    (r"\b(teknik\s+elektro|electrical(\s+engineering)?|te)\b", "Teknik Elektro"),
+    (r"\b(teknik\s+robotika(\s+dan\s+kecerdasan\s+buatan)?|robotika|robotik|trkb|robotics)\b", "Teknik Robotika dan Kecerdasan Buatan"),
+    (r"\b(rekayasa\s+nanoteknologi|nanoteknologi|nanotek|rn|nano)\b", "Rekayasa Nanoteknologi"),
+    (r"\b(teknik\s+industri|industri|industrial(\s+engineering)?|ti)\b", "Teknik Industri"),
+    (r"\b(teknik\s+elektro|elektro|electrical(\s+engineering)?|te)\b", "Teknik Elektro"),
 ]
 
-SEMESTER_PATTERN = re.compile(r"\b(?:semester|sem)\s*([1-8])\b", re.IGNORECASE)
+SEMESTER_PATTERN = re.compile(
+    r"\b(?:semester|sem|smt|semseter)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b",
+    re.IGNORECASE,
+)
 
 FOCUS_PATTERNS = [
     (r"\b(rantai\s+pasok|logistik|supply\s+chain)\b", "Rantai Pasok"),
@@ -96,8 +99,9 @@ class ConversationMemoryManager:
 
         m_sem = SEMESTER_PATTERN.search(t_clean)
         if m_sem:
-            updates["semester_saat_ini"] = int(m_sem.group(1))
-
+            val_raw = m_sem.group(1).lower()
+            roman_map = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7, "viii": 8}
+            updates["semester_saat_ini"] = roman_map.get(val_raw, None) or (int(val_raw) if val_raw.isdigit() else None)
         for pattern, focus_name in FOCUS_PATTERNS:
             if re.search(pattern, t_clean):
                 updates.setdefault("minat_fokus", []).append(focus_name)

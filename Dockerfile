@@ -42,7 +42,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
     OLLAMA_HOST="http://host.docker.internal:11434"
 
 # Create writable data directory for centroids & runtime caches
-RUN mkdir -p /app/data && chown -R appuser:appgroup /app/data
+RUN mkdir -p /app/data/faiss && chown -R appuser:appgroup /app/data
 
 # Copy application source code
 COPY --chown=appuser:appgroup src/ /app/src/

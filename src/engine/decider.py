@@ -26,7 +26,7 @@ CATEGORY_TOOL_NAMES: dict[DecisionCategory, list[str]] = {
     DecisionCategory.CHAT_ONLY: [],
     DecisionCategory.PREREQUISITE: ["validate_prerequisites_dag", "search_courses"],
     DecisionCategory.SKS_CALCULATION: ["calculate_sks_limit"],
-    DecisionCategory.DEGREE_PLANNING: ["generate_degree_plan", "search_courses"],
+    DecisionCategory.DEGREE_PLANNING: ["generate_degree_plan", "get_courses_by_semester", "search_courses"],
     DecisionCategory.COURSE_DISCOVERY: ["search_courses", "get_courses_by_semester"],
     DecisionCategory.FALLBACK_ALL: [
         "search_courses",
@@ -38,13 +38,13 @@ CATEGORY_TOOL_NAMES: dict[DecisionCategory, list[str]] = {
 }
 
 SEMESTER_COURSE_FAST_PATH_REGEX = re.compile(
-    r"(?:mata\s*kuliah|matkul|daftar\s*(?:mata\s*kuliah|matkul)|courses?|list\s*courses?)"
+    r"(?:mata\s*kul[ia]{2}h|matkul|daftar\s*(?:mata\s*kul[ia]{2}h|matkul)|courses?|list\s*courses?)"
     r".*?"
-    r"(?:semester|smt|sem)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b"
+    r"(?:semester|smt|sem|semseter)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b"
     r"|"
-    r"(?:semester|smt|sem)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b"
+    r"(?:semester|smt|sem|semseter)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b"
     r".*?"
-    r"(?:mata\s*kuliah|matkul|daftar\s*(?:mata\s*kuliah|matkul)|courses?|list\s*courses?)",
+    r"(?:mata\s*kul[ia]{2}h|matkul|daftar\s*(?:mata\s*kul[ia]{2}h|matkul)|courses?|list\s*courses?)",
     re.IGNORECASE,
 )
 

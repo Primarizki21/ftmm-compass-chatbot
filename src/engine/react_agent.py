@@ -143,17 +143,19 @@ class ReActAgentEngine:
             total_completion_tokens += c_tokens
             msg = resp.message
             tool_calls = getattr(msg, "tool_calls", None)
-            if not tool_calls and step_count == 1 and not tools_executed and SEMESTER_COURSE_FAST_PATH_REGEX.search(query):
+            if not tool_calls and step_count == 1 and not tools_executed:
                 detected_p = normalize_program_studi(query)
                 detected_s = extract_semester_from_text(query)
-                if detected_p != query and detected_s is not None:
+                is_sem_query = bool(SEMESTER_COURSE_FAST_PATH_REGEX.search(query))
+                if not is_sem_query and detected_p != query and detected_s is not None:
+                    is_sem_query = True
+                if is_sem_query and detected_p != query and detected_s is not None:
                     class _Fn:
                         name = "get_courses_by_semester"
                         arguments = {"program_studi": detected_p, "semester": detected_s}
                     class _TC:
                         function = _Fn()
                     tool_calls = [_TC()]
-
             # Case A: Model outputs tool calls -> execute tools
             if tool_calls:
                 messages.append(msg)
@@ -256,11 +258,43 @@ class ReActAgentEngine:
                     "answer": final_answer,
                 })
                 break
-        if not final_answer and messages:
-            last_content = getattr(messages[-1], "content", "")
-            if isinstance(last_content, str):
-                final_answer = last_content
-
+        if not final_answer:
+            if tools_executed:
+                last_tool = tools_executed[-1]
+                if last_tool.get("tool") == "get_courses_by_semester":
+                    from src.engine.tools.academic_tools import get_courses_by_semester
+                    t_args = last_tool.get("args", {})
+                    c_data = get_courses_by_semester(**t_args)
+                    if c_data.get("courses"):
+                        lines = [
+                            f"Berikut adalah daftar mata kuliah untuk **{c_data.get('program_studi', '')}** pada **Semester {c_data.get('semester', '')}**:\n"
+                        ]
+                        for idx, c in enumerate(c_data["courses"], 1):
+                            p_str = ", ".join(c.get("prasyarat", [])) if c.get("prasyarat") else "Tidak ada"
+                            lines.append(f"{idx}. **[{c.get('kode_mk', '-')}] {c.get('nama_mk', '-')}** ({c.get('sks', 0)} SKS, {c.get('jenis', 'Wajib')}) — Prasyarat: {p_str}")
+                        lines.append(f"\n**Total:** {c_data.get('total_courses', len(c_data['courses']))} mata kuliah ({c_data.get('total_sks', 0)} SKS)")
+                        final_answer = "\n".join(lines)
+            if not final_answer:
+                det_p = normalize_program_studi(query)
+                det_s = extract_semester_from_text(query)
+                if det_p != query and det_s is not None:
+                    from src.engine.tools.academic_tools import get_courses_by_semester
+                    c_data = get_courses_by_semester(program_studi=det_p, semester=det_s)
+                    if c_data.get("courses"):
+                        lines = [
+                            f"Berikut adalah daftar mata kuliah untuk **{c_data.get('program_studi', '')}** pada **Semester {c_data.get('semester', '')}**:\n"
+                        ]
+                        for idx, c in enumerate(c_data["courses"], 1):
+                            p_str = ", ".join(c.get("prasyarat", [])) if c.get("prasyarat") else "Tidak ada"
+                            lines.append(f"{idx}. **[{c.get('kode_mk', '-')}] {c.get('nama_mk', '-')}** ({c.get('sks', 0)} SKS, {c.get('jenis', 'Wajib')}) — Prasyarat: {p_str}")
+                        lines.append(f"\n**Total:** {c_data.get('total_courses', len(c_data['courses']))} mata kuliah ({c_data.get('total_sks', 0)} SKS)")
+                        final_answer = "\n".join(lines)
+                if not final_answer:
+                    final_answer = (
+                        "Maaf, saya tidak dapat memproses pertanyaan Anda secara lengkap. "
+                        "Silakan ajukan pertanyaan seputar kurikulum, prasyarat mata kuliah, batas SKS, "
+                        "atau perencanaan studi FTMM."
+                    )
         total_latency_ms = (time.perf_counter() - t0) * 1000.0
 
         return EngineResult(

@@ -13,6 +13,8 @@ services:
       - ftmm-network
     env_file:
       - .env
+    volumes:
+      - ./data:/app/data:ro
     security_opt:
       - no-new-privileges:true
     cap_drop:
