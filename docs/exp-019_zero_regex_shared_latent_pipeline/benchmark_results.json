@@ -1,0 +1,12 @@
+{
+  "experiment_id": "exp-019",
+  "total_queries": 60,
+  "routing_accuracy": 100.0,
+  "ood_recall": 100.0,
+  "anaphora_success_rate": 100.0,
+  "avg_embedding_calls": 0.97,
+  "max_embedding_calls_in_scope": 1,
+  "p50_latency_ms": 39.67,
+  "p95_latency_ms": 54.82,
+  "avg_latency_ms": 39.19
+}

@@ -48,173 +48,80 @@ class RoutingDecision:
 
 
 class EntityExtractor:
-    """Ekstraksi entitas kunci akademik FTMM berbasis pola ekspresi reguler dan leksikon."""
-    
-    COURSE_CODE_PATTERN = re.compile(r"\b([A-Z]{3}\s?[0-9]{3})\b", re.IGNORECASE)
-    SEMESTER_PATTERN = re.compile(r"\b(?:semester|sem)\s*([1-8])\b", re.IGNORECASE)
-    
-    PRODI_MAP = {
-        "Teknologi Sains Data": ["sains data", "data science", "tsd", "ds"],
-        "Teknik Robotika dan Kecerdasan Buatan": ["robotika", "trkb", "robotics", "ai", "kecerdasan buatan"],
-        "Rekayasa Nanoteknologi": ["nanoteknologi", "nanotek", "rn", "nano"],
-        "Teknik Industri": ["teknik industri", "industri", "ti", "industrial"],
-        "Teknik Elektro": ["teknik elektro", "elektro", "te", "electrical"],
-    }
-    
-    SOP_KEYWORDS = {
-        "pkl": ["pkl", "magang", "kerja praktek", "praktik kerja lapangan", "kerja praktik"],
-        "skripsi": ["skripsi", "tugas akhir", "ta", "proposal skripsi", "sempro"],
-        "yudisium": ["yudisium", "kelulusan", "wisuda", "syarat lulus", "beban lulus"],
-        "sks_limit": ["batas sks", "beban studi", "ips", "ipk", "maksimal sks", "sks maksimal", "maks sks", "jatah sks"],
-        "cuti": ["cuti", "cuti akademik", "ijin libur semester"],
-        "skma": ["skma", "surat keterangan mahasiswa aktif", "surat aktif"],
-        "rekomendasi": ["surat rekomendasi", "rekomendasi magang", "rekomendasi beasiswa", "msib"],
-        "ukt": ["telat ukt", "terlambat bayar", "bayar ukt", "tunggakan ukt", "daftar ulang"],
-        "ktm": ["ktm hilang", "pengantar ktm", "kartu tanda mahasiswa hilang"],
-    }
-    
-    CAREER_KEYWORDS = [
-        "machine learning", "ml", "deep learning", "computer vision", "nlp",
-        "data analyst", "data scientist", "data engineer", "big data",
-        "iot", "robotika", "embedded", "autonomous",
-        "supply chain", "optimasi", "manajemen produksi",
-        "nanomaterial", "nanomedis", "telekomunikasi", "power system"
-    ]
+    """Ekstraksi entitas kunci akademik FTMM berbasis DenseGazetteerLinker dan pola deterministik."""
 
-    def extract(self, query: str) -> ExtractedEntities:
+    def __init__(self, gazetteer: Any = None):
+        from src.engine.memory import get_dense_gazetteer
+        self.gazetteer = gazetteer or get_dense_gazetteer()
+
+    def extract(self, query: str, query_vec: Any = None) -> ExtractedEntities:
+        from src.engine.memory import COURSE_CODE_PATTERN, SEMESTER_PATTERN, ROMAN_MAP
         raw = query.strip()
-        lower = raw.lower()
-        
-        # 1. Course Codes
+
         codes = []
-        for match in self.COURSE_CODE_PATTERN.finditer(raw):
-            clean_code = match.group(1).upper().replace(" ", "")
-            codes.append(clean_code)
-            
-        # 2. Semester
+        for match in COURSE_CODE_PATTERN.finditer(raw):
+            codes.append(match.group(1).upper().replace(" ", ""))
+
         sem = None
-        sem_match = self.SEMESTER_PATTERN.search(lower)
+        sem_match = SEMESTER_PATTERN.search(raw)
         if sem_match:
-            sem = int(sem_match.group(1))
-            
-        # 3. Prodi
-        detected_prodi = None
-        for canonical, aliases in self.PRODI_MAP.items():
-            for alias in aliases:
-                # word boundary match to avoid partial matches
-                if re.search(r"\b" + re.escape(alias) + r"\b", lower):
-                    detected_prodi = canonical
-                    break
-            if detected_prodi:
-                break
-                
-        # 4. SOP keywords (word boundary matching to avoid partial word collisions)
-        detected_sops = []
-        for sop_label, keywords in self.SOP_KEYWORDS.items():
-            for kw in keywords:
-                if re.search(r"\b" + re.escape(kw) + r"\b", lower):
-                    detected_sops.append(sop_label)
-                    break
-                    
-        # 5. Career interests (word boundary matching)
+            val_raw = sem_match.group(1).lower()
+            sem = ROMAN_MAP.get(val_raw, None) or (int(val_raw) if val_raw.isdigit() else None)
+
+        q_vec = query_vec if query_vec is not None else self.gazetteer.embed_query(raw)
+        detected_prodi = self.gazetteer.match_prodi(q_vec)
+
         detected_careers = []
-        for ck in self.CAREER_KEYWORDS:
-            if re.search(r"\b" + re.escape(ck) + r"\b", lower):
-                detected_careers.append(ck)
+        focus = self.gazetteer.match_focus(q_vec)
+        if focus:
+            detected_careers.append(focus)
+
         return ExtractedEntities(
             course_codes=codes,
             program_studi=detected_prodi,
             semester=sem,
-            sop_keywords=detected_sops,
+            sop_keywords=[],
             career_interests=detected_careers,
             raw_query=raw,
         )
 
 class IntentClassifier:
-    """Pengklasifikasi intensi pengguna berdasarkan analisis leksikal dan semantik."""
-    
-    GREETING_PATTERN = re.compile(
-        r"^(halo|hai|hi|hello|selamat pagi|selamat siang|selamat sore|selamat malam|assalamualaikum|tes|ping|terima kasih|makasih|thanks)\b",
-        re.IGNORECASE
-    )
-    
-    OUT_OF_SCOPE_TRIGGERS = [
-        "resep", "masak", "makanan", "restoran", "kuliner", "rendang", "sapi", "ayam", "kue",
-        "siapa presiden", "pemilu", "partai", "politik", "pilpres", "gubernur",
-        "ramalan cuaca", "buatkan puisi", "cerpen", "film", "lagu", "game", "sepak bola",
-        "hack", "jailbreak", "ignore previous instructions", "bypass system"
-    ]
-    
-    PLANNING_TRIGGERS = [
-        "rekomendasi matkul", "rekomendasikan matkul", "ambil matkul apa",
-        "susun krs", "susun semester", "rencana studi", "study plan",
-        "rekomendasi krs", "saran matkul", "pilihan matkul", "mau fokus ke",
-        "tertarik ke", "ingin jadi", "minat saya", "rekomendasi sks"
-    ]
-    
-    SYLLABUS_TRIGGERS = [
-        "silabus", "materi", "membahas tentang", "belajar apa", "deskripsi matkul",
-        "dosen pengampu", "siapa dosen", "prasyarat matkul", "syarat matkul",
-        "apa isi matkul", "mata kuliah", "matkul"
-    ]
-    def classify(self, query: str, entities: ExtractedEntities) -> tuple[IntentType, float, str]:
-        lower = query.lower().strip()
-        
-        # 1. Out of Scope Check
-        for oos in self.OUT_OF_SCOPE_TRIGGERS:
-            if oos in lower:
-                return IntentType.OUT_OF_SCOPE, 0.95, f"Terdeteksi kata kunci di luar ranah akademik FTMM: '{oos}'"
+    """Pengklasifikasi intensi pengguna berbasis System-1 Decider semantik."""
 
-        # 2. Greeting / General Chat Check (short queries)
-        if len(lower.split()) <= 4 and self.GREETING_PATTERN.search(lower):
-            return IntentType.GENERAL_CHAT, 0.98, "Pesan berupa sapaan/kesopanan umum."
+    def __init__(self, decider: Any = None):
+        from src.engine.decider import System1Decider
+        self.decider = decider or System1Decider()
+        self.decider.initialize()
 
-        # 3. Planning / Career Advisory Check (Hybrid Candidate)
-        for trigger in self.PLANNING_TRIGGERS:
-            if trigger in lower or (entities.career_interests and entities.semester):
-                return IntentType.STUDY_PLANNING, 0.90, f"Terdeteksi niatan perencanaan studi: '{trigger}'"
+    def classify(
+        self, query: str, entities: ExtractedEntities, query_vec: Any = None
+    ) -> tuple[IntentType, float, str]:
+        from src.engine.decider import DecisionCategory
+        res = self.decider.decide(query, query_vec=query_vec)
 
-        # 4. Specific Course Syllabus Check (RAG Candidate)
-        if entities.course_codes:
-            # If explicit course code mentioned without general SOP, highly likely syllabus
-            if not entities.sop_keywords:
-                return IntentType.COURSE_SYLLABUS, 0.95, f"Menyebutkan kode matkul spesifik: {entities.course_codes}"
-                
-        for trigger in self.SYLLABUS_TRIGGERS:
-            if trigger in lower and not entities.sop_keywords:
-                return IntentType.COURSE_SYLLABUS, 0.85, f"Menanyakan rincian silabus/materi: '{trigger}'"
-
-        # 5. Regulation / SOP Check (CAG Candidate)
-        if entities.sop_keywords:
-            return IntentType.REGULATION_FAQ, 0.92, f"Menanyakan aturan/SOP akademik: {entities.sop_keywords}"
-
-        # 6. Fallback Check: pastikan ada konteks akademik FTMM
-        academic_context_words = [
-            "ftmm", "unair", "kampus", "kuliah", "akademik", "sks", "dosen", "mata kuliah", "matkul",
-            "semester", "mahasiswa", "lulus", "daftar", "bayar", "ukt", "ipk", "ips", "krs", "prasyarat"
-        ]
-        has_academic_context = any(w in lower for w in academic_context_words)
-        
-        if any(w in lower for w in ["aturan", "syarat", "prosedur", "surat", "cara", "bagaimana"]) and has_academic_context:
-            return IntentType.REGULATION_FAQ, 0.80, "Pertanyaan seputar tata cara atau prosedur akademik FTMM."
-
-        if not has_academic_context and not entities.course_codes and not entities.sop_keywords:
-            return IntentType.OUT_OF_SCOPE, 0.70, "Pertanyaan tidak teridentifikasi memiliki konteks kurikulum/akademik FTMM."
-
-        # Default fallback to RAG for exploratory questions
-        return IntentType.COURSE_SYLLABUS, 0.60, "Pertanyaan informasional kurikulum umum."
-
+        if res.category == DecisionCategory.CHAT_ONLY:
+            return IntentType.GENERAL_CHAT, res.confidence, "Klasifikasi semantik: General Chat."
+        elif res.category == DecisionCategory.REGULATION_SOP:
+            return IntentType.REGULATION_FAQ, res.confidence, "Klasifikasi semantik: Regulasi & SOP FTMM."
+        elif res.category in (DecisionCategory.COURSE_DISCOVERY, DecisionCategory.PREREQUISITE):
+            return IntentType.COURSE_SYLLABUS, res.confidence, "Klasifikasi semantik: Silabus / Prasyarat Mata Kuliah."
+        elif res.category in (DecisionCategory.DEGREE_PLANNING, DecisionCategory.SKS_CALCULATION):
+            return IntentType.STUDY_PLANNING, res.confidence, "Klasifikasi semantik: Perencanaan Studi."
+        else:
+            return IntentType.COURSE_SYLLABUS, res.confidence, "Klasifikasi fallback: Eksplorasi Kurikulum."
 
 class HybridRouter:
     """Router orkestrator yang memetakan kueri ke rute eksekusi."""
-    
-    def __init__(self):
-        self.extractor = EntityExtractor()
-        self.classifier = IntentClassifier()
 
-    def route(self, query: str) -> RoutingDecision:
-        entities = self.extractor.extract(query)
-        intent, confidence, explanation = self.classifier.classify(query, entities)
+    def __init__(self, decider: Any = None, gazetteer: Any = None):
+        self.extractor = EntityExtractor(gazetteer=gazetteer)
+        self.classifier = IntentClassifier(decider=decider)
+
+    def route(self, query: str, query_vec: Any = None) -> RoutingDecision:
+        entities = self.extractor.extract(query, query_vec=query_vec)
+        intent, confidence, explanation = self.classifier.classify(
+            query, entities, query_vec=query_vec
+        )
 
         if intent == IntentType.OUT_OF_SCOPE:
             mode = RoutingMode.GUARDED
@@ -236,7 +143,6 @@ class HybridRouter:
             confidence=confidence,
             explanation=explanation,
         )
-
 
 # Global singleton instance
 _router_instance: HybridRouter | None = None

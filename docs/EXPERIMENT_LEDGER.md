@@ -26,6 +26,7 @@
 | **`exp-015`** | 2026-10-12 | Evaluasi System-1 Decider dengan Centroid EmbeddingGemma-2 & MRL Truncation (Card 109) | `google/embeddinggemma-2` (270M) vs `nomic-embed-text` | Nomic: **96.7%** (58/60)<br>Gemma2 768d: 93.3%<br>Gemma2 512d: **95.0%**<br>Gemma2 256d: **95.0%**<br>Gemma2 128d: 93.3% | Margin (Top1-Top2):<br>Nomic: 0.0401<br>Gemma2 768d: 0.0427<br>Gemma2 256d: **0.0440** | Slang Acc: Nomic 95.0%, Gemma 256d **95.0%**<br>Implicit Acc: **100.0%** (All) | Matrix Dot-Product: **0.05 ms** (BLAS $O(1)$) | Nomic: **35.2 ms** (Ollama)<br>Gemma2: 97.0 ms (PyTorch CUDA) | MRL 256d: Hemat 66.7% dimensi tanpa degradasi akurasi | **Ketahanan MRL Terbukti (256d Optimal)**: Gemma-2 256d & 512d mencapai akurasi 95.0% dengan separabilitas margin lebih tinggi (0.0440 vs 0.0401) dibanding Nomic. Namun unifikasi runtime router terganjal limitasi GGUF Ollama (`unknown model architecture: 'gemma-embedding2'`), sehingga Nomic (Ollama) direkomendasikan tetap aktif untuk router sub-35ms hingga support runtime C++ tersedia. | `docs/exp-015_decider_gemma2_evaluation/` |
 | **`exp-016`** | 2026-10-12 | Hardening Semantic Guardrails & Dual-Centroid Boundary (Card 110) | `nomic-embed-text` + Dual Semantic Boundary | Safety Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Adversarial: 100% | ASR: **0.0%** (0/15 attacks)<br>OOD-R: **100.0%** (20/20 non-academic)<br>FRR: **0.0%** (0/25 benign) | Non-academic Coding: **100% Blocked** (bubble sort, game, web scraping)<br>Slang: 100% Allowed | Dot-Product BLAS: **0.05 ms**<br>Gate P50: **70.66 ms**<br>Gate Avg: **79.21 ms** | P50: **70.66 ms**<br>P95: 151.00 ms | Zero False Refusal (FRR 0.0%)<br>Zero Attack Success (ASR 0.0%) | **Eliminasi Celah Non-Akademik Tuntas**: Memperbaiki logika rapuh `max_ood >= max_ac` dan memperluas anchor OOD mencakup coding umum/tugas sekolah. Kueri `buatkan kode bubble sort` terblokir seketika pada Tier 2 dalam <35ms tanpa beban ekstra LLM. Menjawab Card 110. | `docs/exp-016_hardened_semantic_guardrails/` |
 | **`exp-017`** | 2026-10-12 | Ollama Native Embedding & Classifier Head Matrix (Card 25, 32, 99) | `nomic-embed-text` (768d), `qwen3-embedding:0.6b` (1024d), `bge-m3` (1024d) | Qwen3 kNN: **100.0%** (60/60)<br>BGE-M3 Head: **98.3%**<br>Nomic Centroid: 96.7% | Margin (Top1-Top2):<br>Nomic Centroid: 0.0401<br>Nomic Logistic: **0.0831**<br>Qwen3 kNN: **0.3155**<br>BGE-M3 kNN: **0.2934** | Formal: 100%<br>Slang: **100.0%** (Qwen3 & BGE-M3)<br>Implicit: **100%** (All) | Matrix / Head Latency: **0.05 - 0.10 ms** (BLAS $O(1)$) | Nomic P50: **30.4 ms**<br>Qwen3 P50: **130.0 ms**<br>BGE-M3 P50: **170.0 ms** | Zero Python RAM overhead<br>Zero Disk I/O / Zero Swap<br>VRAM Peak: ~3.95 GB | **Qwen3-Embedding (0.6B) + Multi-Exemplar k-NN Mencapai 100.0% Akurasi Sempurna** dengan margin pemisah 0.3155 (8x lebih tajam vs Nomic). Nomic + Logistic tercepat (30.5 ms P50, 96.7%). Membuktikan keunggulan ekosistem native Ollama tanpa disk thrashing WSL2. | `docs/exp-017_ollama_embedding_classifier_head/` |
+| **`exp-019`** | 2026-10-13 | Eliminasi Total Regex Semantik & Unifikasi Single-Embed Shared Latent Pipeline (Card 113) | `nomic-embed-text` (768d Shared Vector) + `qwen2.5:3b` | Routing Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Implicit: 100% | OOD & Adv Recall: **100.0%**<br>ASR: **0.0%**<br>FRR: **0.0%** | Anaphora Res: **100.0%**<br>Semantic Regex: **0** (dari 24) | Shared Embed Calls: **1x/turn** (Avg 0.97)<br>BLAS Dot-Product: **<0.2 ms** | P50: **39.67 ms**<br>Avg: **39.19 ms**<br>P95: **54.82 ms** | Zero Semantic Regex<br>74/74 Pytest PASS | **Eliminasi 100% Regex Semantik Tuntas**: Seluruh 24 regex intent/anafora/topik digantikan oleh Single-Embed Shared Latent Vector + 6-Class System-1 Decider (`REGULATION_SOP` CAG) + Dense Gazetteer Linker. Menjawab Card 113. | `docs/exp-019_zero_regex_shared_latent_pipeline/` |
 
 ---
 
@@ -548,3 +549,32 @@
   - `docs/exp-017_ollama_embedding_classifier_head/benchmark_metrics.csv`
   - `docs/exp-017_ollama_embedding_classifier_head/benchmark_results.json`
   - `docs/exp-017_ollama_embedding_classifier_head/benchmark_raw_traces.jsonl`
+
+---
+
+### [exp-019] Eliminasi Total Regex Semantik & Unifikasi Single-Embed Shared Latent Pipeline
+- **Tanggal:** 2026-10-13
+- **Kartu Trello:** Card 113 (`[Nauval & Ario] Eliminasi Total Regex Semantik & Unifikasi Single-Embed Shared Latent Pipeline (Exp-019)`).
+- **Tujuan / Hipotesis:**
+  Mengeliminasi 100% penggunaan ekspresi reguler (regex) semantik/intent/anafora (24 pola ringkih di `unified_engine.py`, `decider.py`, `memory.py`, `router.py`, dan `tier1_filter.py`) sesuai mandat *Anti-Pattern Guard #5* (`AGENTS.md`), serta mengunifikasi pemanggilan model embedding menjadi tepat **1x Shared Latent Vector (`q_vec`)** per giliran yang digunakan bersama oleh Tier-2 Dual-Centroid Gate, 6-Class System-1 Decider, dan Dense Gazetteer Memory Linker.
+- **Setup Teknis (Low-Level Architecture):**
+  - **Tier-1 Syntax Sanitiser (`src/guardrails/tier1_filter.py`):** Dipurifikasi menjadi murni 2 aturan sintaksis deterministik (`SQL_SYNTAX_INJECTION` dan `PARAMETER_EXPLOIT`), memindahkan 7 klaster serangan semantik/jailbreak ke `NON_ACADEMIC_ANCHORS` di `Tier2SemanticGate`.
+  - **6-Class Pure Semantic System-1 Decider (`src/engine/decider.py`):** Menghapus `SEMESTER_COURSE_FAST_PATH_REGEX` dan menambahkan kategori `REGULATION_SOP` (rute Pure CAG 0ms) dengan kombinasi skor *Centroid + Max-Exemplar* berbasis operasi matriks BLAS in-memory (`<0.1 ms`).
+  - **Dense Gazetteer & Latent Ellipsis DST (`src/engine/memory.py` & `src/engine/router.py`):** Mengganti seluruh regex anafora (`DEMONSTRATIVE_PATTERN`, `RELATIONAL_NYA_PATTERN`) dan pencocokan kata kunci dengan pencocokan vektor kosinus terhadap gazetteer 369 mata kuliah FTMM, 5 prodi, fokus minat, serta injeksi *Structured Context Header* (`[KONTEKS AKTIF: ...]`).
+  - **Single-Embed Shared Vector (`src/engine/unified_engine.py`):** Menghitung `q_vec` satu kali via daemon C++ Ollama (`nomic-embed-text`) dan membagikannya ke seluruh komponen hilir.
+- **Temuan Kunci:**
+  1. **Akurasi Routing, OOD Recall, & Resolusi Anafora 100.0% Tanpa Regex Semantik:**
+     Evaluasi pada 60 sampel kueri multi-register (Formal, Slang Mahasiswa, Implisit, Multi-turn Anaphora, dan Adversarial Jailbreak) menghasilkan **Routing Accuracy 100.0%**, **OOD & Adversarial Recall 100.0%**, dan **Anaphora Resolution Success 100.0%**.
+  2. **Reduksi Panggilan Embedding & Latensi Sub-40ms:**
+     Jumlah panggilan `ollama.embed` untuk kueri in-scope turun dari 2–3 kali menjadi tepat **1 kali per giliran** (rata-rata 0.97 panggilan karena kueri SQL exploit diblokir di Tier-1 dengan 0 panggilan), menghasilkan latensi pipeline P50 **39.67 ms** (rata-rata **39.19 ms**, P95 **54.82 ms**).
+  3. **Verifikasi Regresi Penuh (74/74 PASS):**
+     Seluruh 74 unit & integration tests di `tests/` (termasuk `tests/test_zero_regex_pipeline.py`) lulus 100% tanpa regresi kontrak API.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - Menetapkan **Single-Embed Shared Latent Pipeline + Dense Gazetteer DST** sebagai arsitektur produksi baku di `src/`.
+  - Menutup tugas Card 113 di board Trello Sprint 6.
+- **Artefak:**
+  - `docs/exp-019_zero_regex_shared_latent_pipeline/README.md`
+  - `docs/exp-019_zero_regex_shared_latent_pipeline/benchmark_summary.md`
+  - `docs/exp-019_zero_regex_shared_latent_pipeline/benchmark_metrics.csv`
+  - `docs/exp-019_zero_regex_shared_latent_pipeline/benchmark_results.json`
+  - `docs/exp-019_zero_regex_shared_latent_pipeline/benchmark_raw_traces.jsonl`

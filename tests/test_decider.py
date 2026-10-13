@@ -5,7 +5,7 @@ def test_decider_initialization():
     decider = System1Decider()
     decider.initialize()
     assert decider.centroid_matrix is not None
-    assert decider.centroid_matrix.shape == (5, 768)
+    assert decider.centroid_matrix.shape == (6, 768)
 
 
 def test_chitchat_prunes_tools():

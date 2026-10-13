@@ -2,7 +2,6 @@ import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 from enum import Enum
 from pathlib import Path
-import re
 import time
 from typing import Any, NamedTuple
 import numpy as np
@@ -19,11 +18,13 @@ class DecisionCategory(str, Enum):
     SKS_CALCULATION = "SKS_CALCULATION"
     DEGREE_PLANNING = "DEGREE_PLANNING"
     COURSE_DISCOVERY = "COURSE_DISCOVERY"
+    REGULATION_SOP = "REGULATION_SOP"
     FALLBACK_ALL = "FALLBACK_ALL"
 
 
 CATEGORY_TOOL_NAMES: dict[DecisionCategory, list[str]] = {
     DecisionCategory.CHAT_ONLY: [],
+    DecisionCategory.REGULATION_SOP: [],
     DecisionCategory.PREREQUISITE: ["validate_prerequisites_dag", "search_courses"],
     DecisionCategory.SKS_CALCULATION: ["calculate_sks_limit"],
     DecisionCategory.DEGREE_PLANNING: ["generate_degree_plan", "get_courses_by_semester", "search_courses"],
@@ -36,17 +37,6 @@ CATEGORY_TOOL_NAMES: dict[DecisionCategory, list[str]] = {
         "get_courses_by_semester",
     ],
 }
-
-SEMESTER_COURSE_FAST_PATH_REGEX = re.compile(
-    r"(?:mata\s*kul[ia]{2}h|matkul|daftar\s*(?:mata\s*kul[ia]{2}h|matkul)|courses?|list\s*courses?)"
-    r".*?"
-    r"(?:semester|smt|sem|semseter)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b"
-    r"|"
-    r"(?:semester|smt|sem|semseter)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b"
-    r".*?"
-    r"(?:mata\s*kul[ia]{2}h|matkul|daftar\s*(?:mata\s*kul[ia]{2}h|matkul)|courses?|list\s*courses?)",
-    re.IGNORECASE,
-)
 
 PROTOTYPES: dict[DecisionCategory, list[str]] = {
     DecisionCategory.CHAT_ONLY: [
@@ -103,6 +93,7 @@ PROTOTYPES: dict[DecisionCategory, list[str]] = {
         "bikinin rencana jadwal matkul semester 4 tsd yang ga bentrok dong kak",
     ],
     DecisionCategory.COURSE_DISCOVERY: [
+        "semester 6 mata kuliah TSD",
         "mata kuliah apa saja yang ditawarkan semester 3 rekayasa nanoteknologi",
         "silabus dan deskripsi materi mata kuliah jaringan komputer",
         "info dosen pengampu mata kuliah visualisasi data",
@@ -116,6 +107,17 @@ PROTOTYPES: dict[DecisionCategory, list[str]] = {
         "ada matkul yang ngebahas soal kecerdasan buatan ga di jurusan robotika",
         "matkul prak terintegrasi itu pembahasannya seputar apa aja sih sizenya berapa sks",
     ],
+    DecisionCategory.REGULATION_SOP: [
+        "apa saja syarat pkl magang kerja praktek ftmm unair minimal berapa sks",
+        "prosedur dan syarat pengajuan skripsi tugas akhir seminar proposal sempro",
+        "ketentuan yudisium kelulusan wisuda dan bebas tanggungan fakultas",
+        "bagaimana tata cara pengajuan cuti akademik kuliah di unair",
+        "informasi pembayaran ukt keringanan ukt dan banding ukt",
+        "aturan skma satuan kredit kegiatan mahasiswa ftmm",
+        "aturan perbaikan nilai ujian remidi dan semester pendek sp",
+        "kebijakan evaluasi putus studi do drop out masa studi mahasiswa",
+        "ketentuan batas pengambilan beban sks berdasarkan indeks prestasi semester ips",
+    ],
 }
 
 
@@ -127,6 +129,7 @@ class DecisionResult(NamedTuple):
     embedding_latency_ms: float
     scores: dict[str, float]
     margin: float = 0.0
+    query_vec: np.ndarray | None = None
 
 
 class System1Decider:
@@ -159,10 +162,15 @@ class System1Decider:
             DecisionCategory.SKS_CALCULATION,
             DecisionCategory.DEGREE_PLANNING,
             DecisionCategory.COURSE_DISCOVERY,
+            DecisionCategory.REGULATION_SOP,
         ]
         self.centroid_matrix: np.ndarray | None = None
         self._raw_centroid_matrix: np.ndarray | None = None
+        self._raw_exemplar_matrix: np.ndarray | None = None
+        self.exemplar_matrix: np.ndarray | None = None
+        self.exemplar_cat_indices: np.ndarray | None = None
         self._initialized = False
+
     def _apply_mrl_truncation(self):
         if self._raw_centroid_matrix is None:
             return
@@ -170,8 +178,14 @@ class System1Decider:
             truncated = self._raw_centroid_matrix[:, : self.mrl_dim].copy()
             norms = np.linalg.norm(truncated, axis=1, keepdims=True)
             self.centroid_matrix = truncated / np.maximum(norms, 1e-12)
+            if self._raw_exemplar_matrix is not None:
+                ex_trunc = self._raw_exemplar_matrix[:, : self.mrl_dim].copy()
+                ex_norms = np.linalg.norm(ex_trunc, axis=1, keepdims=True)
+                self.exemplar_matrix = ex_trunc / np.maximum(ex_norms, 1e-12)
         else:
             self.centroid_matrix = self._raw_centroid_matrix.copy()
+            if self._raw_exemplar_matrix is not None:
+                self.exemplar_matrix = self._raw_exemplar_matrix.copy()
 
     def set_mrl_dim(self, mrl_dim: int | None):
         """Dynamically update MRL dimension in-memory without re-reading centroids."""
@@ -182,12 +196,24 @@ class System1Decider:
         if self._initialized and not force_recompute:
             return
 
+        loaded_valid = False
         if self.centroids_path.exists() and not force_recompute:
             data = np.load(self.centroids_path)
-            self._raw_centroid_matrix = np.array(data["centroids"], dtype=np.float32)
-        else:
+            if (
+                "centroids" in data
+                and data["centroids"].shape[0] == len(self.categories)
+                and "exemplars" in data
+            ):
+                self._raw_centroid_matrix = np.array(data["centroids"], dtype=np.float32)
+                self._raw_exemplar_matrix = np.array(data["exemplars"], dtype=np.float32)
+                self.exemplar_cat_indices = np.array(data["exemplar_cat_indices"], dtype=np.int32)
+                loaded_valid = True
+
+        if not loaded_valid:
             centroids = []
-            for cat in self.categories:
+            all_exemplars = []
+            cat_indices = []
+            for idx, cat in enumerate(self.categories):
                 texts = PROTOTYPES[cat]
                 resp = ollama.embed(model=self.embed_model, input=texts)
                 vecs = np.array(resp["embeddings"], dtype=np.float32)
@@ -195,52 +221,54 @@ class System1Decider:
                 centroid = np.mean(vecs, axis=0)
                 centroid = centroid / np.linalg.norm(centroid)
                 centroids.append(centroid)
+                all_exemplars.append(vecs)
+                cat_indices.extend([idx] * len(vecs))
 
             self._raw_centroid_matrix = np.array(centroids, dtype=np.float32)
+            self._raw_exemplar_matrix = np.vstack(all_exemplars).astype(np.float32)
+            self.exemplar_cat_indices = np.array(cat_indices, dtype=np.int32)
             self.centroids_path.parent.mkdir(parents=True, exist_ok=True)
-            np.savez_compressed(self.centroids_path, centroids=self._raw_centroid_matrix)
+            np.savez_compressed(
+                self.centroids_path,
+                centroids=self._raw_centroid_matrix,
+                exemplars=self._raw_exemplar_matrix,
+                exemplar_cat_indices=self.exemplar_cat_indices,
+            )
 
         self._apply_mrl_truncation()
         self._initialized = True
-
-    def decide(self, query: str) -> DecisionResult:
+    def decide(self, query: str, query_vec: np.ndarray | None = None) -> DecisionResult:
         t0 = time.perf_counter()
-        if SEMESTER_COURSE_FAST_PATH_REGEX.search(query):
-            tool_names = CATEGORY_TOOL_NAMES[DecisionCategory.COURSE_DISCOVERY]
-            selected_tools = [
-                t for t in ACADEMIC_TOOL_DEFINITIONS if t["function"]["name"] in tool_names
-            ]
-            total_dt = (time.perf_counter() - t0) * 1000
-            return DecisionResult(
-                category=DecisionCategory.COURSE_DISCOVERY,
-                confidence=1.0,
-                selected_tools=selected_tools,
-                latency_ms=total_dt,
-                embedding_latency_ms=0.0,
-                scores={
-                    cat.value: (1.0 if cat == DecisionCategory.COURSE_DISCOVERY else 0.0)
-                    for cat in self.categories
-                },
-                margin=1.0,
-            )
-
         if not self._initialized:
             self.initialize()
 
-        # 1. Embed query
+        # 1. Embed query or use precomputed query_vec
         t_embed_start = time.perf_counter()
-        resp = ollama.embed(model=self.embed_model, input=query)
-        q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
+        if query_vec is not None:
+            q_vec = np.array(query_vec, dtype=np.float32)
+            t_embed_ms = 0.0
+        else:
+            resp = ollama.embed(model=self.embed_model, input=query)
+            q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
+            t_embed_ms = (time.perf_counter() - t_embed_start) * 1000
+
         if self.mrl_dim is not None and self.mrl_dim < len(q_vec):
             q_vec = q_vec[: self.mrl_dim]
 
         norm = np.linalg.norm(q_vec)
         if norm > 0:
             q_vec = q_vec / norm
-        t_embed_ms = (time.perf_counter() - t_embed_start) * 1000
-
         # 2. Matrix Dot Product: s = C · q
-        similarities = np.dot(self.centroid_matrix, q_vec)
+        # 2. Matrix Dot Product: s = max(C · q, E · q)
+        centroid_sims = np.dot(self.centroid_matrix, q_vec)
+        if self.exemplar_matrix is not None and self.exemplar_cat_indices is not None:
+            ex_sims = np.dot(self.exemplar_matrix, q_vec)
+            similarities = np.zeros(len(self.categories), dtype=np.float32)
+            for idx in range(len(self.categories)):
+                max_ex = float(np.max(ex_sims[self.exemplar_cat_indices == idx]))
+                similarities[idx] = max(float(centroid_sims[idx]), max_ex)
+        else:
+            similarities = centroid_sims
         score_dict = {cat.value: float(sim) for cat, sim in zip(self.categories, similarities)}
 
         best_idx = int(np.argmax(similarities))
@@ -278,4 +306,5 @@ class System1Decider:
             embedding_latency_ms=t_embed_ms,
             scores=score_dict,
             margin=margin,
+            query_vec=q_vec,
         )

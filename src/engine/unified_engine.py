@@ -1,6 +1,6 @@
 import time
-import re
 from typing import Any
+import numpy as np
 import ollama
 
 from src.engine.base import EngineResult
@@ -18,9 +18,9 @@ TIER1_REFUSAL_MESSAGE = (
 )
 
 TIER2_REFUSAL_MESSAGE = (
-    "Maaf, sebagai asisten akademik FTMM UNAIR, saya hanya dapat membantu pertanyaan terkait "
-    "perkuliahan, kurikulum, silabus mata kuliah, regulasi akademik (SKS, PKL, Skripsi, Yudisium), "
-    "dan perencanaan studi di FTMM."
+    "Maaf, sebagai asisten akademik FTMM UNAIR, permintaan di luar cakupan atau kebijakan keamanan "
+    "sistem akademik tidak dapat diproses. Saya hanya dapat membantu pertanyaan terkait perkuliahan, "
+    "kurikulum, silabus mata kuliah, regulasi akademik (SKS, PKL, Skripsi, Yudisium), dan perencanaan studi di FTMM."
 )
 
 
@@ -38,15 +38,27 @@ class UnifiedChatEngine:
         self,
         model: str = DEFAULT_MODEL,
         memory_manager: ConversationMemoryManager | None = None,
+        embed_model: str = "nomic-embed-text",
     ):
         self.model = model
+        self.embed_model = embed_model
         self.memory = memory_manager or ConversationMemoryManager()
         self.tier1_filter = Tier1DeterministicFilter()
-        self.tier2_gate = Tier2SemanticGate()
+        self.tier2_gate = Tier2SemanticGate(embed_model=self.embed_model)
         self.tier2_gate.initialize()
-        self.decider = System1Decider()
+        self.decider = System1Decider(embed_model=self.embed_model)
         self.decider.initialize()
         self.react_engine = ReActAgentEngine(model=self.model)
+
+    def _embed_once(self, text: str) -> tuple[np.ndarray, float]:
+        t_start = time.perf_counter()
+        resp_embed = ollama.embed(model=self.embed_model, input=text)
+        q_vec = np.array(resp_embed["embeddings"][0], dtype=np.float32)
+        norm = np.linalg.norm(q_vec)
+        if norm > 0:
+            q_vec = q_vec / norm
+        dt_ms = (time.perf_counter() - t_start) * 1000.0
+        return q_vec, dt_ms
 
     def generate_answer(
         self,
@@ -74,7 +86,10 @@ class UnifiedChatEngine:
                 metadata={"tier": "TIER_1", "category": t1_res.category, "reason": t1_res.reason},
             )
 
-        # Step 2: Session State Sync & Multi-Turn Contextualization
+        # Step 2: 1x Shared Embedding for Normalized Query Vector
+        q_vec, shared_embed_ms = self._embed_once(q_raw)
+
+        # Step 3: Session State Sync & Multi-Turn Contextualization
         session = self.memory.get_or_create_session(session_id)
         if history and not session.messages:
             for m in history:
@@ -86,12 +101,6 @@ class UnifiedChatEngine:
                         session.student_profile["semester_saat_ini"] = updates["semester_saat_ini"]
                     if "program_studi" in updates:
                         session.student_profile["program_studi"] = updates["program_studi"]
-                    if re.search(
-                        r"(?:mata\s*kuliah|matkul|courses?).*?(?:semester|sem|smt)\s*[1-8]|(?:semester|sem|smt)\s*[1-8].*?(?:mata\s*kuliah|matkul)",
-                        m["content"],
-                        re.IGNORECASE,
-                    ):
-                        session.last_intent_topic = "SEMESTER_COURSES"
 
         if student_profile:
             for k, v in student_profile.items():
@@ -100,10 +109,13 @@ class UnifiedChatEngine:
             if student_profile.get("semester_saat_ini") and not session.last_discussed_semester:
                 session.last_discussed_semester = student_profile["semester_saat_ini"]
 
-        contextualized_q = self.memory.contextualize_query(session_id, q_raw)
-
-        # Step 3: Tier 2 Semantic Cosine Centroid Gating (OOD Detection)
-        t2_res = self.tier2_gate.check(contextualized_q)
+        contextualized_q = self.memory.contextualize_query(
+            session_id, q_raw, query_vec=q_vec
+        )
+        if contextualized_q != q_raw:
+            q_vec, shared_embed_ms = self._embed_once(contextualized_q)
+        # Step 4: Tier 2 Semantic Cosine Centroid Gating (OOD Detection)
+        t2_res = self.tier2_gate.check(contextualized_q, query_vec=q_vec)
         if t2_res.is_ood:
             total_dt = (time.perf_counter() - t0) * 1000.0
             return EngineResult(
@@ -118,22 +130,16 @@ class UnifiedChatEngine:
                 metadata={"tier": "TIER_2", "academic_score": t2_res.academic_score, "ood_score": t2_res.ood_score},
             )
 
-        # Step 4: Assemble Context & Profile
+        # Step 5: Assemble Context & Profile
         sliding_history, current_profile = self.memory.get_context_for_llm(session_id)
         if history and len(sliding_history) < len(history):
             sliding_history = history[-self.memory.max_window_turns * 2 :]
 
-        # Step 5: System-1 Decider Fast-Path Routing
-        dec_res = self.decider.decide(contextualized_q)
-        greeting_match = re.search(
-            r"^(halo|hai|hi|hello|selamat pagi|selamat siang|selamat sore|selamat malam|assalamualaikum|tes|ping|terima kasih|makasih|thanks)\b",
-            q_raw.strip(),
-            re.IGNORECASE,
-        )
+        # Step 6: System-1 Decider Semantic Routing
+        dec_res = self.decider.decide(contextualized_q, query_vec=q_vec)
         is_pure_chitchat = (
             dec_res.category == DecisionCategory.CHAT_ONLY
-            and dec_res.confidence >= 0.70
-            and bool(greeting_match)
+            and dec_res.confidence >= 0.50
             and not (history or sliding_history)
         )
 
@@ -171,23 +177,8 @@ class UnifiedChatEngine:
                 metadata={"decider_category": dec_res.category.value, "confidence": dec_res.confidence},
             )
 
-        # Step 6: Regulation & SOP FAQ (CAG Route - 0ms retrieval)
-        is_sop_regulation = bool(
-            re.search(
-                r"\b(pkl|skripsi|yudisium|cuti|ukt|skma|syarat\s+sks|batas\s+sks|beban\s+sks|ips|ipk)\b",
-                contextualized_q,
-                re.IGNORECASE,
-            )
-        )
-        is_planning = bool(
-            re.search(
-                r"\b(rekomendasi|rekomendasikan|rencana\s+studi|degree\s+plan|plotting\s+krs|ambil\s+matkul\s+apa)\b",
-                contextualized_q,
-                re.IGNORECASE,
-            )
-        )
-
-        if is_sop_regulation and not is_planning:
+        # Step 7: Regulation & SOP FAQ (CAG Route - 0ms retrieval)
+        if dec_res.category == DecisionCategory.REGULATION_SOP:
             t_gen_start = time.perf_counter()
             cag_prompt = (
                 f"{get_cag_system_prompt()}\n\n"
@@ -225,49 +216,46 @@ class UnifiedChatEngine:
                 metadata={"category": "REGULATION_SOP", "updated_profile": updated_prof},
             )
 
-        # Step 7: Native Tool-Calling via ReActAgentEngine
-
-        # Step 6: Native Tool-Calling via ReActAgentEngine
+        # Step 8: ReAct Agent Engine (Native Tool-Calling / Hybrid / RAG)
         react_res = self.react_engine.generate_answer(
             query=contextualized_q,
             history=sliding_history,
             student_profile=current_profile,
+            precomputed_decision=dec_res,
         )
 
-        # Determine mapped routing mode & action type for frontend contract
         tools_executed = react_res.metadata.get("tools_executed", [])
         tool_names = [t["tool"] for t in tools_executed]
 
-        is_planning = bool(
-            re.search(
-                r"\b(rekomendasi|rekomendasikan|rencana\s+studi|degree\s+plan|plotting\s+krs|ambil\s+matkul\s+apa)\b",
-                contextualized_q,
-                re.IGNORECASE,
-            )
+        if (
+            "get_courses_by_semester" in tool_names
+            or "search_courses" in tool_names
+        ) and "generate_degree_plan" not in tool_names:
+            routing_mode = "RAG"
+        elif (
+            dec_res.category == DecisionCategory.DEGREE_PLANNING
             or "generate_degree_plan" in tool_names
-        )
-        is_sop_regulation = bool(
-            re.search(
-                r"\b(pkl|skripsi|yudisium|cuti|ukt|skma|syarat\s+sks|batas\s+sks|beban\s+sks|ips|ipk)\b",
-                contextualized_q,
-                re.IGNORECASE,
-            )
-            or "calculate_sks_limit" in tool_names
-        )
-
-        if is_planning:
+        ):
             routing_mode = "HYBRID"
-        elif is_sop_regulation:
+        elif (
+            dec_res.category == DecisionCategory.REGULATION_SOP
+            or "calculate_sks_limit" in tool_names
+        ):
             routing_mode = "CAG"
-        elif "get_courses_by_semester" in tool_names or "search_courses" in tool_names:
+        elif dec_res.category in (DecisionCategory.COURSE_DISCOVERY, DecisionCategory.PREREQUISITE):
             routing_mode = "RAG"
         elif not tools_executed:
             routing_mode = "DIRECT"
         else:
             routing_mode = "REACT_AGENT"
 
-        # Update memory state
-        self.memory.add_turn(session_id, q_raw, react_res.answer)
+        self.memory.add_turn(
+            session_id,
+            q_raw,
+            react_res.answer,
+            query_vec=q_vec,
+            decider_category=dec_res.category.value,
+        )
 
         # Update profile updates into metadata
         _, updated_prof = self.memory.get_context_for_llm(session_id)

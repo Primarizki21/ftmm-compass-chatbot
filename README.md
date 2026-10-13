@@ -11,11 +11,11 @@ This microservice provides high-precision academic advising, course discovery, p
 1. **Hybrid RAG-CAG (Retrieval-Augmented Generation + Cache-Augmented Generation)**:
    - **CAG (Cache-Augmented Generation)**: In-memory pre-warmed context for static faculty policies, SKS study load limits, graduation requirements, and institutional SOPs (0 ms retrieval latency).
    - **RAG (Retrieval-Augmented Generation)**: Dense FAISS vector indexing combined with BM25 Okapi and Reciprocal Rank Fusion (RRF) for dynamic, long-tail curriculum queries and syllabus exploration.
-2. **System-1 Decider (Centroid Gating)**:
-   - Fast cosine centroid gating (~30 ms) to route conversational queries, prune unnecessary tool schemas, and prevent LLM tool-calling hallucinations.
+2. **System-1 Decider (Single-Embed Shared Latent Pipeline & 6-Class BLAS Dispatch)**:
+   - Fast cosine centroid gating (<0.1 ms matrix dot-product inference) using a single L2-normalized latent vector per turn to route conversational intents (`CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`), prune unnecessary tool schemas, and prevent LLM tool-calling hallucinations.
 3. **Cascaded Defense-in-Depth Guardrails**:
-   - **Tier 1 (0 ms)**: Deterministic regex filter blocking prompt injection, roleplay jailbreaks, and authority spoofing.
-   - **Tier 2 (~30 ms)**: Semantic centroid gate deflecting out-of-domain / non-academic queries.
+   - **Tier 1 (0 ms)**: Deterministic Syntax Filter targeting low-level syntax attacks (SQL injection syntax, parameter tampering exploits) with zero semantic regex brittleness.
+   - **Tier 2 (~30 ms)**: Semantic Dual-Centroid Gate utilizing calibrated continuous cosine distance against multi-cluster academic vs non-academic prototypes to deflect out-of-domain (OOD) queries and semantic adversarial jailbreaks.
    - **Tier 3**: NeMo Colang input rails for dialog safety and institutional policy compliance.
    - **Tier 4**: Deterministic physical parameter bounds check (legal SKS limits 0–24, semesters 1–8).
 
@@ -127,4 +127,4 @@ uv run pytest tests/
 
 ## Empirical Research & Experiment Ledger
 
-Rigorous empirical benchmark logs, latency profiles, ablation studies (Exp-001 through Exp-011), and architecture decision records are tracked in [`docs/EXPERIMENT_LEDGER.md`](docs/EXPERIMENT_LEDGER.md) and individual experiment folders under [`docs/exp-*/`](docs/).
+Rigorous empirical benchmark logs, latency profiles, ablation studies (Exp-001 through Exp-019), and architecture decision records are tracked in [`docs/EXPERIMENT_LEDGER.md`](docs/EXPERIMENT_LEDGER.md) and individual experiment folders under [`docs/exp-*/`](docs/).

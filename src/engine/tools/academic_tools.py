@@ -450,7 +450,7 @@ def normalize_program_studi(raw: str) -> str:
 
 def extract_semester_from_text(text: str) -> int | None:
     match = re.search(
-        r"(?:semester|smt|sem)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b",
+        r"(?:semester|smt|sem)\s*[:=]?\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b",
         str(text or ""),
         re.IGNORECASE,
     )

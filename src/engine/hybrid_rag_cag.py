@@ -21,7 +21,7 @@ from src.engine.tools.academic_tools import (
     normalize_program_studi,
     extract_semester_from_text,
 )
-from src.engine.decider import SEMESTER_COURSE_FAST_PATH_REGEX
+from src.engine.decider import System1Decider, DecisionCategory
 DEFAULT_MODEL = "qwen2.5:3b"
 
 GUARDRAIL_REFUSAL_MESSAGE = (
@@ -120,7 +120,7 @@ class HybridRAGCAGEngine:
             if prodi_detected == query:
                 prodi_detected = prodi_filter or "Teknologi Sains Data"
 
-            if SEMESTER_COURSE_FAST_PATH_REGEX.search(query) and sem_detected is not None:
+            if sem_detected is not None:
                 course_data = get_courses_by_semester(program_studi=prodi_detected, semester=sem_detected)
                 retrieval_latency_ms = (time.perf_counter() - t_ret_start) * 1000.0
                 course_lines = [

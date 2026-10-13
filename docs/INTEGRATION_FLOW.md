@@ -28,21 +28,24 @@ graph LR
 | **Tier 4: Relational DB** | PostgreSQL 16 (`schema_v2_1_rc1.sql`) | Darryl (Database) | Relasi prasyarat matkul (`course_prerequisites` DAG), paritas ganjil/genap, dan persistensi rencana studi. |
 
 
-### 1.1 Pipeline Internal AI Engine Microservice (Hasil Riset Exp-008 s.d. Exp-017)
+### 1.1 Pipeline Internal AI Engine Microservice (Hasil Riset Exp-008 s.d. Exp-019)
 
-AI Engine mengimplementasikan arsitektur *Cascaded Defense-in-Depth* dan *System-1 Decider*:
+AI Engine mengimplementasikan arsitektur *Cascaded Defense-in-Depth* dan *Single-Embed Shared Latent Pipeline*:
 
 ```mermaid
 graph TD
-    Query[Kueri Mahasiswa] --> T1[Tier 1: 0ms Deterministic Regex Filter]
-    T1 -- Blocked: Jailbreak / Prompt Injection --> RefusalT1[Refusal Keamanan Instan: 0 ms]
-    T1 -- Allowed --> T2[Tier 2: <35ms FAISS Cosine Centroid Gating]
-    T2 -- Blocked: Out-of-Scope Non-Akademik --> RefusalT2[Refusal Batasan Topik: ~30 ms]
-    T2 -- Allowed --> Mem[Conversation Memory Manager: Sliding Window & Anaphora Resolve]
-    Mem --> Decider[System-1 Decider: Embedding Centroid Tool Schema Pruning]
+    Query[Kueri Mahasiswa] --> T1[Tier 1: Deterministic Syntax Filter 0 ms<br/>SQL Injection & Parameter Tampering]
+    T1 -- Blocked: Syntax Attack / Exploit --> RefusalT1[Refusal Keamanan Sintaksis: 0 ms]
+    T1 -- Allowed --> Embed[Single-Embed Step: Ollama C++ Native<br/>1x Call -> L2-Normalized Shared Latent Vector]
+    Embed --> T2[Tier 2: Semantic Dual-Centroid Gating ~30 ms<br/>OOD Detection & Adversarial Jailbreak Boundary]
+    T2 -- Blocked: Out-of-Scope Non-Akademik / Jailbreak --> RefusalT2[Refusal Batasan Topik & Etika: ~30 ms]
+    T2 -- Allowed --> Mem[Conversation Memory Manager<br/>Dense Gazetteer Linking & Latent Ellipsis Context]
+    Mem --> Decider[6-Class System-1 Decider: BLAS Dot-Product <0.1 ms<br/>Shared Latent Vector Intent & Tool Dispatch]
     Decider -- CHAT_ONLY --> DirectLLM[ReAct Agent: Zero Tool Schema Overhead ~400-700 ms]
-    Decider -- PREREQUISITE / SKS / PLAN --> ToolsLLM[ReAct Agent: Injeksi Tool Spesifik Saja]
+    Decider -- REGULATION_SOP --> CAGRoute[Direct CAG Route: Pre-cached Faculty SOP 0 ms Retrieval]
+    Decider -- PREREQUISITE / SKS / PLAN / DISCOVERY --> ToolsLLM[ReAct Agent: Injeksi Tool Spesifik Saja]
     DirectLLM --> Out[Jawaban Akhir Teks]
+    CAGRoute --> Out
     ToolsLLM --> T4[Tier 4: Deterministic Argument & Physical Tool Rail]
     T4 -- Parameter Valid --> Exec[Eksekusi Tool Database / DAG / Kurikulum]
     T4 -- Parameter Melanggar SKS/Semester --> RefusalT4[Refusal Parameter Pelanggaran Aturan]
@@ -52,12 +55,12 @@ graph TD
 
 | Komponen Pipeline | Modul Sumber | Mekanisme & Target Latensi | Status Validasi |
 |---|---|---|---|
-| **Tier 1 Security Filter** | `src/guardrails/tier1_filter.py` | Regex blocklist instan (0.0 ms) untuk cegah prompt injection & DAN jailbreak. | Tuntas (Exp-008, 0% ASR) |
-| **Tier 2 Semantic Gating** | `src/guardrails/tier2_semantic_gate.py` | FAISS Centroid Cosine Distance (<35 ms) mendeteksi kueri OOD tanpa beban LLM. | Tuntas (Exp-008, 100% OOD-R) |
-| **Memory Manager** | `src/engine/memory.py` | Sliding window 6 turn + persistensi profil mahasiswa & resolusi anafora (*itu, tersebut*). | Tuntas (Exp-009, 94.3% Success) |
-| **System-1 Decider** | `src/engine/decider.py` | BLAS Dot-product (30-130 ms) memangkas ~675 token skema JSON; evaluasi 9 varian Ollama native (Nomic, Qwen3, BGE-M3) x 3 heads (Centroid, Logistic, k-NN). | Tuntas (Exp-011 96.7% Acc, Exp-015 95.0% Acc, Exp-017 Qwen3+kNN 100.0% Acc, Margin 0.3155, Nomic+Logistic 96.7% P50 30.5 ms) |
+| **Tier 1 Syntax Filter** | `src/guardrails/tier1_filter.py` | Deterministic Syntax Filter (0.0 ms) untuk cegah SQL syntax injection (`DROP TABLE`, `UNION SELECT`) & parameter tampering numerik. Zero semantic regex. | Tuntas (Exp-008, Exp-019, 0% ASR) |
+| **Tier 2 Dual-Centroid Gating** | `src/guardrails/tier2_semantic_gate.py` | Semantic Dual-Centroid Gating (<35 ms) menggunakan L2-normalized shared latent vector untuk deteksi OOD & jailbreak adversarial semantik. | Tuntas (Exp-016, Exp-019, 100% OOD-R) |
+| **Memory Manager** | `src/engine/memory.py` | Dense Gazetteer Linking (369 kurikulum FTMM) + Latent Ellipsis & Structured Context Injection (prodi, semester, IPS, minat). | Tuntas (Exp-009, Exp-019, $\ge$95% Anaphora Success) |
+| **System-1 Decider** | `src/engine/decider.py` | 6-Class System-1 Decider BLAS Dot-product (<0.1 ms inferensi matrix): `CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`. Memangkas token skema JSON dan redundansi embedding call. | Tuntas (Exp-011 96.7% Acc, Exp-015 95.0% Acc, Exp-017 Qwen3+kNN 100.0% Acc, Exp-019 Single-Embed Pipeline) |
 | **ReAct Agent Engine** | `src/engine/react_agent.py` | Qwen2.5-3B VRAM Pinned (`OLLAMA_MAX_LOADED_MODELS=2`) + DeepSeek-style prefix cache. | Tuntas (Exp-010, P50 1.39s) |
-| **Tier 4 Argument Rail** | `src/guardrails/tier4_tool_rail.py` | Validasi batas legal semester (1–8) dan SKS (0–24) sebelum pemanggilan tool. | Tuntas (Exp-008) |
+| **Tier 4 Argument Rail** | `src/guardrails/tier4_tool_rail.py` | Validasi batas legal semester (1–8) dan SKS (0–24) sebelum pemanggilan tool fisik. | Tuntas (Exp-008) |
 ---
 
 ## 2. Sequence Diagram Alur Integrasi End-to-End

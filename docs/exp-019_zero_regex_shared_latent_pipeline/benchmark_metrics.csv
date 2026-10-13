@@ -1,0 +1,2 @@
+experiment_id,total_queries,routing_accuracy,ood_recall,anaphora_success_rate,avg_embedding_calls,max_embedding_calls_in_scope,p50_latency_ms,p95_latency_ms,avg_latency_ms
+exp-019,60,100.0,100.0,100.0,0.97,1,39.67,54.82,39.19

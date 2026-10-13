@@ -4,7 +4,7 @@ import time
 from typing import Any
 import ollama
 from src.engine.base import EngineResult
-from src.engine.decider import System1Decider, SEMESTER_COURSE_FAST_PATH_REGEX
+from src.engine.decider import System1Decider, DecisionResult
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
 from src.engine.tools.academic_tools import normalize_program_studi, extract_semester_from_text
 DEFAULT_MODEL = "qwen2.5:3b"
@@ -57,9 +57,14 @@ def get_system1_decider() -> System1Decider:
     return _decider_instance
 
 
-def select_relevant_tools(query: str) -> tuple[list[dict[str, Any]] | None, dict[str, Any]]:
-    decider = get_system1_decider()
-    res = decider.decide(query)
+def select_relevant_tools(
+    query: str, precomputed_decision: DecisionResult | None = None
+) -> tuple[list[dict[str, Any]] | None, dict[str, Any]]:
+    if precomputed_decision is not None:
+        res = precomputed_decision
+    else:
+        decider = get_system1_decider()
+        res = decider.decide(query)
     telemetry = {
         "decider_category": res.category.value,
         "decider_confidence": res.confidence,
@@ -78,10 +83,12 @@ class ReActAgentEngine:
         query: str,
         history: list[dict[str, str]] | None = None,
         student_profile: dict[str, Any] | None = None,
+        precomputed_decision: DecisionResult | None = None,
     ) -> EngineResult:
         t0 = time.perf_counter()
-        active_tools, decider_telemetry = select_relevant_tools(query)
-        # Build initial message stack
+        active_tools, decider_telemetry = select_relevant_tools(
+            query, precomputed_decision=precomputed_decision
+        )
         messages: list[dict[str, Any]] = [
             {"role": "system", "content": REACT_SYSTEM_PROMPT}
         ]
@@ -146,10 +153,7 @@ class ReActAgentEngine:
             if not tool_calls and step_count == 1 and not tools_executed:
                 detected_p = normalize_program_studi(query)
                 detected_s = extract_semester_from_text(query)
-                is_sem_query = bool(SEMESTER_COURSE_FAST_PATH_REGEX.search(query))
-                if not is_sem_query and detected_p != query and detected_s is not None:
-                    is_sem_query = True
-                if is_sem_query and detected_p != query and detected_s is not None:
+                if detected_p != query and detected_s is not None:
                     class _Fn:
                         name = "get_courses_by_semester"
                         arguments = {"program_studi": detected_p, "semester": detected_s}
