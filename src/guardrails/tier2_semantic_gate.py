@@ -4,16 +4,14 @@ from pathlib import Path
 from typing import NamedTuple
 import numpy as np
 import ollama
+from src.engine.base import get_ollama_client
 
 DEFAULT_EMBED_MODEL = "nomic-embed-text"
 CACHE_PATH = Path("data/guardrails_centroids_v2.npz")
 
 
 def _get_ollama_client() -> ollama.Client:
-    host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").strip()
-    if not host.startswith(("http://", "https://")):
-        host = f"http://{host}"
-    return ollama.Client(host=host.rstrip("/"))
+    return get_ollama_client()
 
 class GateResult(NamedTuple):
     is_ood: bool

@@ -15,7 +15,7 @@ import ollama
 from src.knowledge.cag_store import get_cag_system_prompt
 from src.knowledge.retriever import get_course_retriever
 from src.engine.router import get_router, RoutingMode, RoutingDecision
-from src.engine.base import EngineResult
+from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
 from src.engine.tools.academic_tools import (
     get_courses_by_semester,
     normalize_program_studi,
@@ -88,10 +88,10 @@ class HybridRAGCAGEngine:
             messages.append({"role": "user", "content": query})
 
             t_gen_start = time.perf_counter()
-            resp = ollama.chat(
+            resp = get_ollama_client().chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.0, "top_p": 0.9, "num_predict": 300}
+                options={"temperature": 0.0, "top_p": 0.9, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX}
             )
             generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
             total_latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -160,10 +160,10 @@ class HybridRAGCAGEngine:
             messages.append({"role": "user", "content": query})
 
             t_gen_start = time.perf_counter()
-            resp = ollama.chat(
+            resp = get_ollama_client().chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": 2048}
+                options={"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": DEFAULT_NUM_CTX}
             )
             generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
             total_latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -214,10 +214,10 @@ class HybridRAGCAGEngine:
             messages.append({"role": "user", "content": query})
 
             t_gen_start = time.perf_counter()
-            resp = ollama.chat(
+            resp = get_ollama_client().chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.2, "top_p": 0.9, "num_predict": 300}
+                options={"temperature": 0.2, "top_p": 0.9, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX}
             )
             generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
             total_latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -242,10 +242,10 @@ class HybridRAGCAGEngine:
             messages.append({"role": "user", "content": query})
 
             t_gen_start = time.perf_counter()
-            resp = ollama.chat(
+            resp = get_ollama_client().chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.3}
+                options={"temperature": 0.3, "num_ctx": DEFAULT_NUM_CTX}
             )
             generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
             total_latency_ms = (time.perf_counter() - t0) * 1000.0

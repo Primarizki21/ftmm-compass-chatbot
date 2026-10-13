@@ -7,7 +7,7 @@ import time
 from typing import Any
 import ollama
 from src.knowledge.retriever import get_course_retriever
-from src.engine.base import EngineResult
+from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
 
 DEFAULT_MODEL = "qwen2.5:3b"
 
@@ -51,10 +51,10 @@ class PureRAGEngine:
 
         # 3. Generation Step
         t_gen_start = time.perf_counter()
-        resp = ollama.chat(
+        resp = get_ollama_client().chat(
             model=self.model,
             messages=messages,
-            options={"temperature": 0.2, "top_p": 0.9}
+            options={"temperature": 0.2, "top_p": 0.9, "num_ctx": DEFAULT_NUM_CTX}
         )
         generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
         total_latency_ms = (time.perf_counter() - t0) * 1000.0

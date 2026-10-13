@@ -13,8 +13,19 @@ services:
       - ftmm-network
     env_file:
       - .env
+    environment:
+      - OMP_NUM_THREADS=2
+      - OPENBLAS_NUM_THREADS=2
+      - MKL_NUM_THREADS=2
+      - TOKENIZERS_PARALLELISM=false
+      - OLLAMA_NUM_CTX=2048
     volumes:
       - ./data:/app/data:ro
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 512M
     security_opt:
       - no-new-privileges:true
     cap_drop:

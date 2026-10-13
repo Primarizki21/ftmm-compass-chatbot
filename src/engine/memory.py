@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 import numpy as np
 import ollama
+from src.engine.base import get_ollama_client
 
 DEFAULT_TTL_SECONDS = 7200  # 2 hours
 DEFAULT_MAX_WINDOW_TURNS = 6  # 6 turns = 12 messages
@@ -58,7 +59,7 @@ class DenseGazetteerLinker:
         self._initialized = True
 
     def embed_query(self, query: str) -> np.ndarray:
-        resp = ollama.embed(model=self.embed_model, input=query)
+        resp = get_ollama_client().embed(model=self.embed_model, input=query, keep_alive=-1)
         q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
         norm = np.linalg.norm(q_vec)
         if norm > 0:

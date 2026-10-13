@@ -3,7 +3,7 @@ import os
 import time
 from typing import Any
 import ollama
-from src.engine.base import EngineResult
+from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
 from src.engine.decider import System1Decider, DecisionResult
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
 from src.engine.tools.academic_tools import normalize_program_studi, extract_semester_from_text
@@ -11,10 +11,7 @@ DEFAULT_MODEL = "qwen2.5:3b"
 
 
 def _get_ollama_client() -> ollama.Client:
-    host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").strip()
-    if not host.startswith(("http://", "https://")):
-        host = f"http://{host}"
-    return ollama.Client(host=host.rstrip("/"))
+    return get_ollama_client()
 REACT_SYSTEM_PROMPT = """Anda adalah Compass AI, agen penasihat akademik resmi Fakultas Teknologi Maju dan Multidisiplin (FTMM) Universitas Airlangga.
 Tugas Anda adalah membantu mahasiswa dengan informasi akurat, perencanaan studi, dan pengecekan regulasi akademik.
 Prinsip Kerja Agen:
@@ -130,7 +127,7 @@ class ReActAgentEngine:
                     chat_kwargs: dict[str, Any] = {
                         "model": self.model,
                         "messages": messages,
-                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": 4096},
+                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": DEFAULT_NUM_CTX},
                     }
                     if active_tools:
                         chat_kwargs["tools"] = active_tools

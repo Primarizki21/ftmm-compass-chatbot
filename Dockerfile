@@ -39,6 +39,14 @@ COPY --from=builder --chown=appuser:appgroup /app/.venv /app/.venv
 ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONOPTIMIZE=1 \
+    TOKENIZERS_PARALLELISM=false \
+    OMP_NUM_THREADS=2 \
+    OPENBLAS_NUM_THREADS=2 \
+    MKL_NUM_THREADS=2 \
+    VECLIB_MAXIMUM_THREADS=2 \
+    NUMEXPR_NUM_THREADS=2 \
+    OLLAMA_NUM_CTX=2048 \
     OLLAMA_HOST="http://host.docker.internal:11434"
 
 # Create writable data directory for centroids & runtime caches
@@ -55,4 +63,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)" || exit 1
 
-CMD ["uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "uvloop", "--http", "httptools", "--no-access-log"]

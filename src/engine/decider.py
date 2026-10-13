@@ -7,6 +7,7 @@ from typing import Any, NamedTuple
 import numpy as np
 import ollama
 
+from src.engine.base import get_ollama_client
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS
 
 DEFAULT_EMBED_MODEL = "nomic-embed-text"
@@ -215,7 +216,7 @@ class System1Decider:
             cat_indices = []
             for idx, cat in enumerate(self.categories):
                 texts = PROTOTYPES[cat]
-                resp = ollama.embed(model=self.embed_model, input=texts)
+                resp = get_ollama_client().embed(model=self.embed_model, input=texts, keep_alive=-1)
                 vecs = np.array(resp["embeddings"], dtype=np.float32)
                 vecs = vecs / np.linalg.norm(vecs, axis=1, keepdims=True)
                 centroid = np.mean(vecs, axis=0)
@@ -248,7 +249,7 @@ class System1Decider:
             q_vec = np.array(query_vec, dtype=np.float32)
             t_embed_ms = 0.0
         else:
-            resp = ollama.embed(model=self.embed_model, input=query)
+            resp = get_ollama_client().embed(model=self.embed_model, input=query, keep_alive=-1)
             q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
             t_embed_ms = (time.perf_counter() - t_embed_start) * 1000
 

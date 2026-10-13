@@ -3,7 +3,7 @@ from typing import Any
 import numpy as np
 import ollama
 
-from src.engine.base import EngineResult
+from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
 from src.guardrails.tier1_filter import Tier1DeterministicFilter
 from src.guardrails.tier2_semantic_gate import Tier2SemanticGate
 from src.engine.decider import System1Decider, DecisionCategory
@@ -52,7 +52,7 @@ class UnifiedChatEngine:
 
     def _embed_once(self, text: str) -> tuple[np.ndarray, float]:
         t_start = time.perf_counter()
-        resp_embed = ollama.embed(model=self.embed_model, input=text)
+        resp_embed = get_ollama_client().embed(model=self.embed_model, input=text, keep_alive=-1)
         q_vec = np.array(resp_embed["embeddings"][0], dtype=np.float32)
         norm = np.linalg.norm(q_vec)
         if norm > 0:
@@ -154,10 +154,11 @@ class UnifiedChatEngine:
                 {"role": "system", "content": chitchat_prompt},
                 {"role": "user", "content": q_raw},
             ]
-            resp = ollama.chat(
+            resp = get_ollama_client().chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.3, "num_predict": 256},
+                options={"temperature": 0.3, "num_predict": 256, "num_ctx": DEFAULT_NUM_CTX},
+                keep_alive=-1,
             )
             gen_dt = (time.perf_counter() - t_gen_start) * 1000.0
             total_dt = (time.perf_counter() - t0) * 1000.0
@@ -192,10 +193,11 @@ class UnifiedChatEngine:
                 messages.extend(sliding_history[-4:])
             messages.append({"role": "user", "content": q_raw})
 
-            resp = ollama.chat(
+            resp = get_ollama_client().chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.0, "num_predict": 300},
+                options={"temperature": 0.0, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX},
+                keep_alive=-1,
             )
             gen_dt = (time.perf_counter() - t_gen_start) * 1000.0
             total_dt = (time.perf_counter() - t0) * 1000.0

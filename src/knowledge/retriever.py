@@ -10,6 +10,9 @@ from typing import Any
 import numpy as np
 import faiss
 import ollama
+from src.engine.base import get_ollama_client
+
+faiss.omp_set_num_threads(int(os.getenv("OMP_NUM_THREADS", "2")))
 
 INDEX_NOMIC_PATH = Path("data/faiss/ftmm_courses.faiss")
 META_NOMIC_PATH = Path("data/faiss/ftmm_courses_meta.pkl")
@@ -53,7 +56,7 @@ class CourseRetriever:
         if not self._loaded:
             self.load()
 
-        resp = ollama.embed(model=DEFAULT_EMBED_MODEL, input=query)
+        resp = get_ollama_client().embed(model=DEFAULT_EMBED_MODEL, input=query, keep_alive=-1)
         q_vec = np.array(resp["embeddings"][0], dtype=np.float32).reshape(1, -1)
         norm = np.linalg.norm(q_vec)
         if norm > 0:
