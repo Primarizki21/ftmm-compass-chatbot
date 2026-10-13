@@ -50,6 +50,7 @@ agents.md
 *agent*.md
 CLAUDE.md
 .agents/
+.omp/
 
 
 # Local Developer Knowledge Graphs & Code Indexing (Transient / Bloat)
