@@ -1,0 +1,13 @@
+{
+  "total_scenarios": 20,
+  "overall_success_rate": 1.0,
+  "prodi_normalization_acc": 1.0,
+  "zero_fallback_rate": 1.0,
+  "sks_bound_adherence_rate": 1.0,
+  "parity_compliance_rate": 1.0,
+  "single_religion_rate": 1.0,
+  "no_empty_semesters_rate": 1.0,
+  "avg_latency_ms": 36.528499999999994,
+  "p50_latency_ms": 31.49,
+  "p95_latency_ms": 62.59
+}

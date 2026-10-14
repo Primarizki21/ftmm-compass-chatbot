@@ -1,0 +1,21 @@
+scenario_id,raw_prodi,expected_canonical,resolved_canonical,register,latency_ms,success,prodi_correct,zero_fallback,sks_adherence,parity_compliance,single_religion,no_empty_semesters,total_credits,total_courses
+DP-001,TSD,Teknologi Sains Data,Teknologi Sains Data,slang_acronym,62.11,1.0,1.0,1.0,1.0,1.0,1.0,1.0,143,54
+DP-002,teknologi sains data,Teknologi Sains Data,Teknologi Sains Data,formal,54.96,1.0,1.0,1.0,1.0,1.0,1.0,1.0,156,58
+DP-003,data science,Teknologi Sains Data,Teknologi Sains Data,english_alias,71.71,1.0,1.0,1.0,1.0,1.0,1.0,1.0,159,59
+DP-004,data saintis,Teknologi Sains Data,Teknologi Sains Data,informal_variant,53.02,1.0,1.0,1.0,1.0,1.0,1.0,1.0,128,48
+DP-005,TRKB,Teknik Robotika dan Kecerdasan Buatan,Teknik Robotika dan Kecerdasan Buatan,slang_acronym,35.13,1.0,1.0,1.0,1.0,1.0,1.0,1.0,152,60
+DP-006,robotika,Teknik Robotika dan Kecerdasan Buatan,Teknik Robotika dan Kecerdasan Buatan,informal_short,32.41,1.0,1.0,1.0,1.0,1.0,1.0,1.0,137,56
+DP-007,ai robot,Teknik Robotika dan Kecerdasan Buatan,Teknik Robotika dan Kecerdasan Buatan,slang_compound,27.02,1.0,1.0,1.0,1.0,1.0,1.0,1.0,137,54
+DP-008,teknik robotika dan kecerdasan buatan,Teknik Robotika dan Kecerdasan Buatan,Teknik Robotika dan Kecerdasan Buatan,formal,29.3,1.0,1.0,1.0,1.0,1.0,1.0,1.0,152,60
+DP-009,RN,S1 Rekayasa Nanoteknologi,S1 Rekayasa Nanoteknologi,slang_acronym,38.31,1.0,1.0,1.0,1.0,1.0,1.0,1.0,144,67
+DP-010,nanoteknologi,S1 Rekayasa Nanoteknologi,S1 Rekayasa Nanoteknologi,informal_short,30.14,1.0,1.0,1.0,1.0,1.0,1.0,1.0,150,68
+DP-011,nanotek,S1 Rekayasa Nanoteknologi,S1 Rekayasa Nanoteknologi,slang_short,27.88,1.0,1.0,1.0,1.0,1.0,1.0,1.0,116,55
+DP-012,rekayasa nanoteknologi,S1 Rekayasa Nanoteknologi,S1 Rekayasa Nanoteknologi,formal,31.29,1.0,1.0,1.0,1.0,1.0,1.0,1.0,150,68
+DP-013,TI,Teknik Industri,Teknik Industri,slang_acronym,31.58,1.0,1.0,1.0,1.0,1.0,1.0,1.0,122,51
+DP-014,teknik industri,Teknik Industri,Teknik Industri,formal,36.86,1.0,1.0,1.0,1.0,1.0,1.0,1.0,130,53
+DP-015,industri,Teknik Industri,Teknik Industri,informal_short,29.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,108,45
+DP-016,industrial,Teknik Industri,Teknik Industri,english_alias,31.82,1.0,1.0,1.0,1.0,1.0,1.0,1.0,130,53
+DP-017,TE,Teknik Elektro,Teknik Elektro,slang_acronym,26.68,1.0,1.0,1.0,1.0,1.0,1.0,1.0,145,65
+DP-018,teknik elektro,Teknik Elektro,Teknik Elektro,formal,31.4,1.0,1.0,1.0,1.0,1.0,1.0,1.0,155,68
+DP-019,elektro,Teknik Elektro,Teknik Elektro,informal_short,24.12,1.0,1.0,1.0,1.0,1.0,1.0,1.0,114,51
+DP-020,electrical,Teknik Elektro,Teknik Elektro,english_alias,25.83,1.0,1.0,1.0,1.0,1.0,1.0,1.0,149,65

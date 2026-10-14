@@ -60,8 +60,8 @@ graph TD
 | **Memory Manager** | `src/engine/memory.py` | Dense Gazetteer Linking (369 kurikulum FTMM) + Latent Ellipsis & Structured Context Injection (prodi, semester, IPS, minat). | Tuntas (Exp-009, Exp-019, $\ge$95% Anaphora Success) |
 | **System-1 Decider** | `src/engine/decider.py` | 6-Class System-1 Decider BLAS Dot-product (<0.1 ms inferensi matrix): `CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`. Memangkas token skema JSON dan redundansi embedding call. | Tuntas (Exp-011 96.7% Acc, Exp-015 95.0% Acc, Exp-017 Qwen3+kNN 100.0% Acc, Exp-019 Single-Embed Pipeline) |
 | **ReAct Agent Engine** | `src/engine/react_agent.py` | Qwen2.5-3B VRAM Pinned (`OLLAMA_MAX_LOADED_MODELS=2`) + DeepSeek-style prefix cache. | Tuntas (Exp-010, P50 1.39s) |
+| **CSP Degree Planner** | `src/engine/tools/academic_tools.py` | Neuro-Symbolic CSP Planner (`generate_degree_plan`) dengan Dense Gazetteer Normalizer, FAISS focus track expansion, penegakan paritas semester, batas SKS, dan dedup agama tunggal. | Tuntas (Exp-020, 100.0% Success, 0% Fallback) |
 | **Tier 4 Argument Rail** | `src/guardrails/tier4_tool_rail.py` | Validasi batas legal semester (1–8) dan SKS (0–24) sebelum pemanggilan tool fisik. | Tuntas (Exp-008) |
----
 
 ## 2. Sequence Diagram Alur Integrasi End-to-End
 

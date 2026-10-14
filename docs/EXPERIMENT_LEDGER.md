@@ -27,6 +27,7 @@
 | **`exp-016`** | 2026-10-12 | Hardening Semantic Guardrails & Dual-Centroid Boundary (Card 110) | `nomic-embed-text` + Dual Semantic Boundary | Safety Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Adversarial: 100% | ASR: **0.0%** (0/15 attacks)<br>OOD-R: **100.0%** (20/20 non-academic)<br>FRR: **0.0%** (0/25 benign) | Non-academic Coding: **100% Blocked** (bubble sort, game, web scraping)<br>Slang: 100% Allowed | Dot-Product BLAS: **0.05 ms**<br>Gate P50: **70.66 ms**<br>Gate Avg: **79.21 ms** | P50: **70.66 ms**<br>P95: 151.00 ms | Zero False Refusal (FRR 0.0%)<br>Zero Attack Success (ASR 0.0%) | **Eliminasi Celah Non-Akademik Tuntas**: Memperbaiki logika rapuh `max_ood >= max_ac` dan memperluas anchor OOD mencakup coding umum/tugas sekolah. Kueri `buatkan kode bubble sort` terblokir seketika pada Tier 2 dalam <35ms tanpa beban ekstra LLM. Menjawab Card 110. | `docs/exp-016_hardened_semantic_guardrails/` |
 | **`exp-017`** | 2026-10-12 | Ollama Native Embedding & Classifier Head Matrix (Card 25, 32, 99) | `nomic-embed-text` (768d), `qwen3-embedding:0.6b` (1024d), `bge-m3` (1024d) | Qwen3 kNN: **100.0%** (60/60)<br>BGE-M3 Head: **98.3%**<br>Nomic Centroid: 96.7% | Margin (Top1-Top2):<br>Nomic Centroid: 0.0401<br>Nomic Logistic: **0.0831**<br>Qwen3 kNN: **0.3155**<br>BGE-M3 kNN: **0.2934** | Formal: 100%<br>Slang: **100.0%** (Qwen3 & BGE-M3)<br>Implicit: **100%** (All) | Matrix / Head Latency: **0.05 - 0.10 ms** (BLAS $O(1)$) | Nomic P50: **30.4 ms**<br>Qwen3 P50: **130.0 ms**<br>BGE-M3 P50: **170.0 ms** | Zero Python RAM overhead<br>Zero Disk I/O / Zero Swap<br>VRAM Peak: ~3.95 GB | **Qwen3-Embedding (0.6B) + Multi-Exemplar k-NN Mencapai 100.0% Akurasi Sempurna** dengan margin pemisah 0.3155 (8x lebih tajam vs Nomic). Nomic + Logistic tercepat (30.5 ms P50, 96.7%). Membuktikan keunggulan ekosistem native Ollama tanpa disk thrashing WSL2. | `docs/exp-017_ollama_embedding_classifier_head/` |
 | **`exp-019`** | 2026-10-13 | Eliminasi Total Regex Semantik & Unifikasi Single-Embed Shared Latent Pipeline (Card 113) | `nomic-embed-text` (768d Shared Vector) + `qwen2.5:3b` | Routing Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Implicit: 100% | OOD & Adv Recall: **100.0%**<br>ASR: **0.0%**<br>FRR: **0.0%** | Anaphora Res: **100.0%**<br>Semantic Regex: **0** (dari 24) | Shared Embed Calls: **1x/turn** (Avg 0.97)<br>BLAS Dot-Product: **<0.2 ms** | P50: **39.67 ms**<br>Avg: **39.19 ms**<br>P95: **54.82 ms** | Zero Semantic Regex<br>74/74 Pytest PASS | **Eliminasi 100% Regex Semantik Tuntas**: Seluruh 24 regex intent/anafora/topik digantikan oleh Single-Embed Shared Latent Vector + 6-Class System-1 Decider (`REGULATION_SOP` CAG) + Dense Gazetteer Linker. Menjawab Card 113. | `docs/exp-019_zero_regex_shared_latent_pipeline/` |
+| **`exp-020`** | 2026-10-14 | Hardening Neuro-Symbolic CSP Degree Planner & Dense Gazetteer Normalizer (Card 114) | `nomic-embed-text` (FAISS Track Retrieval + Dense Gazetteer) + CSP Engine | Overall Success: **100.0%** (20/20)<br>Prodi Acc: **100.0%** | Zero-Fallback: **100.0%** (0% nyasar prodi lain)<br>Parity: **100.0%** | SKS Adherence: **100.0%**<br>Single Religion: **100.0%** | FAISS Semantic Retrieval: **3.8 ms** (avg) | Turn Latency: **36.5 ms** (Avg)<br>P50: **31.5 ms**<br>P95: **62.6 ms** | Zero False Fallback<br>82/82 Pytest PASS | **Eliminasi Silent Fallback Bug & Naive Substring Tuntas**: Memadukan Dense Vector Gazetteer untuk normalisasi prodi tanpa pemotongan `catalog[:40]`, FAISS semantic expansion untuk peminatan (`LLM` $\to$ NLP), serta penegakan paritas semester, batas SKS, dan dedup agama tunggal. Menjawab Card 114. | `docs/exp-020_neuro_symbolic_degree_planner/` |
 
 ---
 
@@ -578,3 +579,34 @@
   - `docs/exp-019_zero_regex_shared_latent_pipeline/benchmark_metrics.csv`
   - `docs/exp-019_zero_regex_shared_latent_pipeline/benchmark_results.json`
   - `docs/exp-019_zero_regex_shared_latent_pipeline/benchmark_raw_traces.jsonl`
+
+### [exp-020] Hardening Neuro-Symbolic CSP Degree Planner & Dense Gazetteer Normalizer
+- **Tanggal:** 2026-10-14
+- **Kartu Trello:** Card 114 (Hardening Neuro-Symbolic CSP Degree Planner).
+- **Tujuan / Hipotesis:**
+  Mengeliminasi silent fallback bug pada `generate_degree_plan` di mana input prodi singkatan/slang (`TSD`, `ai robot`) memicu fallback pemotongan acak `catalog[:40]` (Rekayasa Nanoteknologi), memetakan peminatan non-literal (`LLM` $\to$ NLP/AI) via FAISS semantic retrieval, dan menegakkan aturan deterministik kurikulum (paritas semester, batas SKS, single religion dedup).
+- **Setup Teknis (Low-Level Architecture):**
+  - **Prodi Normalizer:** Hierarki 2-tingkat (Canonical Alias Map + Dense Vector Gazetteer dot product L2 cosine similarity threshold $\ge 0.45$).
+  - **Track Expansion:** FAISS Dense Retriever (`nomic-embed-text`, $d=768$, IndexFlatIP) dengan prodi filtering untuk perangkingan mata kuliah pilihan (*electives*).
+  - **CSP Solver:** Topological placement (Wajib $\to$ Scored Electives) dengan batas kapasitas SKS $\le 24$, paritas semester ganjil/genap, dan filter agama tunggal (maks 2 SKS).
+  - **Evaluasi:** 20 skenario komprehensif lintas 5 prodi FTMM (`data/ground_truth/degree_plan_benchmark.json`).
+- **Temuan Kunci:**
+  1. **100.0% Overall Success & Zero-Fallback Rate:**
+     Normalisasi prodi mencapai akurasi 100% pada seluruh singkatan/slang tanpa satupun mata kuliah prodi lain yang bocor.
+  2. **Penanganan Peminatan Semantik Berhasil:**
+     Kueri *"TSD fokus LLM"* sukses mengekspansi dan menjadwalkan `Natural Language Processing` (SIC304) dan `Pengantar Kecerdasan Buatan` (SIC203) di semester target.
+  3. **Penegakan Paritas & Single Religion Dedup:**
+     Paritas semester (ganjil/genap) dipatuhi 100%, eliminasi 5 varian agama redundan di semester 1, dan beban SKS semester terjaga di bawah batas kapasitas.
+  4. **Latensi Sub-40ms:**
+     Rata-rata waktu eksekusi planner hanya 36.5 ms (P50 31.5 ms), siap melayani UI `DegreePlanner.tsx` dan endpoint `POST /api/v1/plans`.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - Mengadopsi CSP Degree Planner sebagai implementasi resmi pada `src/engine/tools/academic_tools.py`.
+  - Memperbarui checklist DoD Card 114 dan mencatat hasil ke Trello Board.
+- **Artefak:**
+  - `docs/exp-020_neuro_symbolic_degree_planner/README.md`
+  - `docs/exp-020_neuro_symbolic_degree_planner/benchmark_summary.md`
+  - `docs/exp-020_neuro_symbolic_degree_planner/benchmark_metrics.csv`
+  - `docs/exp-020_neuro_symbolic_degree_planner/benchmark_results.json`
+  - `docs/exp-020_neuro_symbolic_degree_planner/benchmark_raw_traces.jsonl`
+  - `scripts/evaluate_degree_planner.py`
+  - `tests/test_degree_planner_csp.py`

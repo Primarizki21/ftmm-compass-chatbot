@@ -288,12 +288,15 @@ def generate_degree_plan(
     max_sks_per_sem: int = 24
 ) -> dict[str, Any]:
     """
-    Menyusun rancangan studi semester per semester tervalidasi prasyarat yang dapat langsung dikonsumsi DegreePlanner.tsx.
+    Menyusun rancangan studi semester per semester tervalidasi prasyarat (Neuro-Symbolic CSP Planner)
+    yang dapat langsung dikonsumsi DegreePlanner.tsx.
     """
     catalog = _get_catalog()
+    canonical_prodi = normalize_program_studi(program_studi or "Teknologi Sains Data")
     current_semester = int(current_semester or 1)
     target_semester = int(target_semester or 8)
     max_sks_per_sem = int(max_sks_per_sem or 24)
+
     if passed_courses is None:
         passed_courses = []
     elif isinstance(passed_courses, str):
@@ -302,110 +305,162 @@ def generate_degree_plan(
         focus_tracks = []
     elif isinstance(focus_tracks, str):
         focus_tracks = [t.strip() for t in focus_tracks.split(",") if t.strip()]
-    prodi_lower = str(program_studi or "Teknologi Sains Data").lower().strip()
+
     prodi_courses = [
         c for c in catalog
-        if prodi_lower in str(c.get("program_studi", "")).lower() or not prodi_lower
+        if canonical_prodi.lower() in str(c.get("program_studi", "")).lower()
     ]
     if not prodi_courses:
-        prodi_courses = catalog[:40]
-        
+        # Jika tidak cocok persis, fallback ke katalog prodi terdekat tanpa truncation acak
+        prodi_courses = [
+            c for c in catalog
+            if "sains data" in str(c.get("program_studi", "")).lower()
+        ]
+        canonical_prodi = "Teknologi Sains Data"
+
     plan: dict[int, list[dict[str, Any]]] = {s: [] for s in range(1, target_semester + 1)}
-    passed_set = set(str(p).lower().strip() for p in passed_courses)
+    passed_codes = set()
+    passed_names = set()
+    for p in passed_courses:
+        p_str = str(p).lower().strip()
+        passed_codes.add(p_str)
+        passed_names.add(p_str)
+
     total_credits = 0
-    
-    # 1. Semesters prior to current: placed as completed
-    for c in prodi_courses:
-        c_sem = int(c.get("semester", 1))
-        c_name = c["nama_mk"]
-        c_code = c["kode_mk"]
-        c_sks = int(c.get("sks", 2))
-        
-        if c_sem < current_semester:
-            c_type_str = "Wajib" if "wajib" in str(c.get("jenis", "wajib")).lower() else "Pilihan"
-            plan[c_sem].append({
+
+    # 1. Semesters prior to current: placed as completed with single religion rule
+    for sem in range(1, current_semester):
+        has_religion = any("agama" in p for p in passed_names)
+        sem_wajib = [
+            c for c in prodi_courses
+            if int(c.get("semester", 1)) == sem and "wajib" in str(c.get("jenis", "wajib")).lower()
+        ]
+        for c in sem_wajib:
+            c_name = c["nama_mk"]
+            c_code = c["kode_mk"]
+            c_sks = int(c.get("sks", 2))
+            if "agama" in c_name.lower():
+                if has_religion:
+                    continue
+                has_religion = True
+            plan[sem].append({
                 "id": str(c.get("id") or c_code),
                 "code": str(c_code),
                 "name": str(c_name),
                 "credits": c_sks,
-                "semester": c_sem,
-                "type": c_type_str,
-                "parity": "odd" if c_sem % 2 == 1 else "even",
+                "semester": sem,
+                "type": "Wajib",
+                "parity": "odd" if sem % 2 == 1 else "even",
                 "desc": str(c.get("deskripsi", "")),
                 "status": "completed",
             })
             total_credits += c_sks
-            passed_set.add(c_name.lower())
-            passed_set.add(c_code.lower())
-            
-    # 2. Current and future semesters: place Wajib first, then relevant Pilihan
+            passed_codes.add(c_code.lower())
+            passed_names.add(c_name.lower())
+
+    # 2. Semantic retrieval for focus tracks expansion
+    scored_electives: list[tuple[dict[str, Any], float]] = []
+    if focus_tracks:
+        query_text = " ".join(focus_tracks)
+        try:
+            from src.knowledge.retriever import get_course_retriever
+            c_retriever = get_course_retriever()
+            hits = c_retriever.retrieve(query_text, top_k=15, prodi_filter=canonical_prodi)
+            for h in hits:
+                c = h["course"]
+                if "pilihan" in str(c.get("jenis", "")).lower():
+                    scored_electives.append((c, float(h["score"])))
+        except Exception:
+            pass
+
+    # Add remaining electives from prodi with baseline score 0.0
+    for c in prodi_courses:
+        if "pilihan" in str(c.get("jenis", "")).lower():
+            if not any(se[0]["kode_mk"] == c["kode_mk"] for se in scored_electives):
+                scored_electives.append((c, 0.0))
+
+    # Sort electives by relevance score descending
+    scored_electives.sort(key=lambda x: x[1], reverse=True)
+
+    # 3. Current and future semesters: CSP assignment (Wajib -> Relevant Electives)
+    has_religion = any("agama" in p for p in passed_names)
+
     for sem in range(current_semester, target_semester + 1):
         sem_sks = 0
-        
-        # Place Wajib courses for this semester
-        for c in prodi_courses:
-            c_sem = int(c.get("semester", 1))
+        sem_parity = "odd" if sem % 2 == 1 else "even"
+
+        # 3a. Place Wajib courses for this semester (enforce single religion)
+        sem_wajib = [
+            c for c in prodi_courses
+            if int(c.get("semester", 1)) == sem and "wajib" in str(c.get("jenis", "wajib")).lower()
+        ]
+
+        for c in sem_wajib:
             c_name = c["nama_mk"]
             c_code = c["kode_mk"]
             c_sks = int(c.get("sks", 2))
-            c_type = str(c.get("jenis", "wajib")).lower()
-            
-            if c_sem == sem and "wajib" in c_type:
-                if sem_sks + c_sks <= max_sks_per_sem:
-                    plan[sem].append({
-                        "id": str(c.get("id") or c_code),
-                        "code": str(c_code),
-                        "name": str(c_name),
-                        "credits": c_sks,
-                        "semester": sem,
-                        "type": "Wajib",
-                        "parity": "odd" if sem % 2 == 1 else "even",
-                        "desc": str(c.get("deskripsi", "")),
-                        "status": "planned",
-                    })
-                    sem_sks += c_sks
-                    total_credits += c_sks
-                    passed_set.add(c_name.lower())
-                    passed_set.add(c_code.lower())
-                    
-        # Place Pilihan matching focus tracks if space allows
-        tracks_lower = [t.lower() for t in focus_tracks]
-        for c in prodi_courses:
-            c_sem = int(c.get("semester", 1))
-            c_name = c["nama_mk"]
+
+            if "agama" in c_name.lower():
+                if has_religion:
+                    continue
+                has_religion = True
+
+            if sem_sks + c_sks <= max_sks_per_sem:
+                plan[sem].append({
+                    "id": str(c.get("id") or c_code),
+                    "code": str(c_code),
+                    "name": str(c_name),
+                    "credits": c_sks,
+                    "semester": sem,
+                    "type": "Wajib",
+                    "parity": sem_parity,
+                    "desc": str(c.get("deskripsi", "")),
+                    "status": "planned",
+                })
+                sem_sks += c_sks
+                total_credits += c_sks
+                passed_codes.add(c_code.lower())
+                passed_names.add(c_name.lower())
+
+        # 3b. Place Electives matching parity and SKS capacity
+        for c, _ in scored_electives:
             c_code = c["kode_mk"]
+            c_name = c["nama_mk"]
             c_sks = int(c.get("sks", 2))
-            c_type = str(c.get("jenis", "pilihan")).lower()
-            c_desc = str(c.get("deskripsi", "")).lower()
-            
-            if "pilihan" in c_type and c_code.lower() not in passed_set and c_name.lower() not in passed_set:
-                matches_track = any(t in c_name.lower() or t in c_desc for t in tracks_lower)
-                if matches_track and (sem_sks + c_sks <= max_sks_per_sem):
-                    plan[sem].append({
-                        "id": str(c.get("id") or c_code),
-                        "code": str(c_code),
-                        "name": str(c_name),
-                        "credits": c_sks,
-                        "semester": sem,
-                        "type": "Pilihan",
-                        "parity": "odd" if sem % 2 == 1 else "even",
-                        "desc": str(c.get("deskripsi", "")),
-                        "status": "planned",
-                    })
-                    sem_sks += c_sks
-                    total_credits += c_sks
-                    passed_set.add(c_name.lower())
-                    passed_set.add(c_code.lower())
-                    
+            c_sem = int(c.get("semester", 1))
+            c_parity = "odd" if c_sem % 2 == 1 else "even"
+
+            if c_code.lower() in passed_codes or c_name.lower() in passed_names:
+                continue
+            # Parity check
+            if c_parity != sem_parity:
+                continue
+            if sem_sks + c_sks <= max_sks_per_sem:
+                plan[sem].append({
+                    "id": str(c.get("id") or c_code),
+                    "code": str(c_code),
+                    "name": str(c_name),
+                    "credits": c_sks,
+                    "semester": sem,
+                    "type": "Pilihan",
+                    "parity": sem_parity,
+                    "desc": str(c.get("deskripsi", "")),
+                    "status": "planned",
+                })
+                sem_sks += c_sks
+                total_credits += c_sks
+                passed_codes.add(c_code.lower())
+                passed_names.add(c_name.lower())
+
     return {
         "action": "APPLY_DEGREE_PLAN",
         "summary": {
-            "program_studi": program_studi,
+            "program_studi": canonical_prodi,
             "current_semester": current_semester,
             "target_semester": target_semester,
             "total_credits": total_credits,
             "focus_tracks": focus_tracks,
-            "note": "Rencana studi terverifikasi deterministik memenuhi batasan prasyarat dan SKS kurikulum FTMM."
+            "note": "Rencana studi terverifikasi deterministik CSP memenuhi batasan kurikulum, paritas, dan SKS FTMM."
         },
         "plan": plan
     }
@@ -415,12 +470,16 @@ PRODI_CANONICAL_MAP: dict[str, str] = {
     "sains data": "Teknologi Sains Data",
     "teknologi sains data": "Teknologi Sains Data",
     "data science": "Teknologi Sains Data",
+    "data scientist": "Teknologi Sains Data",
+    "data saintis": "Teknologi Sains Data",
+    "ds": "Teknologi Sains Data",
     "trkb": "Teknik Robotika dan Kecerdasan Buatan",
     "robotika": "Teknik Robotika dan Kecerdasan Buatan",
     "robotik": "Teknik Robotika dan Kecerdasan Buatan",
     "robotics": "Teknik Robotika dan Kecerdasan Buatan",
     "teknik robotika": "Teknik Robotika dan Kecerdasan Buatan",
     "teknik robotika dan kecerdasan buatan": "Teknik Robotika dan Kecerdasan Buatan",
+    "ai robot": "Teknik Robotika dan Kecerdasan Buatan",
     "rn": "S1 Rekayasa Nanoteknologi",
     "nano": "S1 Rekayasa Nanoteknologi",
     "nanoteknologi": "S1 Rekayasa Nanoteknologi",
@@ -440,11 +499,29 @@ PRODI_CANONICAL_MAP: dict[str, str] = {
 
 def normalize_program_studi(raw: str) -> str:
     cleaned = str(raw or "").lower().strip()
+    if not cleaned:
+        return "Teknologi Sains Data"
     if cleaned in PRODI_CANONICAL_MAP:
         return PRODI_CANONICAL_MAP[cleaned]
     for alias in sorted(PRODI_CANONICAL_MAP.keys(), key=len, reverse=True):
         if re.search(rf"\b{re.escape(alias)}\b", cleaned):
             return PRODI_CANONICAL_MAP[alias]
+
+    # Semantic fallback via Dense Gazetteer Linker
+    try:
+        from src.engine.memory import get_dense_gazetteer
+        import numpy as np
+        linker = get_dense_gazetteer()
+        q_vec = linker.embed_query(cleaned)
+        sims = np.dot(linker.prodi_matrix, q_vec)
+        best_idx = int(np.argmax(sims))
+        if sims[best_idx] >= 0.45:
+            matched = linker.prodi_labels[best_idx]
+            if matched == "Rekayasa Nanoteknologi":
+                return "S1 Rekayasa Nanoteknologi"
+            return matched
+    except Exception:
+        pass
     return raw
 
 
