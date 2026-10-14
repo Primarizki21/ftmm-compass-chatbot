@@ -11,8 +11,8 @@
 | **Semester Parity Compliance** | **100.0%** | 70.0% (Matkul genap di sem ganjil) | **PASS** |
 | **Single-Religion Dedup Rate** | **100.0%** | 0.0% (6 agama masuk sekaligus) | **PASS** |
 | **No-Empty Target Semesters** | **100.0%** | 30.0% (Sem 5-7 kosong) | **PASS** |
-| **P50 Planner Latency (ms)** | **31.49 ms** | 4.20 ms | **PASS (Sub-50ms)** |
-| **P95 Planner Latency (ms)** | **62.59 ms** | 12.50 ms | **PASS** |
+| **P50 Planner Latency (ms)** | **36.64 ms** | 4.20 ms | **PASS (Sub-50ms)** |
+| **P95 Planner Latency (ms)** | **48.59 ms** | 12.50 ms | **PASS** |
 
 ## 2. Analisis Perbaikan Arsitektur (Exp-020)
 

@@ -435,6 +435,9 @@ def generate_degree_plan(
             # Parity check
             if c_parity != sem_parity:
                 continue
+            # Batasan semester: Mata kuliah pilihan tidak boleh diambil mendahului semester kurikulum resminya
+            if c_sem > sem:
+                continue
             if sem_sks + c_sks <= max_sks_per_sem:
                 plan[sem].append({
                     "id": str(c.get("id") or c_code),
