@@ -140,6 +140,7 @@ class ReActAgentEngine:
                 f"- Mata Kuliah Lulus: {', '.join(student_profile.get('riwayat_matkul_lulus', [])) or 'Belum ada data'}\n"
                 f"- Minat/Fokus: {', '.join(student_profile.get('minat_fokus', [])) or 'Umum'}\n"
                 f"- Target Kelulusan: Semester {student_profile.get('target_kelulusan_semester', 8)}\n"
+                f"- Batas SKS Maksimal: {student_profile.get('maks_sks_per_semester', 24)} SKS\n"
             )
             messages.append({"role": "system", "content": profile_context})
 
