@@ -529,21 +529,9 @@ def normalize_program_studi(raw: str) -> str:
 
 
 def extract_semester_from_text(text: str) -> int | None:
-    match = re.search(
-        r"(?:semester|smt|sem)\s*[:=]?\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b",
-        str(text or ""),
-        re.IGNORECASE,
-    )
-    if match:
-        raw_val = match.group(1).lower()
-        roman_map = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7, "viii": 8}
-        if raw_val in roman_map:
-            return roman_map[raw_val]
-        try:
-            return int(raw_val)
-        except ValueError:
-            pass
-    return None
+    """Mengekstrak semester numerik dengan mendelegasikan ke SSOT memory.py."""
+    from src.engine.memory import extract_semester_from_text as _extract_sem
+    return _extract_sem(text)
 
 
 def get_courses_by_semester(

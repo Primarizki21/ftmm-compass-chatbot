@@ -23,6 +23,19 @@ SEMESTER_PATTERN = re.compile(
 ROMAN_MAP = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7, "viii": 8}
 
 
+def extract_semester_from_text(text: str) -> int | None:
+    """Mengekstrak nilai semester numerik (1-8) atau Romawi (I-VIII) dari teks pengguna."""
+    match = SEMESTER_PATTERN.search(str(text or ""))
+    if match:
+        raw_val = match.group(1).lower()
+        if raw_val in ROMAN_MAP:
+            return ROMAN_MAP[raw_val]
+        if raw_val.isdigit():
+            val_int = int(raw_val)
+            if 1 <= val_int <= 8:
+                return val_int
+    return None
+
 class DenseGazetteerLinker:
     """In-memory vector gazetteer matcher using dot product over normalized embeddings."""
 

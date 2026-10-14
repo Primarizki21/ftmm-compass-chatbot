@@ -55,19 +55,14 @@ class EntityExtractor:
         self.gazetteer = gazetteer or get_dense_gazetteer()
 
     def extract(self, query: str, query_vec: Any = None) -> ExtractedEntities:
-        from src.engine.memory import COURSE_CODE_PATTERN, SEMESTER_PATTERN, ROMAN_MAP
+        from src.engine.memory import COURSE_CODE_PATTERN, extract_semester_from_text
         raw = query.strip()
 
         codes = []
         for match in COURSE_CODE_PATTERN.finditer(raw):
             codes.append(match.group(1).upper().replace(" ", ""))
 
-        sem = None
-        sem_match = SEMESTER_PATTERN.search(raw)
-        if sem_match:
-            val_raw = sem_match.group(1).lower()
-            sem = ROMAN_MAP.get(val_raw, None) or (int(val_raw) if val_raw.isdigit() else None)
-
+        sem = extract_semester_from_text(raw)
         q_vec = query_vec if query_vec is not None else self.gazetteer.embed_query(raw)
         detected_prodi = self.gazetteer.match_prodi(q_vec)
 
