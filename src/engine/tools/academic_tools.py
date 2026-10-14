@@ -523,3 +523,49 @@ def get_courses_by_semester(
         "total_sks": total_sks,
         "courses": filtered,
     }
+
+
+def format_course_catalog_response(course_data: dict[str, Any], language: str = "id") -> str:
+    """
+    Format data kurikulum semester menjadi Markdown baku FTMM COMPASS.
+    Mendukung dwibahasa (id/en) dengan struktur daftar mata kuliah berformat tebal.
+    """
+    if not course_data or not course_data.get("courses"):
+        if language == "en":
+            return "No courses found for the specified semester."
+        return "Data mata kuliah tidak ditemukan untuk semester tersebut."
+
+    prodi = course_data.get("program_studi", "")
+    semester = course_data.get("semester", "")
+    total_c = course_data.get("total_courses", len(course_data["courses"]))
+    total_sks = course_data.get("total_sks", 0)
+
+    if language == "en":
+        header = f"Here is the official course catalog for **{prodi}** in **Semester {semester}**:\n"
+        none_prereq = "None"
+        footer = f"\n**Total:** {total_c} courses ({total_sks} credits)"
+    else:
+        header = f"Berikut adalah daftar mata kuliah untuk **{prodi}** pada **Semester {semester}**:\n"
+        none_prereq = "Tidak ada"
+        footer = f"\n**Total:** {total_c} mata kuliah ({total_sks} SKS)"
+
+    lines = [header]
+    for idx, c in enumerate(course_data["courses"], 1):
+        prereqs = c.get("prasyarat", [])
+        p_str = ", ".join(prereqs) if prereqs else none_prereq
+        raw_jenis = str(c.get("jenis", "wajib")).lower()
+        if language == "en":
+            jenis_str = "Required" if "wajib" in raw_jenis else "Elective"
+            label_prereq = "Prerequisites"
+            label_sks = "Credits"
+        else:
+            jenis_str = "Wajib" if "wajib" in raw_jenis else "Pilihan"
+            label_prereq = "Prasyarat"
+            label_sks = "SKS"
+
+        lines.append(
+            f"{idx}. **[{c.get('kode_mk', '-')}] {c.get('nama_mk', '-')}** "
+            f"({c.get('sks', 0)} {label_sks}, {jenis_str}) — {label_prereq}: {p_str}"
+        )
+    lines.append(footer)
+    return "\n".join(lines)

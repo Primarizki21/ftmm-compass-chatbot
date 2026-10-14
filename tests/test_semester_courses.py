@@ -4,7 +4,9 @@ from src.engine.tools.academic_tools import (
     get_courses_by_semester,
     normalize_program_studi,
     extract_semester_from_text,
+    format_course_catalog_response,
 )
+from src.engine.react_agent import detect_query_language
 from src.engine.decider import System1Decider, DecisionCategory
 from src.guardrails.tier4_tool_rail import Tier4ToolRail
 
@@ -99,3 +101,34 @@ def test_tier4_tool_rail_validation():
     val_bad_sem = rail.validate_call("get_courses_by_semester", {"program_studi": "TSD", "semester": 9})
     assert not val_bad_sem.is_valid
     assert "di luar rentang kurikulum" in val_bad_sem.error
+
+
+def test_format_course_catalog_response_id():
+    res_tsd3 = get_courses_by_semester("TSD", 3)
+    formatted = format_course_catalog_response(res_tsd3, language="id")
+
+    assert "Berikut adalah daftar mata kuliah untuk **Teknologi Sains Data** pada **Semester 3**:" in formatted
+    assert "**[BAE110] Bahasa Inggris** (2 SKS, Wajib) — Prasyarat: Tidak ada" in formatted
+    assert "**[MAS245] Statistika Nonparametrik** (3 SKS, Wajib) — Prasyarat: Metode Statistika" in formatted
+    assert "**Total:** 10 mata kuliah (27 SKS)" in formatted
+
+
+def test_format_course_catalog_response_en():
+    res_tsd3 = get_courses_by_semester("TSD", 3)
+    formatted = format_course_catalog_response(res_tsd3, language="en")
+
+    assert "Here is the official course catalog for **Teknologi Sains Data** in **Semester 3**:" in formatted
+    assert "**[BAE110] Bahasa Inggris** (2 Credits, Required) — Prerequisites: None" in formatted
+    assert "**[MAS245] Statistika Nonparametrik** (3 Credits, Required) — Prerequisites: Metode Statistika" in formatted
+    assert "**Total:** 10 courses (27 credits)" in formatted
+
+
+def test_detect_query_language():
+    assert detect_query_language("semester 3 mata kuliah tsd") == "id"
+    assert detect_query_language("kalau mata kuliah semester 3 nya TE apa") == "id"
+    assert detect_query_language("matkul TSD semester 4 apa aja") == "id"
+    assert detect_query_language("what are the courses in semester 3 for TE?") == "en"
+    assert detect_query_language("Can I enroll in Data Mining without Calculus?") == "en"
+    assert detect_query_language("tell me the syllabus of Machine Learning") == "en"
+    assert detect_query_language("prerequisites for BAE110") == "en"
+    assert detect_query_language("prasyarat BAE110 apa") == "id"

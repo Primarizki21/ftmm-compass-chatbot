@@ -6,8 +6,48 @@ import ollama
 from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
 from src.engine.decider import System1Decider, DecisionResult
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
-from src.engine.tools.academic_tools import normalize_program_studi, extract_semester_from_text
+from src.engine.tools.academic_tools import (
+    normalize_program_studi,
+    extract_semester_from_text,
+    format_course_catalog_response,
+)
 DEFAULT_MODEL = "qwen2.5:3b"
+
+
+def detect_query_language(query: str, history: list[dict[str, str]] | None = None) -> str:
+    raw = query.lower()
+    en_markers = {
+        "what", "which", "how", "courses", "course", "prerequisite",
+        "prerequisites", "credits", "credit", "curriculum", "syllabus",
+        "tell me", "show me", "can i", "list of", "in english",
+    }
+    id_markers = {
+        "apa", "apakah", "kalau", "kalo", "mata kuliah", "matkul",
+        "prasyarat", "syarat", "berapa", "bisa", "ambil", "daftar",
+        "jurusan", "prodi", "kurikulum", "silabus", "tolong", "saja",
+    }
+    has_id = any(m in raw for m in id_markers)
+    has_en = any(m in raw for m in en_markers)
+
+    if has_en and not has_id:
+        return "en"
+    if has_id and not has_en:
+        return "id"
+    if has_en and has_id:
+        en_count = sum(1 for m in en_markers if m in raw)
+        id_count = sum(1 for m in id_markers if m in raw)
+        return "en" if en_count > id_count else "id"
+
+    if history:
+        for turn in reversed(history[-2:]):
+            if turn.get("role") == "user":
+                prev_raw = turn.get("content", "").lower()
+                if any(m in prev_raw for m in en_markers):
+                    return "en"
+                if any(m in prev_raw for m in id_markers):
+                    return "id"
+
+    return "id"
 
 
 def _get_ollama_client() -> ollama.Client:
@@ -17,9 +57,10 @@ Tugas Anda adalah membantu mahasiswa dengan informasi akurat, perencanaan studi,
 Prinsip Kerja Agen:
 1. Gunakan tools deterministik yang tersedia untuk mencari mata kuliah, memvalidasi prasyarat, menghitung batas SKS, dan menyusun rencana studi.
 2. Dilarang menebak atau berhalusinasi tentang prasyarat atau batas SKS; selalu rujuk data hasil tools.
-3. ATURAN BAHASA (LANGUAGE MIRRORING):
-   - Jika pengguna bertanya dalam Bahasa Inggris (English), berikan seluruh respons dalam Bahasa Inggris profesional.
-   - Jika pengguna bertanya dalam Bahasa Indonesia, berikan seluruh respons dalam Bahasa Indonesia.
+3. ATURAN BAHASA (LANGUAGE MIRRORING & DEFAULT BAHASA INDONESIA):
+   - Bahasa resmi default Compass AI adalah Bahasa Indonesia. Seluruh kueri dalam Bahasa Indonesia, kueri telegrafis (contoh: 'semester 3 mata kuliah tsd'), atau kueri ambigu WAJIB dijawab 100% dalam Bahasa Indonesia.
+   - HANYA jika pengguna secara eksplisit bertanya dalam Bahasa Inggris (contoh: 'what are the courses in semester 3?'), berikan seluruh respons dalam Bahasa Inggris profesional.
+   - Dilarang keras menjawab dalam Bahasa Inggris jika kueri pengguna menggunakan kosakata Bahasa Indonesia (seperti 'mata kuliah', 'matkul', 'prasyarat', 'kalau', 'apa').
    - Jangan mencampuradukkan bahasa (no code-switching dalam satu kalimat).
 4. Jika mahasiswa meminta rekomendasi/penyusunan rencana studi (Degree Plan), Anda WAJIB memanggil fungsi `generate_degree_plan`.
 5. Aturan Putusan Prasyarat (Symmetric Decision Rules):
@@ -33,8 +74,9 @@ Prinsip Kerja Agen:
 7. Jika mahasiswa menanyakan daftar mata kuliah pada semester tertentu (misal: 'mata kuliah semester 3 apa saja?'), Anda WAJIB memanggil fungsi `get_courses_by_semester` (BUKAN `search_courses`).
 8. Ketika menampilkan hasil daftar mata kuliah dari `get_courses_by_semester`:
    - Anda WAJIB menampilkan SELURUH mata kuliah yang ada di hasil tool secara lengkap tanpa terpotong (jangan hanya 1 atau sebagian).
-   - Format ringkas per baris: Nomor. [Kode MK] Nama MK (X SKS, Jenis) - Prasyarat: [Prasyarat jika ada].
-   - Tuliskan juga total mata kuliah dan total SKS sesuai data tool.
+   - Awali respons dengan kalimat pembuka yang menyebutkan nama program studi dan semester secara eksplisit: 'Berikut adalah daftar mata kuliah untuk [Nama Program Studi] pada Semester [Nomor Semester]:'
+   - Format wajib per baris: Nomor. **[Kode MK] Nama MK** (X SKS, Jenis) — Prasyarat: [Prasyarat jika ada / Tidak ada].
+   - Tuliskan juga baris penutup total: **Total:** X mata kuliah (Y SKS).
 9. BATASAN DOMAIN & REFUSAL POLICY (OUT-OF-SCOPE REFUSAL):
    - Anda adalah asisten akademik institusional FTMM UNAIR, BUKAN asisten umum/coding umum.
    - Jika pengguna meminta penulisan kode umum (seperti implementasi algoritma pemrograman lepas, pembuatan script/aplikasi di luar kurikulum FTMM), pengerjaan PR umum, atau topik non-akademik umum lainnya, Anda WAJIB MENOLAK secara sopan dan lugas:
@@ -129,7 +171,7 @@ class ReActAgentEngine:
                         "messages": messages,
                         "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": DEFAULT_NUM_CTX},
                     }
-                    if active_tools:
+                    if active_tools and step_count == 1:
                         chat_kwargs["tools"] = active_tools
                     client = _get_ollama_client()
                     resp = client.chat(**chat_kwargs)
@@ -147,16 +189,23 @@ class ReActAgentEngine:
             total_completion_tokens += c_tokens
             msg = resp.message
             tool_calls = getattr(msg, "tool_calls", None)
-            if not tool_calls and step_count == 1 and not tools_executed:
+            if step_count == 1 and not tools_executed:
                 detected_p = normalize_program_studi(query)
                 detected_s = extract_semester_from_text(query)
                 if detected_p != query and detected_s is not None:
-                    class _Fn:
-                        name = "get_courses_by_semester"
-                        arguments = {"program_studi": detected_p, "semester": detected_s}
-                    class _TC:
-                        function = _Fn()
-                    tool_calls = [_TC()]
+                    if not tool_calls:
+                        class _Fn:
+                            name = "get_courses_by_semester"
+                            arguments = {"program_studi": detected_p, "semester": detected_s}
+                        class _TC:
+                            function = _Fn()
+                        tool_calls = [_TC()]
+                    else:
+                        for tc in tool_calls:
+                            fn = getattr(tc, "function", None)
+                            if fn and getattr(fn, "name", None) == "search_courses":
+                                fn.name = "get_courses_by_semester"
+                                fn.arguments = {"program_studi": detected_p, "semester": detected_s}
             # Case A: Model outputs tool calls -> execute tools
             if tool_calls:
                 messages.append(msg)
@@ -259,43 +308,68 @@ class ReActAgentEngine:
                     "answer": final_answer,
                 })
                 break
+        detected_lang = detect_query_language(query, history=history)
+
         if not final_answer:
             if tools_executed:
                 last_tool = tools_executed[-1]
                 if last_tool.get("tool") == "get_courses_by_semester":
-                    from src.engine.tools.academic_tools import get_courses_by_semester
-                    t_args = last_tool.get("args", {})
-                    c_data = get_courses_by_semester(**t_args)
-                    if c_data.get("courses"):
-                        lines = [
-                            f"Berikut adalah daftar mata kuliah untuk **{c_data.get('program_studi', '')}** pada **Semester {c_data.get('semester', '')}**:\n"
-                        ]
-                        for idx, c in enumerate(c_data["courses"], 1):
-                            p_str = ", ".join(c.get("prasyarat", [])) if c.get("prasyarat") else "Tidak ada"
-                            lines.append(f"{idx}. **[{c.get('kode_mk', '-')}] {c.get('nama_mk', '-')}** ({c.get('sks', 0)} SKS, {c.get('jenis', 'Wajib')}) — Prasyarat: {p_str}")
-                        lines.append(f"\n**Total:** {c_data.get('total_courses', len(c_data['courses']))} mata kuliah ({c_data.get('total_sks', 0)} SKS)")
-                        final_answer = "\n".join(lines)
+                    c_data = None
+                    if raw_execution_traces:
+                        for trace in reversed(raw_execution_traces):
+                            for st in trace.get("tools", []):
+                                if st.get("tool") == "get_courses_by_semester":
+                                    c_data = st.get("result_raw")
+                                    break
+                            if c_data:
+                                break
+                    if not c_data or not isinstance(c_data, dict) or not c_data.get("courses"):
+                        from src.engine.tools.academic_tools import get_courses_by_semester
+                        t_args = last_tool.get("args", {})
+                        c_data = get_courses_by_semester(**t_args)
+
+                    if isinstance(c_data, dict) and c_data.get("courses"):
+                        final_answer = format_course_catalog_response(c_data, language=detected_lang)
+
             if not final_answer:
                 det_p = normalize_program_studi(query)
                 det_s = extract_semester_from_text(query)
                 if det_p != query and det_s is not None:
                     from src.engine.tools.academic_tools import get_courses_by_semester
                     c_data = get_courses_by_semester(program_studi=det_p, semester=det_s)
-                    if c_data.get("courses"):
-                        lines = [
-                            f"Berikut adalah daftar mata kuliah untuk **{c_data.get('program_studi', '')}** pada **Semester {c_data.get('semester', '')}**:\n"
-                        ]
-                        for idx, c in enumerate(c_data["courses"], 1):
-                            p_str = ", ".join(c.get("prasyarat", [])) if c.get("prasyarat") else "Tidak ada"
-                            lines.append(f"{idx}. **[{c.get('kode_mk', '-')}] {c.get('nama_mk', '-')}** ({c.get('sks', 0)} SKS, {c.get('jenis', 'Wajib')}) — Prasyarat: {p_str}")
-                        lines.append(f"\n**Total:** {c_data.get('total_courses', len(c_data['courses']))} mata kuliah ({c_data.get('total_sks', 0)} SKS)")
-                        final_answer = "\n".join(lines)
-                if not final_answer:
+                    if isinstance(c_data, dict) and c_data.get("courses"):
+                        final_answer = format_course_catalog_response(c_data, language=detected_lang)
+
+            if not final_answer:
+                if detected_lang == "en":
+                    final_answer = (
+                        "Sorry, I could not process your request completely. "
+                        "Please ask inquiries related to FTMM curriculum, course prerequisites, credit limits, or study planning."
+                    )
+                else:
                     final_answer = (
                         "Maaf, saya tidak dapat memproses pertanyaan Anda secara lengkap. "
                         "Silakan ajukan pertanyaan seputar kurikulum, prasyarat mata kuliah, batas SKS, "
                         "atau perencanaan studi FTMM."
                     )
+        elif tools_executed and tools_executed[-1].get("tool") == "get_courses_by_semester":
+            c_data = None
+            if raw_execution_traces:
+                for trace in reversed(raw_execution_traces):
+                    for st in trace.get("tools", []):
+                        if st.get("tool") == "get_courses_by_semester":
+                            c_data = st.get("result_raw")
+                            break
+                    if c_data:
+                        break
+            if isinstance(c_data, dict) and c_data.get("courses"):
+                prodi = c_data.get("program_studi", "")
+                ans_lang = detect_query_language(final_answer[:150])
+                lang_mismatch = (detected_lang == "id" and ans_lang == "en") or (detected_lang == "en" and ans_lang == "id")
+                is_tool_preamble = any(final_answer.lower().startswith(p) for p in ["based on", "here is", "here are", "according to the tool"])
+                missing_prodi = bool(prodi and prodi not in final_answer and normalize_program_studi(prodi) not in final_answer)
+                if lang_mismatch or (detected_lang == "id" and is_tool_preamble) or missing_prodi:
+                    final_answer = format_course_catalog_response(c_data, language=detected_lang)
         total_latency_ms = (time.perf_counter() - t0) * 1000.0
 
         return EngineResult(

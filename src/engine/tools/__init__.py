@@ -5,6 +5,7 @@ from src.engine.tools.academic_tools import (
     calculate_sks_limit,
     generate_degree_plan,
     get_courses_by_semester,
+    format_course_catalog_response,
 )
 
 # Tool Schemas for native Ollama function-calling (OpenAI tool format)
