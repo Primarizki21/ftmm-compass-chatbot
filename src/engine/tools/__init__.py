@@ -6,6 +6,8 @@ from src.engine.tools.academic_tools import (
     generate_degree_plan,
     get_courses_by_semester,
     format_course_catalog_response,
+    format_degree_plan_response,
+    compress_degree_plan_for_llm,
 )
 
 # Tool Schemas for native Ollama function-calling (OpenAI tool format)

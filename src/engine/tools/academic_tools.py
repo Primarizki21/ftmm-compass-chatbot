@@ -344,7 +344,7 @@ def generate_degree_plan(
                     continue
                 has_religion = True
             plan[sem].append({
-                "id": str(c.get("id") or c_code),
+                "id": str(c_code or c.get("id")),
                 "code": str(c_code),
                 "name": str(c_name),
                 "credits": c_sks,
@@ -407,7 +407,7 @@ def generate_degree_plan(
 
             if sem_sks + c_sks <= max_sks_per_sem:
                 plan[sem].append({
-                    "id": str(c.get("id") or c_code),
+                    "id": str(c_code or c.get("id")),
                     "code": str(c_code),
                     "name": str(c_name),
                     "credits": c_sks,
@@ -429,6 +429,10 @@ def generate_degree_plan(
             c_sks = int(c.get("sks", 2))
             c_sem = int(c.get("semester", 1))
             c_parity = "odd" if c_sem % 2 == 1 else "even"
+            if "agama" in c_name.lower():
+                if has_religion:
+                    continue
+                has_religion = True
 
             if c_code.lower() in passed_codes or c_name.lower() in passed_names:
                 continue
@@ -440,7 +444,7 @@ def generate_degree_plan(
                 continue
             if sem_sks + c_sks <= max_sks_per_sem:
                 plan[sem].append({
-                    "id": str(c.get("id") or c_code),
+                    "id": str(c_code or c.get("id")),
                     "code": str(c_code),
                     "name": str(c_name),
                     "credits": c_sks,
@@ -636,4 +640,94 @@ def format_course_catalog_response(course_data: dict[str, Any], language: str = 
             f"({c.get('sks', 0)} {label_sks}, {jenis_str}) — {label_prereq}: {p_str}"
         )
     lines.append(footer)
+    return "\n".join(lines)
+
+
+def compress_degree_plan_for_llm(plan_dict: dict[str, Any]) -> dict[str, Any]:
+    """
+    Mengompresi payload rencana studi menjadi format ringkas bebas deskripsi silabus panjang
+    agar muat dalam context window LLM (num_ctx 2048) tanpa memotong semester awal.
+    """
+    summary = plan_dict.get("summary", {})
+    raw_plan = plan_dict.get("plan", {})
+    compact_plan: dict[int, dict[str, Any]] = {}
+    for sem, courses in raw_plan.items():
+        compact_plan[int(sem)] = {
+            "total_sks": sum(int(c.get("credits", 0)) for c in courses),
+            "courses": [
+                f"[{c.get('code', c.get('id', ''))}] {c.get('name', '')} ({c.get('credits', 0)} SKS, {c.get('type', 'Wajib')})"
+                for c in courses
+            ],
+        }
+    return {
+        "status": "success",
+        "action": "PLAN_GENERATED",
+        "program_studi": summary.get("program_studi"),
+        "current_semester": summary.get("current_semester"),
+        "target_semester": summary.get("target_semester"),
+        "total_credits": summary.get("total_credits"),
+        "focus_tracks": summary.get("focus_tracks"),
+        "plan": compact_plan,
+    }
+
+
+def format_degree_plan_response(plan_data: dict[str, Any], language: str = "id") -> str:
+    """
+    Memformat rencana studi semester per semester menjadi respons Markdown terstruktur baku
+    yang mencakup seluruh semester (1 s.d. target) secara lengkap.
+    """
+    summary = plan_data.get("summary", {})
+    prodi = summary.get("program_studi", "FTMM")
+    cur_sem = summary.get("current_semester", 1)
+    target_sem = summary.get("target_semester", 8)
+    total_credits = summary.get("total_credits", 0)
+    focus = summary.get("focus_tracks", [])
+    if isinstance(focus, str):
+        focus_str = focus
+    elif focus:
+        focus_str = ", ".join(focus)
+    else:
+        focus_str = "Umum" if language == "id" else "General"
+
+    plan = plan_data.get("plan", {})
+    lines: list[str] = []
+    if language == "en":
+        lines.append(
+            f"Here is the recommended study plan for **{prodi}** from Semester {cur_sem} to Semester {target_sem} (Focus: {focus_str}):\n"
+        )
+    else:
+        lines.append(
+            f"Berikut adalah rancangan studi untuk **{prodi}** dari Semester {cur_sem} hingga Semester {target_sem} (Fokus: {focus_str}):\n"
+        )
+
+    for sem in sorted(plan.keys(), key=int):
+        courses = plan[sem]
+        sem_sks = sum(int(c.get("credits", 0)) for c in courses)
+        lines.append(f"### Semester {sem} ({sem_sks} SKS)")
+        for idx, c in enumerate(courses, 1):
+            code = c.get("code") or c.get("id") or "-"
+            name = c.get("name", "")
+            sks = c.get("credits", 0)
+            ctype = c.get("type", "Wajib")
+            if language == "en":
+                type_label = "Required" if "wajib" in str(ctype).lower() else "Elective"
+                lines.append(f"{idx}. **[{code}] {name}** ({sks} Credits, {type_label})")
+            else:
+                type_label = "Wajib" if "wajib" in str(ctype).lower() else "Pilihan"
+                lines.append(f"{idx}. **[{code}] {name}** ({sks} SKS, {type_label})")
+        lines.append("")
+
+    if language == "en":
+        lines.append(f"**Total Credits:** {total_credits} credits.")
+        lines.append(
+            "This study plan has been verified against FTMM UNAIR curriculum prerequisites, semester parity, and SKS limits. "
+            "You can also view and customize this roadmap interactively in the Degree Planner panel."
+        )
+    else:
+        lines.append(f"**Total Beban Studi:** {total_credits} SKS.")
+        lines.append(
+            "Rancangan studi ini telah diverifikasi memenuhi prasyarat kurikulum, paritas semester, dan batas SKS FTMM UNAIR. "
+            "Anda juga dapat melihat dan menyesuaikan roadmap ini secara interaktif di panel Rencana Studi."
+        )
+
     return "\n".join(lines)

@@ -10,6 +10,8 @@ from src.engine.tools.academic_tools import (
     normalize_program_studi,
     extract_semester_from_text,
     format_course_catalog_response,
+    format_degree_plan_response,
+    compress_degree_plan_for_llm,
 )
 DEFAULT_MODEL = "qwen2.5:3b"
 
@@ -191,23 +193,27 @@ class ReActAgentEngine:
             msg = resp.message
             tool_calls = getattr(msg, "tool_calls", None)
             if step_count == 1 and not tools_executed:
-                detected_p = normalize_program_studi(query)
-                detected_s = extract_semester_from_text(query)
-                if detected_p != query and detected_s is not None:
-                    if not tool_calls:
-                        class _Fn:
-                            name = "get_courses_by_semester"
-                            arguments = {"program_studi": detected_p, "semester": detected_s}
-                        class _TC:
-                            function = _Fn()
-                        tool_calls = [_TC()]
-                    else:
-                        for tc in tool_calls:
-                            fn = getattr(tc, "function", None)
-                            if fn and getattr(fn, "name", None) == "search_courses":
-                                fn.name = "get_courses_by_semester"
-                                fn.arguments = {"program_studi": detected_p, "semester": detected_s}
-            # Case A: Model outputs tool calls -> execute tools
+                is_planning = (
+                    (precomputed_decision and precomputed_decision.category.value == "DEGREE_PLANNING")
+                    or any(w in query.lower() for w in ["rencana studi", "degree plan", "sampai semester", "hingga semester"])
+                )
+                if not is_planning:
+                    detected_p = normalize_program_studi(query)
+                    detected_s = extract_semester_from_text(query)
+                    if detected_p != query and detected_s is not None:
+                        if not tool_calls:
+                            class _Fn:
+                                name = "get_courses_by_semester"
+                                arguments = {"program_studi": detected_p, "semester": detected_s}
+                            class _TC:
+                                function = _Fn()
+                            tool_calls = [_TC()]
+                        else:
+                            for tc in tool_calls:
+                                fn = getattr(tc, "function", None)
+                                if fn and getattr(fn, "name", None) == "search_courses":
+                                    fn.name = "get_courses_by_semester"
+                                    fn.arguments = {"program_studi": detected_p, "semester": detected_s}
             if tool_calls:
                 messages.append(msg)
                 step_tools_record = []
@@ -286,9 +292,14 @@ class ReActAgentEngine:
                         "latency_ms": round(tool_time, 2)
                     })
 
+                    if fn_name == "generate_degree_plan" and isinstance(result, dict) and "action" in result:
+                        tool_content = json.dumps(compress_degree_plan_for_llm(result), ensure_ascii=False)
+                    else:
+                        tool_content = json.dumps(result, ensure_ascii=False)
+
                     messages.append({
                         "role": "tool",
-                        "content": json.dumps(result, ensure_ascii=False)
+                        "content": tool_content
                     })
 
                 raw_execution_traces.append({
@@ -315,8 +326,19 @@ class ReActAgentEngine:
 
         if not final_answer:
             if tools_executed:
-                last_tool = tools_executed[-1]
-                if last_tool.get("tool") == "get_courses_by_semester":
+                if any(t.get("tool") == "generate_degree_plan" for t in tools_executed):
+                    p_data = None
+                    if raw_execution_traces:
+                        for trace in reversed(raw_execution_traces):
+                            for st in trace.get("tools", []):
+                                if st.get("tool") == "generate_degree_plan":
+                                    p_data = st.get("result_raw")
+                                    break
+                            if p_data:
+                                break
+                    if isinstance(p_data, dict) and p_data.get("plan"):
+                        final_answer = format_degree_plan_response(p_data, language=detected_lang)
+                elif tools_executed[-1].get("tool") == "get_courses_by_semester":
                     c_data = None
                     if raw_execution_traces:
                         for trace in reversed(raw_execution_traces):
@@ -373,6 +395,18 @@ class ReActAgentEngine:
                 missing_prodi = bool(prodi and prodi not in final_answer and normalize_program_studi(prodi) not in final_answer)
                 if lang_mismatch or (detected_lang == "id" and is_tool_preamble) or missing_prodi:
                     final_answer = format_course_catalog_response(c_data, language=detected_lang)
+        elif tools_executed and any(t.get("tool") == "generate_degree_plan" for t in tools_executed):
+            p_data = None
+            if raw_execution_traces:
+                for trace in reversed(raw_execution_traces):
+                    for st in trace.get("tools", []):
+                        if st.get("tool") == "generate_degree_plan":
+                            p_data = st.get("result_raw")
+                            break
+                    if p_data:
+                        break
+            if isinstance(p_data, dict) and p_data.get("plan"):
+                final_answer = format_degree_plan_response(p_data, language=detected_lang)
         total_latency_ms = (time.perf_counter() - t0) * 1000.0
 
         return EngineResult(
