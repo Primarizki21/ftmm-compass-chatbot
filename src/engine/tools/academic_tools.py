@@ -285,7 +285,8 @@ def generate_degree_plan(
     target_semester: int = 8,
     passed_courses: list[str] | str | None = None,
     focus_tracks: list[str] | str | None = None,
-    max_sks_per_sem: int = 24
+    max_sks_per_sem: int = 24,
+    target_total_credits: int = 144,
 ) -> dict[str, Any]:
     """
     Menyusun rancangan studi semester per semester tervalidasi prasyarat (Neuro-Symbolic CSP Planner)
@@ -296,6 +297,7 @@ def generate_degree_plan(
     current_semester = int(current_semester or 1)
     target_semester = int(target_semester or 8)
     max_sks_per_sem = int(max_sks_per_sem or 24)
+    target_total_credits = int(target_total_credits or 144)
 
     if passed_courses is None:
         passed_courses = []
@@ -382,24 +384,20 @@ def generate_degree_plan(
     # Sort electives by relevance score descending
     scored_electives.sort(key=lambda x: x[1], reverse=True)
 
-    # 3. Current and future semesters: CSP assignment (Wajib -> Relevant Electives)
+    # 3. Current and future semesters: Place Wajib courses first (enforce single religion)
     has_religion = any("agama" in p for p in passed_names)
-
     for sem in range(current_semester, target_semester + 1):
-        sem_sks = 0
+        sem_sks = sum(x["credits"] for x in plan[sem])
         sem_parity = "odd" if sem % 2 == 1 else "even"
 
-        # 3a. Place Wajib courses for this semester (enforce single religion)
         sem_wajib = [
             c for c in prodi_courses
             if int(c.get("semester", 1)) == sem and "wajib" in str(c.get("jenis", "wajib")).lower()
         ]
-
         for c in sem_wajib:
             c_name = c["nama_mk"]
             c_code = c["kode_mk"]
             c_sks = int(c.get("sks", 2))
-
             if "agama" in c_name.lower():
                 if has_religion:
                     continue
@@ -422,27 +420,73 @@ def generate_degree_plan(
                 passed_codes.add(c_code.lower())
                 passed_names.add(c_name.lower())
 
-        # 3b. Place Electives matching parity and SKS capacity
-        for c, _ in scored_electives:
-            c_code = c["kode_mk"]
-            c_name = c["nama_mk"]
-            c_sks = int(c.get("sks", 2))
-            c_sem = int(c.get("semester", 1))
-            c_parity = "odd" if c_sem % 2 == 1 else "even"
-            if "agama" in c_name.lower():
-                if has_religion:
-                    continue
-                has_religion = True
+    # 3. Filter valid candidate electives (exclude 10+ SKS MBKM internships and secondary religion)
+    valid_electives: list[tuple[dict[str, Any], float]] = []
+    for c, sc in scored_electives:
+        c_name = str(c.get("nama_mk", "")).lower()
+        c_code = str(c.get("kode_mk", "")).lower()
+        c_sks = int(c.get("sks", 2))
+        if "magang" in c_name and c_sks >= 10:
+            continue
+        if "agama" in c_name:
+            continue
+        if c_code in passed_codes or c_name in passed_names:
+            continue
+        valid_electives.append((c, sc))
 
-            if c_code.lower() in passed_codes or c_name.lower() in passed_names:
+    # 4. Determine needed elective credits to reach target_total_credits (default 144 SKS)
+    if target_semester == 8:
+        needed_credits = max(0, target_total_credits - total_credits)
+    else:
+        planned_sem_count = target_semester - current_semester + 1
+        needed_credits = min(planned_sem_count * 20, max(0, target_total_credits - total_credits))
+
+    chosen_electives: list[dict[str, Any]] = []
+    if needed_credits > 0 and valid_electives:
+        dp_items: dict[int, list[int]] = {0: []}
+        for idx, (c, sc) in enumerate(valid_electives):
+            w = int(c.get("sks", 2))
+            for cur_w in sorted(list(dp_items.keys()), reverse=True):
+                new_w = cur_w + w
+                if new_w <= needed_credits + 2:
+                    new_score = sum(valid_electives[i][1] for i in dp_items[cur_w]) + sc
+                    if new_w not in dp_items:
+                        dp_items[new_w] = dp_items[cur_w] + [idx]
+                    else:
+                        existing_score = sum(valid_electives[i][1] for i in dp_items[new_w])
+                        if new_score > existing_score:
+                            dp_items[new_w] = dp_items[cur_w] + [idx]
+
+        if needed_credits in dp_items:
+            best_w = needed_credits
+        else:
+            eligible_weights = [w for w in dp_items.keys() if w >= needed_credits]
+            best_w = min(eligible_weights) if eligible_weights else max(dp_items.keys())
+        chosen_electives = [valid_electives[i][0] for i in dp_items[best_w]]
+    else:
+        chosen_electives = [c for c, _ in valid_electives]
+
+    chosen_electives.sort(key=lambda c: int(c.get("semester", 1)))
+
+    # 5. Place chosen electives across semesters (soft capacity prevents sem 8 overload)
+    for c in chosen_electives:
+        c_code = c["kode_mk"]
+        c_name = c["nama_mk"]
+        c_sks = int(c.get("sks", 2))
+        c_sem = int(c.get("semester", 1))
+        c_parity = "odd" if c_sem % 2 == 1 else "even"
+
+        start_sem = max(current_semester, c_sem)
+        placed = False
+        # Pass A: balanced soft capacity (leave room for Skripsi in sem 8)
+        for sem in range(start_sem, target_semester + 1):
+            sem_parity = "odd" if sem % 2 == 1 else "even"
+            if sem_parity != c_parity:
                 continue
-            # Parity check
-            if c_parity != sem_parity:
-                continue
-            # Batasan semester: Mata kuliah pilihan tidak boleh diambil mendahului semester kurikulum resminya
-            if c_sem > sem:
-                continue
-            if sem_sks + c_sks <= max_sks_per_sem:
+            cur_sks = sum(x["credits"] for x in plan[sem])
+            soft_cap = 22 if sem <= 6 else (20 if sem == 7 else 10)
+            soft_cap = min(soft_cap, max_sks_per_sem)
+            if cur_sks + c_sks <= soft_cap:
                 plan[sem].append({
                     "id": str(c_code or c.get("id")),
                     "code": str(c_code),
@@ -454,10 +498,36 @@ def generate_degree_plan(
                     "desc": str(c.get("deskripsi", "")),
                     "status": "planned",
                 })
-                sem_sks += c_sks
                 total_credits += c_sks
                 passed_codes.add(c_code.lower())
                 passed_names.add(c_name.lower())
+                placed = True
+                break
+
+        # Pass B: hard capacity fallback up to max_sks_per_sem
+        if not placed:
+            for sem in range(start_sem, target_semester + 1):
+                sem_parity = "odd" if sem % 2 == 1 else "even"
+                if sem_parity != c_parity:
+                    continue
+                cur_sks = sum(x["credits"] for x in plan[sem])
+                if cur_sks + c_sks <= max_sks_per_sem:
+                    plan[sem].append({
+                        "id": str(c_code or c.get("id")),
+                        "code": str(c_code),
+                        "name": str(c_name),
+                        "credits": c_sks,
+                        "semester": sem,
+                        "type": "Pilihan",
+                        "parity": sem_parity,
+                        "desc": str(c.get("deskripsi", "")),
+                        "status": "planned",
+                    })
+                    total_credits += c_sks
+                    passed_codes.add(c_code.lower())
+                    passed_names.add(c_name.lower())
+                    placed = True
+                    break
 
     return {
         "action": "APPLY_DEGREE_PLAN",
@@ -720,14 +790,16 @@ def format_degree_plan_response(plan_data: dict[str, Any], language: str = "id")
     if language == "en":
         lines.append(f"**Total Credits:** {total_credits} credits.")
         lines.append(
-            "This study plan has been verified against FTMM UNAIR curriculum prerequisites, semester parity, and SKS limits. "
-            "You can also view and customize this roadmap interactively in the Degree Planner panel."
+            "💡 **Next Step:** This roadmap is ready on the interactive action card below. "
+            "Click the **'Apply to Degree Planner'** button below to view the visual semester progression, "
+            "inspect prerequisites DAG, and customize your study plan directly in the planner modal!"
         )
     else:
         lines.append(f"**Total Beban Studi:** {total_credits} SKS.")
         lines.append(
-            "Rancangan studi ini telah diverifikasi memenuhi prasyarat kurikulum, paritas semester, dan batas SKS FTMM UNAIR. "
-            "Anda juga dapat melihat dan menyesuaikan roadmap ini secara interaktif di panel Rencana Studi."
+            "💡 **Langkah Selanjutnya:** Rencana studi lengkap ini telah disiapkan pada kartu rekomendasi interaktif di bawah. "
+            "Silakan klik tombol **'Terapkan ke Rencana Studi'** untuk membuka visualisasi roadmap semester, "
+            "mengecek prasyarat (DAG), dan menyesuaikan pilihan mata kuliah Anda secara langsung di panel Degree Planner!"
         )
 
     return "\n".join(lines)

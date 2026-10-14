@@ -171,3 +171,35 @@ def test_no_database_id_exposed_in_degree_plan():
         for c in courses:
             assert not str(c["id"]).startswith("MK-"), f"Internal DB id exposed: {c['id']}"
             assert c["code"] != ""
+
+def test_degree_plan_default_144_sks_for_tsd():
+    """Memastikan total beban studi default untuk TSD adalah tepat 144 SKS dan semester 8 tidak kelebihan beban."""
+    res = generate_degree_plan(
+        program_studi="Teknologi Sains Data",
+        current_semester=1,
+        target_semester=8,
+        focus_tracks=["statistika"],
+        max_sks_per_sem=24,
+    )
+    assert res["summary"]["total_credits"] == 144, f"Total credits harus tepat 144 SKS, didapatkan: {res['summary']['total_credits']}"
+    sem8_sks = sum(c["credits"] for c in res["plan"][8])
+    assert sem8_sks <= 10, f"Semester 8 harus difokuskan pada Skripsi, tidak boleh kelebihan beban: {sem8_sks} SKS"
+    sem8_codes = [c["code"] for c in res["plan"][8]]
+    assert "PNJ499" in sem8_codes  # Skripsi Wajib
+
+
+def test_format_degree_plan_directs_to_interactive_card():
+    """Memastikan teks balasan mengarahkan mahasiswa ke tombol/kartu Degree Planner interaktif."""
+    res = generate_degree_plan(
+        program_studi="Teknologi Sains Data",
+        current_semester=1,
+        target_semester=8,
+        focus_tracks=["statistika"],
+    )
+    formatted_id = format_degree_plan_response(res, language="id")
+    assert "Terapkan ke Rencana Studi" in formatted_id
+    assert "Degree Planner" in formatted_id
+
+    formatted_en = format_degree_plan_response(res, language="en")
+    assert "Apply to Degree Planner" in formatted_en
+    assert "Degree Planner" in formatted_en
