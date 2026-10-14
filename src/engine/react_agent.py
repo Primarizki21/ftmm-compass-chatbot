@@ -231,6 +231,8 @@ class ReActAgentEngine:
                                 args["target_semester"] = student_profile.get("target_kelulusan_semester", 8)
                             if not args.get("focus_tracks"):
                                 args["focus_tracks"] = student_profile.get("minat_fokus", [])
+                            if not args.get("max_sks_per_sem") and student_profile.get("maks_sks_per_semester"):
+                                args["max_sks_per_sem"] = student_profile.get("maks_sks_per_semester")
                         elif fn_name == "validate_prerequisites_dag":
                             if "passed_courses" not in args or not args.get("passed_courses"):
                                 args["passed_courses"] = student_profile.get("riwayat_matkul_lulus", [])
