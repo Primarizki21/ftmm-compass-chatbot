@@ -1,0 +1,4 @@
+Notice: arXiv Search and Retrieval Skill
+Timestamp: 2026-10-14T04:20:00Z
+User Notification: Please check the terms of use at https://info.arxiv.org/help/api/index.html and always check the license of the papers retrieved for any restrictions.
+All queries strictly respect arXiv's rate limit of at most 1 request per 3 seconds.
