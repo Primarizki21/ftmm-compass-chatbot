@@ -22,6 +22,12 @@ TIER2_REFUSAL_MESSAGE = (
     "sistem akademik tidak dapat diproses. Saya hanya dapat membantu pertanyaan terkait perkuliahan, "
     "kurikulum, silabus mata kuliah, regulasi akademik (SKS, PKL, Skripsi, Yudisium), dan perencanaan studi di FTMM."
 )
+TIER2_HOMEWORK_REFUSAL_MESSAGE = (
+    "Maaf, sebagai asisten akademik FTMM UNAIR, saya berfokus pada informasi kurikulum, "
+    "silabus mata kuliah, prasyarat, dan perencanaan studi di FTMM. Saya tidak dapat mengerjakan "
+    "tugas/soal, menurunkan rumus, atau menuliskan kode program mandiri. Silakan konsultasikan topik "
+    "materi terkait dengan silabus mata kuliah resmi FTMM."
+)
 
 
 class UnifiedChatEngine:
@@ -118,16 +124,27 @@ class UnifiedChatEngine:
         t2_res = self.tier2_gate.check(contextualized_q, query_vec=q_vec)
         if t2_res.is_ood:
             total_dt = (time.perf_counter() - t0) * 1000.0
+            refusal_ans = (
+                TIER2_HOMEWORK_REFUSAL_MESSAGE
+                if getattr(t2_res, "category", "") == "OUT_OF_SCOPE_HOMEWORK"
+                else TIER2_REFUSAL_MESSAGE
+            )
             return EngineResult(
-                answer=TIER2_REFUSAL_MESSAGE,
+                answer=refusal_ans,
                 architecture="UnifiedChatEngine (Tier-2 Blocked)",
                 retrieved_chunks=[],
                 retrieval_latency_ms=0.0,
                 generation_latency_ms=0.0,
                 total_latency_ms=total_dt,
-                tokens_generated=len(TIER2_REFUSAL_MESSAGE.split()),
+                tokens_generated=len(refusal_ans.split()),
                 routing_mode="GUARDED",
-                metadata={"tier": "TIER_2", "academic_score": t2_res.academic_score, "ood_score": t2_res.ood_score},
+                metadata={
+                    "tier": "TIER_2",
+                    "category": getattr(t2_res, "category", "OUT_OF_SCOPE"),
+                    "academic_score": t2_res.academic_score,
+                    "ood_score": t2_res.ood_score,
+                    "task_score": getattr(t2_res, "task_score", 0.0),
+                },
             )
 
         # Step 5: Assemble Context & Profile

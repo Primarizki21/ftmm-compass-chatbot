@@ -36,6 +36,7 @@ class GuardrailsResult:
 REFUSAL_MESSAGES = {
     "TIER_1": "Permintaan tidak dapat diproses karena melanggar kebijakan keamanan sistem akademik FTMM UNAIR.",
     "TIER_2": "Maaf, sebagai asisten akademik FTMM UNAIR, saya hanya dapat membantu pertanyaan terkait perkuliahan, kurikulum, dan regulasi studi.",
+    "TIER_2_HOMEWORK": "Maaf, sebagai asisten akademik FTMM UNAIR, saya berfokus pada informasi kurikulum, silabus mata kuliah, prasyarat, dan perencanaan studi. Saya tidak dapat mengerjakan tugas/soal, menurunkan rumus, atau menuliskan kode program mandiri. Silakan konsultasikan topik materi terkait dengan silabus mata kuliah resmi FTMM.",
     "TIER_3": "Maaf, permintaan ini melanggar kebijakan batasan topik atau panduan integritas akademik FTMM UNAIR.",
     "TIER_4": "Operasi dibatalkan: parameter yang diberikan melanggar batas legal regulasi akademik FTMM UNAIR.",
 }
@@ -150,10 +151,11 @@ class SafetyGuardrailsManager:
 
             if g2.is_ood:
                 total_dt = (time.perf_counter() - t_start) * 1000
+                ref_key = "TIER_2_HOMEWORK" if getattr(g2, "category", "") == "OUT_OF_SCOPE_HOMEWORK" else "TIER_2"
                 return GuardrailsResult(
                     query=query,
                     variant=variant,
-                    response=REFUSAL_MESSAGES["TIER_2"],
+                    response=REFUSAL_MESSAGES[ref_key],
                     blocked=True,
                     trigger_tier="TIER_2",
                     refusal_reason=g2.reason,
@@ -239,7 +241,7 @@ class SafetyGuardrailsManager:
                 return GuardrailsResult(
                     query=query,
                     variant=variant,
-                    response=REFUSAL_MESSAGES["TIER_2"],
+                    response=REFUSAL_MESSAGES["TIER_2_HOMEWORK" if getattr(g2, "category", "") == "OUT_OF_SCOPE_HOMEWORK" else "TIER_2"],
                     blocked=True,
                     trigger_tier="TIER_2",
                     refusal_reason=g2.reason,

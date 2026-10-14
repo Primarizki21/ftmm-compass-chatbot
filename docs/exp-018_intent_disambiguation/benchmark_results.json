@@ -1,0 +1,68 @@
+{
+  "experiment": "exp-018_intent_disambiguation",
+  "date": "2026-10-14",
+  "total_queries": 120,
+  "overall_accuracy_pct": 100.0,
+  "in_scope_accuracy_pct": 100.0,
+  "false_refusal_rate_pct": 0.0,
+  "homework_recall_pct": 100.0,
+  "latency_telemetry_ms": {
+    "p50": 30.53,
+    "p90": 41.08,
+    "p95": 48.6,
+    "mean": 33.2
+  },
+  "quadrant_breakdown": {
+    "IN_SCOPE_FORMAL": {
+      "total": 30,
+      "correct": 30,
+      "accuracy_pct": 100.0,
+      "p50_latency_ms": 31.67
+    },
+    "IN_SCOPE_SLANG": {
+      "total": 30,
+      "correct": 30,
+      "accuracy_pct": 100.0,
+      "p50_latency_ms": 29.81
+    },
+    "OOD_HOMEWORK_FORMAL": {
+      "total": 30,
+      "correct": 30,
+      "accuracy_pct": 100.0,
+      "p50_latency_ms": 30.23
+    },
+    "OOD_HOMEWORK_SLANG": {
+      "total": 30,
+      "correct": 30,
+      "accuracy_pct": 100.0,
+      "p50_latency_ms": 30.31
+    }
+  },
+  "prodi_breakdown": {
+    "TSD": {
+      "total": 24,
+      "correct": 24,
+      "accuracy_pct": 100.0
+    },
+    "TRKB": {
+      "total": 24,
+      "correct": 24,
+      "accuracy_pct": 100.0
+    },
+    "RN": {
+      "total": 24,
+      "correct": 24,
+      "accuracy_pct": 100.0
+    },
+    "TI": {
+      "total": 24,
+      "correct": 24,
+      "accuracy_pct": 100.0
+    },
+    "TE": {
+      "total": 24,
+      "correct": 24,
+      "accuracy_pct": 100.0
+    }
+  }
+}

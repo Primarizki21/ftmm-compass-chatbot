@@ -7,7 +7,7 @@ import ollama
 from src.engine.base import get_ollama_client
 
 DEFAULT_EMBED_MODEL = "nomic-embed-text"
-CACHE_PATH = Path("data/guardrails_centroids_v2.npz")
+CACHE_PATH = Path("data/guardrails_centroids_v3.npz")
 
 
 def _get_ollama_client() -> ollama.Client:
@@ -19,6 +19,8 @@ class GateResult(NamedTuple):
     ood_score: float
     latency_ms: float
     reason: str | None = None
+    category: str = "IN_SCOPE"
+    task_score: float = 0.0
 
 
 ACADEMIC_ANCHORS = [
@@ -80,6 +82,8 @@ class Tier2SemanticGate:
         self.margin = margin
         self.academic_vectors: np.ndarray | None = None
         self.ood_vectors: np.ndarray | None = None
+        self.task_direction: np.ndarray | None = None
+        self.task_threshold: float = 0.0
         self._initialized = False
 
     def initialize(self, force_recompute: bool = False):
@@ -91,6 +95,10 @@ class Tier2SemanticGate:
             data = np.load(CACHE_PATH)
             self.academic_vectors = data["academic"]
             self.ood_vectors = data["ood"]
+            if "task_direction" in data:
+                self.task_direction = data["task_direction"]
+            if "task_threshold" in data:
+                self.task_threshold = float(data["task_threshold"])
             self._initialized = True
             return
         client = _get_ollama_client()
@@ -137,21 +145,37 @@ class Tier2SemanticGate:
         max_ood = float(np.max(ood_sims))
         dt_ms = (time.perf_counter() - t0) * 1000
 
+        task_score = float(np.dot(self.task_direction, q_vec)) if self.task_direction is not None else -1.0
+
         # Dual boundary decision logic (pure semantic vector boundary):
-        # 1. Out-of-scope dominance: Query similarity to non-academic prototypes exceeds academic margin
-        # 2. Strict academic outlier: Query similarity to FTMM academic scope is below valid threshold
-        is_ood = (max_ood > max_ac + self.margin) or (max_ac < self.academic_threshold)
-        reason = None
-        if is_ood:
+        # 1. Homework / Concept Problem Solving intent dominance (Task-Intent Disambiguation)
+        is_hw = bool(task_score >= self.task_threshold)
+        # 2. Out-of-scope dominance: Query similarity to non-academic prototypes exceeds academic margin
+        is_general_ood = bool((max_ood > max_ac + self.margin) or (max_ac < self.academic_threshold))
+        is_ood = is_hw or is_general_ood
+
+        if is_hw:
+            category = "OUT_OF_SCOPE_HOMEWORK"
+            reason = (
+                f"Kueri terdeteksi sebagai permintaan pengerjaan tugas/soal/rumus sains mandiri "
+                f"(Skor Task Disambiguasi: {task_score:.3f}). "
+                f"Asisten akademik FTMM hanya melayani informasi kurikulum, prasyarat, dan perencanaan studi."
+            )
+        elif is_general_ood:
+            category = "OUT_OF_SCOPE_GENERAL"
             reason = (
                 f"Kueri di luar cakupan akademik FTMM UNAIR (Skor Akademik: {max_ac:.3f}, "
                 f"Skor Non-Akademik: {max_ood:.3f})."
             )
-
+        else:
+            category = "IN_SCOPE"
+            reason = None
         return GateResult(
             is_ood=is_ood,
             academic_score=max_ac,
             ood_score=max_ood,
             latency_ms=dt_ms,
             reason=reason,
+            category=category,
+            task_score=task_score,
         )

@@ -56,7 +56,7 @@ graph TD
 | Komponen Pipeline | Modul Sumber | Mekanisme & Target Latensi | Status Validasi |
 |---|---|---|---|
 | **Tier 1 Syntax Filter** | `src/guardrails/tier1_filter.py` | Deterministic Syntax Filter (0.0 ms) untuk cegah SQL syntax injection (`DROP TABLE`, `UNION SELECT`) & parameter tampering numerik. Zero semantic regex. | Tuntas (Exp-008, Exp-019, 0% ASR) |
-| **Tier 2 Dual-Centroid Gating** | `src/guardrails/tier2_semantic_gate.py` | Semantic Dual-Centroid Gating (<35 ms) menggunakan L2-normalized shared latent vector untuk deteksi OOD & jailbreak adversarial semantik. | Tuntas (Exp-016, Exp-019, 100% OOD-R) |
+| **Tier 2 Dual-Centroid Gating** | `src/guardrails/tier2_semantic_gate.py` | Semantic Dual-Centroid Gating (<35 ms) menggunakan L2-normalized shared latent vector untuk deteksi OOD, jailbreak adversarial, dan task-intent disambiguation sains vs homework solver. | Tuntas (Exp-016, Exp-018, Exp-019, 100% OOD-R, 100% Disambiguation) |
 | **Memory Manager** | `src/engine/memory.py` | Dense Gazetteer Linking (369 kurikulum FTMM) + Latent Ellipsis & Structured Context Injection (prodi, semester, IPS, minat). | Tuntas (Exp-009, Exp-019, $\ge$95% Anaphora Success) |
 | **System-1 Decider** | `src/engine/decider.py` | 6-Class System-1 Decider BLAS Dot-product (<0.1 ms inferensi matrix): `CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`. Memangkas token skema JSON dan redundansi embedding call. | Tuntas (Exp-011 96.7% Acc, Exp-015 95.0% Acc, Exp-017 Qwen3+kNN 100.0% Acc, Exp-019 Single-Embed Pipeline) |
 | **ReAct Agent Engine** | `src/engine/react_agent.py` | Qwen2.5-3B VRAM Pinned (`OLLAMA_MAX_LOADED_MODELS=2`) + DeepSeek-style prefix cache. | Tuntas (Exp-010, P50 1.39s) |

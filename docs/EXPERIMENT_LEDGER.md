@@ -26,6 +26,7 @@
 | **`exp-015`** | 2026-10-12 | Evaluasi System-1 Decider dengan Centroid EmbeddingGemma-2 & MRL Truncation (Card 109) | `google/embeddinggemma-2` (270M) vs `nomic-embed-text` | Nomic: **96.7%** (58/60)<br>Gemma2 768d: 93.3%<br>Gemma2 512d: **95.0%**<br>Gemma2 256d: **95.0%**<br>Gemma2 128d: 93.3% | Margin (Top1-Top2):<br>Nomic: 0.0401<br>Gemma2 768d: 0.0427<br>Gemma2 256d: **0.0440** | Slang Acc: Nomic 95.0%, Gemma 256d **95.0%**<br>Implicit Acc: **100.0%** (All) | Matrix Dot-Product: **0.05 ms** (BLAS $O(1)$) | Nomic: **35.2 ms** (Ollama)<br>Gemma2: 97.0 ms (PyTorch CUDA) | MRL 256d: Hemat 66.7% dimensi tanpa degradasi akurasi | **Ketahanan MRL Terbukti (256d Optimal)**: Gemma-2 256d & 512d mencapai akurasi 95.0% dengan separabilitas margin lebih tinggi (0.0440 vs 0.0401) dibanding Nomic. Namun unifikasi runtime router terganjal limitasi GGUF Ollama (`unknown model architecture: 'gemma-embedding2'`), sehingga Nomic (Ollama) direkomendasikan tetap aktif untuk router sub-35ms hingga support runtime C++ tersedia. | `docs/exp-015_decider_gemma2_evaluation/` |
 | **`exp-016`** | 2026-10-12 | Hardening Semantic Guardrails & Dual-Centroid Boundary (Card 110) | `nomic-embed-text` + Dual Semantic Boundary | Safety Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Adversarial: 100% | ASR: **0.0%** (0/15 attacks)<br>OOD-R: **100.0%** (20/20 non-academic)<br>FRR: **0.0%** (0/25 benign) | Non-academic Coding: **100% Blocked** (bubble sort, game, web scraping)<br>Slang: 100% Allowed | Dot-Product BLAS: **0.05 ms**<br>Gate P50: **70.66 ms**<br>Gate Avg: **79.21 ms** | P50: **70.66 ms**<br>P95: 151.00 ms | Zero False Refusal (FRR 0.0%)<br>Zero Attack Success (ASR 0.0%) | **Eliminasi Celah Non-Akademik Tuntas**: Memperbaiki logika rapuh `max_ood >= max_ac` dan memperluas anchor OOD mencakup coding umum/tugas sekolah. Kueri `buatkan kode bubble sort` terblokir seketika pada Tier 2 dalam <35ms tanpa beban ekstra LLM. Menjawab Card 110. | `docs/exp-016_hardened_semantic_guardrails/` |
 | **`exp-017`** | 2026-10-12 | Ollama Native Embedding & Classifier Head Matrix (Card 25, 32, 99) | `nomic-embed-text` (768d), `qwen3-embedding:0.6b` (1024d), `bge-m3` (1024d) | Qwen3 kNN: **100.0%** (60/60)<br>BGE-M3 Head: **98.3%**<br>Nomic Centroid: 96.7% | Margin (Top1-Top2):<br>Nomic Centroid: 0.0401<br>Nomic Logistic: **0.0831**<br>Qwen3 kNN: **0.3155**<br>BGE-M3 kNN: **0.2934** | Formal: 100%<br>Slang: **100.0%** (Qwen3 & BGE-M3)<br>Implicit: **100%** (All) | Matrix / Head Latency: **0.05 - 0.10 ms** (BLAS $O(1)$) | Nomic P50: **30.4 ms**<br>Qwen3 P50: **130.0 ms**<br>BGE-M3 P50: **170.0 ms** | Zero Python RAM overhead<br>Zero Disk I/O / Zero Swap<br>VRAM Peak: ~3.95 GB | **Qwen3-Embedding (0.6B) + Multi-Exemplar k-NN Mencapai 100.0% Akurasi Sempurna** dengan margin pemisah 0.3155 (8x lebih tajam vs Nomic). Nomic + Logistic tercepat (30.5 ms P50, 96.7%). Membuktikan keunggulan ekosistem native Ollama tanpa disk thrashing WSL2. | `docs/exp-017_ollama_embedding_classifier_head/` |
+| **`exp-018`** | 2026-10-14 | Intent Disambiguation Kurikulum vs Homework Solver (Card 112) | `nomic-embed-text` (768d Closed-Form Ridge Hyperplane) | Disambiguation Acc: **100.0%** (120/120)<br>Formal: 100%<br>Slang: 100% | Homework Recall: **100.0%** (60/60)<br>Curriculum Acc: **100.0%** (60/60) | FRR: **0.0%** (0/60 false refusals)<br>ASR: **0.0%** | BLAS Projection: **<0.05 ms** ($O(1)$) | P50: **30.5 ms**<br>Avg: **33.2 ms**<br>P95: **48.6 ms** | Zero Semantic Regex<br>91/91 Pytest PASS | **Pemisahan Task-Intent Sains vs Homework Solver Tuntas**: Membuktikan bahwa tumpang tindih kosakata sains (mekanika kuantum, termodinamika) dapat dipisahkan secara sempurna dalam ruang laten semantik kontinu tanpa regex, menekan False Refusal Rate ke 0.0% pada slang mahasiswa. | `docs/exp-018_intent_disambiguation/` |
 | **`exp-019`** | 2026-10-13 | Eliminasi Total Regex Semantik & Unifikasi Single-Embed Shared Latent Pipeline (Card 113) | `nomic-embed-text` (768d Shared Vector) + `qwen2.5:3b` | Routing Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Implicit: 100% | OOD & Adv Recall: **100.0%**<br>ASR: **0.0%**<br>FRR: **0.0%** | Anaphora Res: **100.0%**<br>Semantic Regex: **0** (dari 24) | Shared Embed Calls: **1x/turn** (Avg 0.97)<br>BLAS Dot-Product: **<0.2 ms** | P50: **39.67 ms**<br>Avg: **39.19 ms**<br>P95: **54.82 ms** | Zero Semantic Regex<br>74/74 Pytest PASS | **Eliminasi 100% Regex Semantik Tuntas**: Seluruh 24 regex intent/anafora/topik digantikan oleh Single-Embed Shared Latent Vector + 6-Class System-1 Decider (`REGULATION_SOP` CAG) + Dense Gazetteer Linker. Menjawab Card 113. | `docs/exp-019_zero_regex_shared_latent_pipeline/` |
 | **`exp-020`** | 2026-10-14 | Hardening Neuro-Symbolic CSP Degree Planner & Dense Gazetteer Normalizer (Card 114) | `nomic-embed-text` (FAISS Track Retrieval + Dense Gazetteer) + CSP Engine | Overall Success: **100.0%** (20/20)<br>Prodi Acc: **100.0%** | Zero-Fallback: **100.0%** (0% nyasar prodi lain)<br>Parity: **100.0%** | SKS Adherence: **100.0%**<br>Single Religion: **100.0%** | FAISS Semantic Retrieval: **3.8 ms** (avg) | Turn Latency: **36.5 ms** (Avg)<br>P50: **31.5 ms**<br>P95: **62.6 ms** | Zero False Fallback<br>82/82 Pytest PASS | **Eliminasi Silent Fallback Bug & Naive Substring Tuntas**: Memadukan Dense Vector Gazetteer untuk normalisasi prodi tanpa pemotongan `catalog[:40]`, FAISS semantic expansion untuk peminatan (`LLM` $\to$ NLP), serta penegakan paritas semester, batas SKS, dan dedup agama tunggal. Menjawab Card 114. | `docs/exp-020_neuro_symbolic_degree_planner/` |
 
@@ -552,6 +553,41 @@
   - `docs/exp-017_ollama_embedding_classifier_head/benchmark_raw_traces.jsonl`
 
 ---
+### [exp-018] Intent Disambiguation Kurikulum vs General Homework Solver
+- **Tanggal:** 2026-10-14
+- **Kartu Trello:** Card 112 (`[Nauval & Ario] Disambiguasi Intent Kurikulum vs General Homework Solver (Exp-018)`).
+- **Tujuan / Hipotesis:**
+  Mengeliminasi fenomena *semantic vocabulary overlap* di Tier 2 Semantic Gate di mana kueri pengerjaan soal sains mandiri (seperti penurunan rumus Schrodinger, perhitungan integral lipat, efisiensi termodinamika) memperoleh skor kemiripan akademik tinggi karena silabus prodi RN/TE/TSD memuat istilah sains serupa. Sistem wajib memisahkan secara tajam antara *Meta-Inquiry Kurikulum FTMM* (in-scope RAG) vs *Generic Homework / Concept Tutoring* (out-of-scope) dalam ruang laten kontinu tanpa regex, dengan target Disambiguation Accuracy $\ge 98\%$, FRR 0.0%, dan latency overhead $<1\text{ ms}$.
+- **Setup Teknis (Low-Level Architecture):**
+  - **Dataset Ground Truth Terstratifikasi (120 Kueri):** Mengadopsi metodologi XSTest (NAACL 2024) dan CLINC150 (EMNLP 2019) dengan 4 kuadran kontras seimbang (30 In-Scope Formal, 30 In-Scope Slang, 30 OOD Homework Formal, 30 OOD Homework Slang) yang mencakup seluruh 5 program studi FTMM (TSD, TRKB, RN, TI, TE).
+  - **Continuous Semantic Ridge Hyperplane (`src/guardrails/tier2_semantic_gate.py`):** Mempelajari vektor arah tugas $w_{\text{task}} \in \mathbb{R}^{768}$ secara closed-form linear algebra murni tanpa dependensi eksternal, memproyeksikan kueri via in-memory BLAS matrix dot product ($<0.05\text{ ms}$).
+  - **Directional Educative Refusal (`src/guardrails/manager.py` & `src/engine/unified_engine.py`):** Menyajikan pesan penolakan edukatif terarah yang menjelaskan batasan asisten akademik dan merekomendasikan mata kuliah kurikulum resmi terkait.
+- **Temuan Kunci:**
+  1. **Akurasi Disambiguasi Sempurna (100.0% across 120 Queries):**
+     Evaluasi pada 120 kueri menghasilkan **Overall Accuracy 100.0%** (120/120), **Curriculum Meta-Inquiry Accuracy 100.0%** (60/60, FRR 0.00%), dan **Homework Solver Recall 100.0%** (60/60).
+  2. **Separabilitas Margin Luas (+0.4650):**
+     Skor proyeksi tugas kueri homework berada di rentang $[+0.183, +1.022]$, sedangkan kueri silabus berada di rentang $[-1.166, -0.229]$, membuktikan separabilitas linear yang kokoh di ruang laten.
+  3. **Zero Semantic Regex Invariant:**
+     Tidak ada satupun ekspresi reguler atau pencocokan kata kunci diskrit yang digunakan, memenuhi standar *Anti-Pattern Guard #5*.
+  4. **Latensi Pipeline Sub-35ms:**
+     P50 latency tercatat **30.5 ms** (Mean 33.2 ms, P95 48.6 ms) dengan operasi BLAS $<0.05\text{ ms}$.
+  5. **Verifikasi Penuh (91/91 Pytest PASS):**
+     Seluruh unit & regression tests di `tests/` lulus 100% tanpa regresi.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - Mengadopsi Task-Intent Disambiguation Hyperplane sebagai standar baku Tier 2 Semantic Gate.
+  - Menuntaskan seluruh checklist DoD pada Trello Card 112 di Sprint 6.
+- **Artefak:**
+  - `docs/exp-018_intent_disambiguation/README.md`
+  - `docs/exp-018_intent_disambiguation/benchmark_summary.md`
+  - `docs/exp-018_intent_disambiguation/benchmark_metrics.csv`
+  - `docs/exp-018_intent_disambiguation/benchmark_results.json`
+  - `docs/exp-018_intent_disambiguation/benchmark_raw_traces.jsonl`
+  - `scripts/evaluate_intent_disambiguation.py`
+  - `tests/test_intent_disambiguation.py`
+  - `data/ground_truth/intent_disambiguation_benchmark.json`
+
+---
+
 
 ### [exp-019] Eliminasi Total Regex Semantik & Unifikasi Single-Embed Shared Latent Pipeline
 - **Tanggal:** 2026-10-13
