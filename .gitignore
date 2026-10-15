@@ -51,6 +51,17 @@ agents.md
 CLAUDE.md
 .agents/
 .omp/
+# AI Agent Work Plans & Local Scratchpads (DO NOT COMMIT)
+PLAN_*.md
+*plan*.md
+*PLAN*.md
+
+# Archives & Bundles
+*.zip
+*.tar.gz
+*.tgz
+*.rar
+*.7z
 
 
 # Local Developer Knowledge Graphs & Code Indexing (Transient / Bloat)
