@@ -1,0 +1,5 @@
+model,total_queries,tool_selection_accuracy_pct,json_schema_compliance_pct,parameter_extraction_error_pct,physical_execution_success_pct,adherence_composite_score,mean_hardware_ttft_ms,p50_hardware_ttft_ms,p95_hardware_ttft_ms,mean_perceived_ttft_ms,p50_perceived_ttft_ms,mean_tps,p50_tps,peak_vram_mib,vram_delta_mib,pareto_efficiency_score,is_pareto_frontier
+qwen2.5:1.5b,50,34.0,36.0,66.0,34.0,34.67,78.66,123.59,133.08,298.24,305.78,157.12,158.94,4071,1159,51.23,False
+qwen2.5:3b,50,92.0,92.0,8.0,92.0,92.0,136.73,156.5,251.72,634.59,650.85,99.56,101.38,2914,2,89.81,True
+llama3.2:3b,50,90.0,98.0,10.0,84.0,92.67,126.79,53.62,242.93,785.2,723.76,98.77,99.15,3136,2315,94.05,True
+qwen2.5:7b,50,96.0,98.0,4.0,96.0,96.67,265.99,468.86,486.74,984.33,1054.36,56.07,56.35,5346,4525,48.33,True

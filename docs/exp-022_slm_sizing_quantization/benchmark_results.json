@@ -1,0 +1,238 @@
+[
+  {
+    "model": "qwen2.5:1.5b",
+    "total_queries": 50,
+    "tool_selection_accuracy_pct": 34.0,
+    "json_schema_compliance_pct": 36.0,
+    "parameter_extraction_error_pct": 66.0,
+    "physical_execution_success_pct": 34.0,
+    "mean_hardware_ttft_ms": 78.66,
+    "p50_hardware_ttft_ms": 123.59,
+    "p95_hardware_ttft_ms": 133.08,
+    "mean_perceived_ttft_ms": 298.24,
+    "p50_perceived_ttft_ms": 305.78,
+    "p95_perceived_ttft_ms": 463.92,
+    "mean_tps": 157.12,
+    "p50_tps": 158.94,
+    "baseline_vram_mib": 2912,
+    "peak_vram_mib": 4071,
+    "vram_delta_mib": 1159,
+    "category_breakdown": {
+      "SKS_CALCULATION": {
+        "total": 10,
+        "tool_select_ok": 1,
+        "schema_compliant": 1,
+        "param_error": 9,
+        "exec_success": 1
+      },
+      "PREREQUISITE_DAG": {
+        "total": 10,
+        "tool_select_ok": 0,
+        "schema_compliant": 0,
+        "param_error": 10,
+        "exec_success": 0
+      },
+      "COURSE_DISCOVERY": {
+        "total": 10,
+        "tool_select_ok": 4,
+        "schema_compliant": 4,
+        "param_error": 6,
+        "exec_success": 4
+      },
+      "DEGREE_PLANNING": {
+        "total": 10,
+        "tool_select_ok": 2,
+        "schema_compliant": 3,
+        "param_error": 8,
+        "exec_success": 2
+      },
+      "CHITCHAT": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      }
+    },
+    "adherence_composite_score": 34.67,
+    "pareto_efficiency_score": 51.23,
+    "is_pareto_frontier": false
+  },
+  {
+    "model": "qwen2.5:3b",
+    "total_queries": 50,
+    "tool_selection_accuracy_pct": 92.0,
+    "json_schema_compliance_pct": 92.0,
+    "parameter_extraction_error_pct": 8.0,
+    "physical_execution_success_pct": 92.0,
+    "mean_hardware_ttft_ms": 136.73,
+    "p50_hardware_ttft_ms": 156.5,
+    "p95_hardware_ttft_ms": 251.72,
+    "mean_perceived_ttft_ms": 634.59,
+    "p50_perceived_ttft_ms": 650.85,
+    "p95_perceived_ttft_ms": 1057.73,
+    "mean_tps": 99.56,
+    "p50_tps": 101.38,
+    "baseline_vram_mib": 2912,
+    "peak_vram_mib": 2914,
+    "vram_delta_mib": 2,
+    "category_breakdown": {
+      "SKS_CALCULATION": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      },
+      "PREREQUISITE_DAG": {
+        "total": 10,
+        "tool_select_ok": 7,
+        "schema_compliant": 7,
+        "param_error": 3,
+        "exec_success": 7
+      },
+      "COURSE_DISCOVERY": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      },
+      "DEGREE_PLANNING": {
+        "total": 10,
+        "tool_select_ok": 9,
+        "schema_compliant": 9,
+        "param_error": 1,
+        "exec_success": 9
+      },
+      "CHITCHAT": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      }
+    },
+    "adherence_composite_score": 92.0,
+    "pareto_efficiency_score": 89.81,
+    "is_pareto_frontier": true
+  },
+  {
+    "model": "llama3.2:3b",
+    "total_queries": 50,
+    "tool_selection_accuracy_pct": 90.0,
+    "json_schema_compliance_pct": 98.0,
+    "parameter_extraction_error_pct": 10.0,
+    "physical_execution_success_pct": 84.0,
+    "mean_hardware_ttft_ms": 126.79,
+    "p50_hardware_ttft_ms": 53.62,
+    "p95_hardware_ttft_ms": 242.93,
+    "mean_perceived_ttft_ms": 785.2,
+    "p50_perceived_ttft_ms": 723.76,
+    "p95_perceived_ttft_ms": 1184.86,
+    "mean_tps": 98.77,
+    "p50_tps": 99.15,
+    "baseline_vram_mib": 821,
+    "peak_vram_mib": 3136,
+    "vram_delta_mib": 2315,
+    "category_breakdown": {
+      "SKS_CALCULATION": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      },
+      "PREREQUISITE_DAG": {
+        "total": 10,
+        "tool_select_ok": 9,
+        "schema_compliant": 9,
+        "param_error": 1,
+        "exec_success": 9
+      },
+      "COURSE_DISCOVERY": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 7
+      },
+      "DEGREE_PLANNING": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      },
+      "CHITCHAT": {
+        "total": 10,
+        "tool_select_ok": 6,
+        "schema_compliant": 10,
+        "param_error": 4,
+        "exec_success": 6
+      }
+    },
+    "adherence_composite_score": 92.67,
+    "pareto_efficiency_score": 94.05,
+    "is_pareto_frontier": true
+  },
+  {
+    "model": "qwen2.5:7b",
+    "total_queries": 50,
+    "tool_selection_accuracy_pct": 96.0,
+    "json_schema_compliance_pct": 98.0,
+    "parameter_extraction_error_pct": 4.0,
+    "physical_execution_success_pct": 96.0,
+    "mean_hardware_ttft_ms": 265.99,
+    "p50_hardware_ttft_ms": 468.86,
+    "p95_hardware_ttft_ms": 486.74,
+    "mean_perceived_ttft_ms": 984.33,
+    "p50_perceived_ttft_ms": 1054.36,
+    "p95_perceived_ttft_ms": 1590.14,
+    "mean_tps": 56.07,
+    "p50_tps": 56.35,
+    "baseline_vram_mib": 821,
+    "peak_vram_mib": 5346,
+    "vram_delta_mib": 4525,
+    "category_breakdown": {
+      "SKS_CALCULATION": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      },
+      "PREREQUISITE_DAG": {
+        "total": 10,
+        "tool_select_ok": 8,
+        "schema_compliant": 9,
+        "param_error": 2,
+        "exec_success": 8
+      },
+      "COURSE_DISCOVERY": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      },
+      "DEGREE_PLANNING": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      },
+      "CHITCHAT": {
+        "total": 10,
+        "tool_select_ok": 10,
+        "schema_compliant": 10,
+        "param_error": 0,
+        "exec_success": 10
+      }
+    },
+    "adherence_composite_score": 96.67,
+    "pareto_efficiency_score": 48.33,
+    "is_pareto_frontier": true
+  }
+]

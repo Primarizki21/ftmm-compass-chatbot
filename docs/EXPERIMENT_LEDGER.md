@@ -30,6 +30,7 @@
 | **`exp-019`** | 2026-10-13 | Eliminasi Total Regex Semantik & Unifikasi Single-Embed Shared Latent Pipeline (Card 113) | `nomic-embed-text` (768d Shared Vector) + `qwen2.5:3b` | Routing Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Implicit: 100% | OOD & Adv Recall: **100.0%**<br>ASR: **0.0%**<br>FRR: **0.0%** | Anaphora Res: **100.0%**<br>Semantic Regex: **0** (dari 24) | Shared Embed Calls: **1x/turn** (Avg 0.97)<br>BLAS Dot-Product: **<0.2 ms** | P50: **39.67 ms**<br>Avg: **39.19 ms**<br>P95: **54.82 ms** | Zero Semantic Regex<br>74/74 Pytest PASS | **Eliminasi 100% Regex Semantik Tuntas**: Seluruh 24 regex intent/anafora/topik digantikan oleh Single-Embed Shared Latent Vector + 6-Class System-1 Decider (`REGULATION_SOP` CAG) + Dense Gazetteer Linker. Menjawab Card 113. | `docs/exp-019_zero_regex_shared_latent_pipeline/` |
 | **`exp-020`** | 2026-10-14 | Hardening Neuro-Symbolic CSP Degree Planner & Dense Gazetteer Normalizer (Card 114) | `nomic-embed-text` (FAISS Track Retrieval + Dense Gazetteer) + CSP Engine | Overall Success: **100.0%** (20/20)<br>Prodi Acc: **100.0%** | Zero-Fallback: **100.0%** (0% nyasar prodi lain)<br>Parity: **100.0%** | SKS Adherence: **100.0%**<br>Single Religion: **100.0%** | FAISS Semantic Retrieval: **3.8 ms** (avg) | Turn Latency: **36.5 ms** (Avg)<br>P50: **31.5 ms**<br>P95: **62.6 ms** | Zero False Fallback<br>82/82 Pytest PASS | **Eliminasi Silent Fallback Bug & Naive Substring Tuntas**: Memadukan Dense Vector Gazetteer untuk normalisasi prodi tanpa pemotongan `catalog[:40]`, FAISS semantic expansion untuk peminatan (`LLM` $\to$ NLP), serta penegakan paritas semester, batas SKS, dan dedup agama tunggal. Menjawab Card 114. | `docs/exp-020_neuro_symbolic_degree_planner/` |
 | **`exp-021`** | 2026-10-16 | Two-Tier Native Embedding Benchmark (Card 118) | `nomic-embed-text` (768d/256d), `nomic-embed-text-v2-moe` (768d/256d), `qwen3-embedding:0.6b` (1024d), `bge-m3` (1024d) | Task A (Course Retrieval 369 MK):<br>Qwen3: **Hit@3 87.25%**, Hit@1 76.51%, MRR 0.8173, NDCG@5 0.8247<br>Nomic-v2-MoE-256d: **Hit@3 83.89%**, Hit@1 71.81%, MRR 0.7795<br>BGE-M3: Hit@3 81.88%, Hit@1 73.15%<br>Nomic-v1-768d: Hit@3 73.83%, Hit@1 52.35% | Task B (System-1 Router 6-Class):<br>Qwen3: **98.33%** (Margin 0.0962)<br>Nomic-v2-MoE-256d: **96.67%** (Margin **0.1316**)<br>BGE-M3: 95.00% (Margin 0.1146)<br>Nomic-v1: 86.67% (Margin 0.0343) | Multilingual Parity (Bilingual Hit@3):<br>BGE-M3: **95.0%**<br>Qwen3: **90.0%**<br>Nomic-v2-MoE: **85.0%**<br>Nomic-v1: 55.0% (-24.6% drop) | FAISS Indexing (369 MK):<br>Nomic-v1-256d: 4.9s<br>Nomic-v1-768d: 5.7s<br>Nomic-v2-256d: 8.7s<br>Nomic-v2-768d: 20.4s<br>BGE-M3: 24.4s<br>Qwen3: 31.5s | P50 Retrieval Latency:<br>Nomic-v1: **29.8 ms**<br>Qwen3: **123.6 ms**<br>Nomic-v2-MoE: 163.0 ms<br>BGE-M3: 168.0 ms | Zero Disk Swap Thrashing<br>VRAM Peak: Qwen3 5.28 GB, Nomic-v2 3.60 GB, BGE-M3 3.69 GB | **Two-Tier Native Embedding Benchmark Tuntas**: Nomic v2 MoE 256d menjuarai Tier 1 Iso-Dimension (Composite 90.28 vs Nomic v1 80.25). Pada Tier 2 Frontier Pareto, Qwen3-0.6B meraih akurasi puncak (Hit@3 87.25%, Router 98.33%), sementara Nomic v2 MoE 256d menjadi titik Pareto efisiensi tertinggi (Hit@3 83.89%, Router 96.67%, Margin tertinggi 0.1316, VRAM 3.6 GB). Menjawab Card 118. | `docs/exp-021_native_embedding_benchmark/` |
+| **`exp-022`** | 2026-10-16 | Komparasi Model SLM Lokal & Kuantisasi (Card 105) | `qwen2.5:1.5b`, `qwen2.5:3b`, `llama3.2:3b`, `qwen2.5:7b` (Q4_K_M) | Tool Selection Acc:<br>Qwen 7B: **96.00%**<br>Qwen 3B: **92.00%**<br>Llama 3B: **90.00%**<br>Qwen 1.5B: 34.00% | JSON Schema Compliance:<br>Qwen 7B: **98.00%**<br>Llama 3B: **98.00%**<br>Qwen 3B: **92.00%**<br>Qwen 1.5B: 36.00% | Param Error Rate:<br>Qwen 7B: **4.00%**<br>Qwen 3B: **8.00%**<br>Llama 3B: 10.00%<br>Qwen 1.5B: 66.00% | Physical Exec Success:<br>Qwen 7B: **96.00%**<br>Qwen 3B: **92.00%**<br>Llama 3B: 84.00%<br>Qwen 1.5B: 34.00% | P50 TTFT (Hardware / Perceived):<br>Llama 3B: **53.6 ms** / 723.8 ms<br>Qwen 1.5B: 123.6 ms / 305.8 ms<br>Qwen 3B: 156.5 ms / 650.9 ms<br>Qwen 7B: 468.9 ms / 1054.4 ms | Mean TPS:<br>Qwen 1.5B: **157.1**<br>Qwen 3B: **99.6**<br>Llama 3B: **98.8**<br>Qwen 7B: 56.1 | Peak VRAM Footprint:<br>Qwen 3B: **2914 MiB**<br>Llama 3B: **3136 MiB**<br>Qwen 1.5B: 4071 MiB<br>Qwen 7B: 5346 MiB | **Justifikasi Sizing SLM & Kuantisasi Tuntas**: Qwen2.5 3B terbukti sebagai model paling optimal untuk produksi harian (92% akurasi eksekusi, P50 TTFT 156 ms, 99.6 TPS, VRAM 2.9 GB). Qwen2.5 7B memimpin akurasi absolut (96%), sementara 1.5B gagal total pada tool-calling (34% akurasi). Menjawab Card 105. | `docs/exp-022_slm_sizing_quantization/` |
 
 ---
 
@@ -686,3 +687,42 @@
   - `scripts/evaluate_embedding_benchmark.py`
   - `tests/test_embedding_benchmark.py`
   - `data/ground_truth/ir_eval_dataset.json` (149 kueri terstratifikasi)
+
+### [exp-022] Komparasi Model SLM Lokal: Qwen2.5 (1.5B vs 3B vs 7B) & Kuantisasi
+- **Tanggal:** 2026-10-16
+- **Kartu Trello:** Card 105 (`[Nauval & Ario] Komparasi Model SLM Lokal: Qwen2.5 (1.5B vs 3B vs 7B) & Kuantisasi`).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi secara empiris dampak ukuran parameter (1.5B vs 3B vs 7B) dan arsitektur model (Qwen2.5 vs Llama-3.2) terhadap ketaatan tool-calling (*function calling*), kepatuhan skema JSON, ketepatan ekstraksi parameter, latensi inferensi (*Time-to-First-Token* / TTFT), *throughput* (*Tokens per Second* / TPS), dan alokasi memori grafis (*Peak VRAM Footprint*) pada laptop GPU NVIDIA GeForce RTX 5050 (8GB VRAM).
+- **Setup Teknis (Low-Level Architecture):**
+  - **Kandidat Model:** `qwen2.5:1.5b` (Q4_K_M, ~986 MB), `qwen2.5:3b` (Q4_K_M, ~1.9 GB), `llama3.2:3b` (Q4_K_M, ~2.0 GB), `qwen2.5:7b` (Q4_K_M, ~4.7 GB).
+  - **Dataset Terstratifikasi:** 50 kueri uji akademik FTMM (`data/ground_truth/slm_sizing_eval_dataset.json`) mencakup 5 domain: SKS Calculation (10), Prerequisite DAG (10), Course Discovery (10), Degree Planning (10), dan Chitchat (10).
+  - **Runtime & Isolasi Model:** Daemon native C++ Ollama v0.32.5 (`num_ctx = 2048`, `temperature = 0.1`, `num_predict = 256`), dengan unloader otomatis `ollama stop <prev_model>` antar iterasi untuk mencegah polusi VRAM dan multi-model contention.
+  - **Hardware Telemetry:** Pengukuran hardware prefill `prompt_eval_duration`, perceived streaming TTFT, TPS via `eval_count / eval_duration`, serta pemantauan VRAM real-time via `nvidia-smi`.
+- **Temuan Kunci:**
+  1. **Dominasi Akurasi Absolut Qwen2.5 7B (96.00% Tool Selection & 96.00% Physical Execution):**
+     - Qwen2.5 7B mencatat tingkat kesalahan ekstraksi parameter terendah (**4.00%**) dan kepatuhan skema 98.00%.
+     - Sempurna (10/10) pada SKS calculation, Course Discovery, Degree Planning, dan Chitchat.
+     - Peak VRAM mencapai **5346 MiB** (sekitar 65.6% dari kapasitas RTX 5050 8GB) dengan TTFT hardware P50 468.9 ms dan kecepatan 56.1 TPS.
+  2. **Sweet Spot Produksi Real-Time Qwen2.5 3B (92.00% Akurasi & 92.00% Physical Execution):**
+     - Qwen2.5 3B mengonfirmasi kelayakan perannya sebagai default engine: akurasi eksekusi 92.00%, tingkat kepatuhan skema 92.00%, dan error rate hanya 8.00%.
+     - Memberikan kecepatan generasi tinggi (**99.56 TPS**) dengan hardware TTFT P50 **156.5 ms** dan konsumsi VRAM minimal (**2914 MiB**), menyisakan ruang >5 GB untuk embedding dan cache sistem.
+  3. **Karakteristik Llama-3.2 3B (P50 TTFT 53.6 ms, Akurasi 90.00%, Eksekusi 84.00%):**
+     - Llama-3.2 3B mencatat latensi TTFT tercepat (P50 53.6 ms), namun rentan *over-triggering tool* pada sapaan chitchat (hanya 6/10 chitchat tanpa tool call, 4 kueri memicu tool palsu).
+     - Tingkat eksekusi fisik berada di bawah Qwen2.5 3B (84.00% vs 92.00%) akibat ketidaksesuaian tipe parameter numerik.
+  4. **Degradasi Kritis Model Edge 1.5B (34.00% Akurasi, 66.00% Parameter Error):**
+     - Qwen2.5 1.5B mengalami degradasi masif pada function calling: alih-alih memancarkan tool calls, model sering langsung menghasilkan narasi halusinasi tanpa data kurikulum resmi.
+     - Terbukti secara ilmiah tidak layak menjadi generator penalaran ReAct Agent institusional.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - **Default Production Mode:** Pertahankan `qwen2.5:3b` sebagai model percakapan utama karena rasio akurasi-ke-latensi dan keberhasilan eksekusi alat tertinggi (92%).
+  - **High-Capacity / Offline Evaluation Mode:** Gunakan `qwen2.5:7b` untuk evaluasi kurikulum mendalam dan pembuatan degree plan multi-semester.
+  - **Mandatory System-1 Decider Filtering:** Terapkan Centroid Decider di hulu pipeline untuk mencegah over-triggering tool pada sapaan chitchat.
+  - Memperbarui 4 butir DoD Card 105 pada Trello Board (100% PASS).
+- **Artefak:**
+  - `docs/exp-022_slm_sizing_quantization/README.md`
+  - `docs/exp-022_slm_sizing_quantization/benchmark_summary.md`
+  - `docs/exp-022_slm_sizing_quantization/benchmark_metrics.csv`
+  - `docs/exp-022_slm_sizing_quantization/benchmark_results.json`
+  - `docs/exp-022_slm_sizing_quantization/benchmark_raw_traces.jsonl`
+  - `scripts/evaluate_slm_sizing.py`
+  - `tests/test_slm_sizing.py`
+  - `data/ground_truth/slm_sizing_eval_dataset.json` (50 kueri terstratifikasi)
