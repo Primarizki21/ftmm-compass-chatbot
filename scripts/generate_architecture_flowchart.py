@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-FTMM COMPASS — Pipeline Architecture Flowchart Generator
+FTMM COMPASS: Pipeline Architecture Flowchart Generator
 Generates high-resolution publication-grade flowcharts using pure matplotlib.
 Follows strict geometric constraints:
 - Process: Rectangle (Snap points at center of sides)
@@ -357,7 +357,7 @@ class FlowchartBuilder:
 def build_ftmm_compass_flowchart():
     builder = FlowchartBuilder(width=14.5, height=22.0, dpi=300)
     builder.render_header(
-        "FTMM COMPASS — AI Engine Microservice End-to-End Pipeline",
+        "FTMM COMPASS: AI Engine Microservice End-to-End Pipeline",
         "Single-Embed Shared Latent Vector + Cascaded Guardrails + System-1 Decider + CSP Planner"
     )
 
@@ -458,7 +458,7 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="tier4", cx=7.25, cy=5.05, w=6.6, h=1.15,
         title="Tier 4: Physical Parameter Rail",
-        subtitle="Deterministic Argument Validation\nLegal Semester 1–8 & Capacity Limit SKS 0–24",
+        subtitle="Deterministic Argument Validation\nLegal Semester 1-8 & Capacity Limit SKS 0-24",
         badge="Safety Invariant"
     )
 
@@ -474,7 +474,7 @@ def build_ftmm_compass_flowchart():
     builder.add_terminal(
         node_id="end", cx=7.25, cy=1.80, w=6.2, h=0.75,
         title="Output SSE Stream & DegreePlanCardWidget",
-        subtitle="Live Typing Effect & Visual Semester 1–8 Roadmap"
+        subtitle="Live Typing Effect & Visual Semester 1-8 Roadmap"
     )
 
     # CONNECTIONS & ROUTING

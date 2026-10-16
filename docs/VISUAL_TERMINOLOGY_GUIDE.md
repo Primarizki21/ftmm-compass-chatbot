@@ -46,7 +46,7 @@ Gunakan tabel padanan ini sebagai acuan mutlak. Kolom **Istilah Terlarang** menc
 | **Semantic Dual-Centroid Gate** | Gerbang Titik Pusat Ganda Semantik | Tier 2: Batas margin cosine similarity kontinu untuk deteksi OOD. |
 | **Out-of-Scope (OOD) Detection** | Deteksi Luar Lingkup / Penemuan Di Luar Cakupan | Pengidentifikasian kueri non-akademik dan non-FTMM. |
 | **Adversarial Jailbreak** | Pembobolan Melawan / Penjebolan Sistem | Upaya manipulasi prompt untuk melewati guardrail keselamatan. |
-| **Physical Parameter Rail** | Rel Parameter Fisik | Tier 4: Validasi batas numerik legal (semester 1–8, SKS 0–24). |
+| **Physical Parameter Rail** | Rel Parameter Fisik | Tier 4: Validasi batas numerik legal (semester 1-8, SKS 0-24). |
 | **Error Envelope** | Amplop Kesalahan | Format standar JSON response untuk penolakan kueri (`{ error: { code, message } }`). |
 | **False Refusal Rate (FRR)** | Tingkat Penolakan Keliru | Persentase kueri legal mahasiswa yang tertolak secara salah oleh guardrail. |
 | **Attack Success Rate (ASR)** | Tingkat Keberhasilan Serangan | Persentase jailbreak atau injeksi yang berhasil menembus pertahanan sistem. |
@@ -77,9 +77,8 @@ Gunakan tabel padanan ini sebagai acuan mutlak. Kolom **Istilah Terlarang** menc
 | **Server-Sent Events (SSE) Streaming** | Aliran Peristiwa Kiriman Peladen | Pengiriman token jawaban mengalir secara real-time (`/api/v1/chat/stream`). |
 | **Token Streaming** | Pengaliran Token | Pengiriman respons kata-per-kata untuk memicu efek mengetik (*live typing*). |
 | **Live Typing Effect** | Efek Mengetik Langsung | Visualisasi teks muncul mengalir huruf demi huruf di browser. |
-| **DegreePlanPayload JSON** | Muatan Rencana Gelar JSON | Kontrak data JSON terstruktur untuk merender roadmap semester 1–8 di frontend. |
+| **DegreePlanPayload JSON** | Muatan Rencana Gelar JSON | Kontrak data JSON terstruktur untuk merender roadmap semester 1-8 di frontend. |
 | **Dual-Tier API Architecture** | Arsitektur API Tingkat Ganda | Penyediaan rute kanonik modern `/api/v1/*` dan backward-compatibility `/api/*`. |
-
 ---
 
 ## 3. Contoh Penerapan Baku pada Diagram Flowchart
