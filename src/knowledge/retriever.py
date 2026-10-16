@@ -3,6 +3,7 @@ Modul Retriever FAISS untuk Pencarian Matkul FTMM UNAIR.
 Mendukung similarity search berbasis Cosine Similarity (IndexFlatIP).
 """
 
+import json
 import os
 import pickle
 from pathlib import Path
@@ -10,12 +11,12 @@ from typing import Any
 import numpy as np
 import faiss
 import ollama
-from src.engine.base import get_ollama_client
 
 faiss.omp_set_num_threads(int(os.getenv("OMP_NUM_THREADS", "2")))
 
 INDEX_NOMIC_PATH = Path("data/faiss/ftmm_courses.faiss")
 META_NOMIC_PATH = Path("data/faiss/ftmm_courses_meta.pkl")
+META_JSON_NOMIC_PATH = Path("data/faiss/ftmm_courses_meta.json")
 
 INDEX_PATH = INDEX_NOMIC_PATH
 META_PATH = META_NOMIC_PATH
@@ -38,16 +39,34 @@ class CourseRetriever:
         self._loaded = False
 
     def load(self):
-        """Memuat index FAISS dan metadata dari disk."""
-        if not self.index_path.exists() or not self.meta_path.exists():
+        """Memuat index FAISS dan metadata dari disk (mendukung JSON dan pickle)."""
+        if not self.index_path.exists():
             raise FileNotFoundError(
                 f"Index FAISS belum dibuat ({self.index_path})! Jalankan ingest script terlebih dahulu."
             )
-        self.index = faiss.read_index(str(self.index_path))
-        with open(self.meta_path, "rb") as f:
-            self.metadata = pickle.load(f)
-        self._loaded = True
 
+        # Prioritaskan meta_path eksplisit, fallback ke JSON, lalu pickle
+        resolved_meta: Path | None = None
+        if self.meta_path and self.meta_path.exists():
+            resolved_meta = self.meta_path
+        elif META_JSON_NOMIC_PATH.exists():
+            resolved_meta = META_JSON_NOMIC_PATH
+        elif META_NOMIC_PATH.exists():
+            resolved_meta = META_NOMIC_PATH
+
+        if not resolved_meta or not resolved_meta.exists():
+            raise FileNotFoundError(
+                f"Metadata FAISS belum dibuat ({self.meta_path})! Jalankan ingest script terlebih dahulu."
+            )
+
+        self.index = faiss.read_index(str(self.index_path))
+        if resolved_meta.suffix.lower() == ".json":
+            with open(resolved_meta, "r", encoding="utf-8") as f:
+                self.metadata = json.load(f)
+        else:
+            with open(resolved_meta, "rb") as f:
+                self.metadata = pickle.load(f)
+        self._loaded = True
     def retrieve(self, query: str, top_k: int = 3, prodi_filter: str | None = None) -> list[dict[str, Any]]:
         """
         Melakukan pencarian top_k mata kuliah berdasarkan kesamaan semantik.
@@ -55,7 +74,7 @@ class CourseRetriever:
         """
         if not self._loaded:
             self.load()
-
+        from src.engine.base import get_ollama_client
         resp = get_ollama_client().embed(model=DEFAULT_EMBED_MODEL, input=query, keep_alive=-1)
         q_vec = np.array(resp["embeddings"][0], dtype=np.float32).reshape(1, -1)
         norm = np.linalg.norm(q_vec)

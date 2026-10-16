@@ -1,3 +1,4 @@
+import json
 import pickle
 import re
 from pathlib import Path
@@ -89,6 +90,8 @@ def extract_content_tokens(text: str) -> set[str]:
     tokens = re.findall(r"\w+", normalize_academic_text(text))
     return {t for t in tokens if len(t) > 1 and t not in STOP_TOKENS}
 META_PATH = Path("data/faiss/ftmm_courses_meta.pkl")
+META_JSON_PATH = Path("data/faiss/ftmm_courses_meta.json")
+CATALOG_JSON_PATH = Path("data/courses_catalog.json")
 
 # Lazy-loaded singleton components
 _retriever: HybridCourseRetriever | None = None
@@ -98,11 +101,22 @@ _courses_cache: list[dict[str, Any]] | None = None
 def _get_catalog() -> list[dict[str, Any]]:
     global _courses_cache
     if _courses_cache is None:
-        with open(META_PATH, "rb") as f:
-            meta = pickle.load(f)
-            _courses_cache = meta["courses"]
+        if CATALOG_JSON_PATH.exists():
+            with open(CATALOG_JSON_PATH, "r", encoding="utf-8") as f:
+                _courses_cache = json.load(f)
+        elif META_JSON_PATH.exists():
+            with open(META_JSON_PATH, "r", encoding="utf-8") as f:
+                meta = json.load(f)
+                _courses_cache = meta["courses"]
+        elif META_PATH.exists():
+            with open(META_PATH, "rb") as f:
+                meta = pickle.load(f)
+                _courses_cache = meta["courses"]
+        else:
+            raise FileNotFoundError(
+                "Katalog kurikulum tidak ditemukan di data/courses_catalog.json atau data/faiss/!"
+            )
     return _courses_cache
-
 
 def _get_retriever() -> HybridCourseRetriever:
     global _retriever
