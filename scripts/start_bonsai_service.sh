@@ -36,4 +36,4 @@ exec "$LLAMA_SERVER_BIN" \
     --host "$HOST" \
     --port "$PORT" \
     -c "$CTX_SIZE" \
-    --ngl "$N_GPU_LAYERS"
+    -ngl "$N_GPU_LAYERS"
