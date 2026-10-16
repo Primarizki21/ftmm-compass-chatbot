@@ -26,7 +26,8 @@ This microservice provides high-precision academic advising, course discovery, p
 - **Runtime & Package Manager**: Python >= 3.12, [`uv`](https://github.com/astral-sh/uv)
 - **Web Framework**: FastAPI, Uvicorn, Pydantic v2
 - **Vector Search & Retrieval**: FAISS (`faiss-cpu`), Scikit-learn, NumPy
-- **LLM & Embeddings**: Ollama (`qwen2.5:3b`, `nomic-embed-text`)
+- **Primary Generator LLM**: Bonsai-2-4B Ternary (PQ2_0 / 1.58-bit) via `llama-server` CUDA (Port 8080)
+- **Embedding & Fallback LLM**: Ollama daemon (`nomic-embed-text-v2-moe`, `qwen2.5:3b` fallback) (Port 11434)
 - **Containerization**: Docker, Docker Compose
 
 ---
@@ -41,11 +42,13 @@ This microservice provides high-precision academic advising, course discovery, p
    ```
 2. **Ollama** running locally with required models:
    ```bash
+   ollama pull nomic-embed-text-v2-moe
    ollama pull qwen2.5:3b
-   ollama pull nomic-embed-text
    ```
+3. **Bonsai-2-4B GGUF Model & llama-server**:
+   Model ternary `Ternary-Bonsai-2-4B-PQ2_0.gguf` dan binary CUDA `llama-server` (default lokasi di `../Bonsai-demo/` atau konfigurasi `MODEL_PATH` dan `LLAMA_SERVER_BIN`).
 
-### Installation & Local Run
+### Installation & Local Run (3-Service Topology)
 
 1. Clone repository and install dependencies:
    ```bash
@@ -59,11 +62,32 @@ This microservice provides high-precision academic advising, course discovery, p
    cp .env.example .env
    ```
 
-3. Run the development server:
+3. Jalankan ketiga service pendukung:
+
+   - **Service 1: Ollama Daemon (Port 11434)**
+     Melayani embedding model `nomic-embed-text-v2-moe` dan fallback generator:
+     ```bash
+     ollama serve
+     ```
+
+   - **Service 2: Bonsai-2-4B llama-server (Port 8080)**
+     Melayani inferensi ReAct generator berbobot ternary PQ2_0:
+     ```bash
+     bash scripts/start_bonsai_service.sh
+     # atau background:
+     nohup bash scripts/start_bonsai_service.sh > /tmp/bonsai_server.log 2>&1 &
+     ```
+
+   - **Service 3: FastAPI Chatbot Backend (Port 8000)**
+     ```bash
+     uv run uvicorn src.api.server:app --host 0.0.0.0 --port 8000 --reload
+     ```
+
+4. Verifikasi Kesehatan Layanan (Dual Health Probe):
    ```bash
-   uv run python main.py
+   curl -s http://localhost:8000/api/v1/health | jq .
    ```
-   Server will start at `http://localhost:8000`.
+   Memastikan `status: healthy`, `bonsai_online: true`, dan `ollama_online: true`.
 
 ---
 
@@ -88,7 +112,7 @@ docker compose up --build -d
 ### 3. URL Layanan & Healthcheck
 - **Endpoint Internal (dalam `ftmm-network`):** `http://ftmm-compass-chatbot:8000`
 - **Endpoint Publik Host:** `http://localhost:8000`
-- **Healthcheck Probe:** `curl -s http://localhost:8000/api/v1/health | jq .` (memverifikasi `status: healthy` dan `ollama_online: true`)
+- **Healthcheck Probe:** `curl -s http://localhost:8000/api/v1/health | jq .` (memverifikasi status kesehatan ganda: `bonsai_online: true` dan `ollama_online: true`)
 - **Interactive Swagger Docs:** `http://localhost:8000/docs`
 - **Interactive ReDoc:** `http://localhost:8000/redoc`
 
@@ -104,7 +128,7 @@ docker run -d --gpus=all -v ollama_data:/root/.ollama -p 11434:11434 --network f
 ## API Endpoints (Dual-Tier REST Architecture)
 
 Layanan mengekspos endpoint kanonik (`/api/v1/*`) dan alias kompatibilitas (`/api/*`):
-- `GET /api/v1/health` — Probe kesehatan layanan dan konektivitas daemon Ollama.
+- `GET /api/v1/health` : Probe kesehatan layanan dual-tier (konektivitas Bonsai port 8080 dan Ollama port 11434).
 - `GET /api/v1/courses` — Katalog 369 mata kuliah kurikulum 5 prodi FTMM dengan paginasi adaptif (`page`, `per_page`).
 - `GET /api/v1/courses/search` — Pencarian semantik dan kata kunci silabus via Hybrid FAISS + BM25.
 - `POST /api/v1/chat` — Dialog akademik interaktif dengan Intent Decider & Hybrid RAG-CAG engine.
