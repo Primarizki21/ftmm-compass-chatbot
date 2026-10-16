@@ -364,7 +364,7 @@ def build_ftmm_compass_flowchart():
     # 1. Start Node
     builder.add_terminal(
         node_id="start", cx=7.25, cy=20.2, w=5.4, h=0.75,
-        title="Kueri Mahasiswa (Browser / Chatbot UI)",
+        title="Student Query (Browser / Chatbot UI)",
         subtitle="POST /api/v1/chat/stream { message, history, student_profile }"
     )
 
@@ -372,15 +372,15 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="tier1", cx=7.25, cy=18.6, w=6.2, h=1.2,
         title="Tier 1: Deterministic Syntax Filter",
-        subtitle="Sanitasi Format SQL Injection &\nParameter Tampering Berpola Malicious",
+        subtitle="SQL Injection Sanitization &\nMalicious Parameter Tampering Defense",
         badge="0.0 ms Latency"
     )
 
     # 3. Tier 1 Refusal Node
     builder.add_process(
         node_id="refusal_t1", cx=1.40, cy=18.6, w=2.6, h=0.9,
-        title="Refusal Keamanan",
-        subtitle="Blokir SQL Syntax & Parameter\n(0.0 ms Latency - HTTP 400)",
+        title="Security Refusal",
+        subtitle="Blocked: Malicious SQL Syntax\nHTTP 400 Bad Request (0.0 ms)",
         theme="refusal"
     )
 
@@ -396,22 +396,22 @@ def build_ftmm_compass_flowchart():
     builder.add_decision(
         node_id="tier2", cx=7.25, cy=14.65, w=5.8, h=1.75,
         title="Tier 2: Semantic Dual-Centroid Gate",
-        subtitle="L2 Cosine Centroid Boundary (<35 ms)\nDeteksi Kueri Non-Akademik & Adversarial Jailbreak"
+        subtitle="L2 Cosine Centroid Boundary (<35 ms)\nOOD Detection & Adversarial Jailbreak Defense"
     )
 
     # 6. Tier 2 Refusal Node
     builder.add_process(
         node_id="refusal_t2", cx=1.40, cy=14.65, w=2.6, h=0.9,
-        title="Refusal Topik",
-        subtitle="Tolak Kueri Non-Akademik / Jailbreak\n(~30 ms Latency - Error Envelope)",
+        title="Topic & Scope Refusal",
+        subtitle="Blocked: Non-Academic / Jailbreak\nStandard Error Envelope (~30 ms)",
         theme="refusal"
     )
 
     # 7. Memory Manager Process
     builder.add_process(
         node_id="memory", cx=7.25, cy=12.55, w=6.6, h=1.2,
-        title="Conversation Memory & Structured Context Injection",
-        subtitle="Dense Gazetteer Linking (369 Kurikulum FTMM)\nInjeksi Profil Mahasiswa & Resolusi Latent Ellipsis",
+        title="Conversation Memory & Context Injection",
+        subtitle="Dense Gazetteer Linking (369 Kurikulum FTMM)\nStudent Profile & Latent Ellipsis Context",
         badge="In-Memory State"
     )
 
@@ -419,7 +419,7 @@ def build_ftmm_compass_flowchart():
     builder.add_decision(
         node_id="decider", cx=7.25, cy=10.45, w=6.6, h=1.85,
         title="System-1 Decider (6-Class Intent Matrix)",
-        subtitle="Matrix Dot-Product BLAS O(1) (<0.1 ms)\nKlasifikasi Intent Semantik Ruang Laten"
+        subtitle="Matrix Dot-Product BLAS O(1) (<0.1 ms)\nShared Latent Intent Classification"
     )
 
     # 9. Execution Subsystems (4 Parallel Blocks)
@@ -429,7 +429,7 @@ def build_ftmm_compass_flowchart():
 
     builder.add_process(
         node_id="exec_chat", cx=1.85, cy=exec_y, w=exec_w, h=exec_h,
-        title="ReAct Direct (Sapaan)",
+        title="ReAct Direct (Chitchat)",
         subtitle="Intent: CHAT_ONLY\nZero Tool Schema (~400-700 ms)\nDeepSeek-Style Prefix Caching",
         theme="route", badge="Fast Path"
     )
@@ -443,14 +443,14 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="exec_tools", cx=9.05, cy=exec_y, w=exec_w, h=exec_h,
         title="Tools ReAct Agent",
-        subtitle="Intent: PREREQUISITE / SKS / DISCOV\nHybrid FAISS Dense + BM25 RRF\nPrasyarat DAG & Penegakan Aturan SKS",
+        subtitle="Intent: PREREQUISITE / SKS / DISCOV\nHybrid FAISS Dense + BM25 RRF\nPrerequisite DAG & SKS Constraint Rail",
         theme="route", badge="Tool-Calling"
     )
 
     builder.add_process(
         node_id="exec_csp", cx=12.65, cy=exec_y, w=exec_w, h=exec_h,
         title="Neuro-Symbolic CSP Planner",
-        subtitle="Intent: DEGREE_PLANNING\nDense Gazetteer + FAISS Track Expansion\nParitas Semester, Batas SKS & Dedup Agama",
+        subtitle="Intent: DEGREE_PLANNING\nDense Gazetteer & FAISS Track Exp\nTopological Placement, Parity & Dedup",
         theme="route", badge="CSP Solver"
     )
 
@@ -458,15 +458,15 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="tier4", cx=7.25, cy=5.05, w=6.6, h=1.15,
         title="Tier 4: Physical Parameter Rail",
-        subtitle="Validasi Deterministik Argumen Fisik\nSemester Legal 1–8 & Batas Beban SKS 0–24",
+        subtitle="Deterministic Argument Validation\nLegal Semester 1–8 & Capacity Limit SKS 0–24",
         badge="Safety Invariant"
     )
 
     # 11. Compilation & Stream Node
     builder.add_process(
         node_id="stream", cx=7.25, cy=3.40, w=6.8, h=1.15,
-        title="Asynchronous Token Streamer & DegreePlan JSON Compilation",
-        subtitle="Yielding SSE Event Token Kata-per-Kata\nKompilasi Widget DegreePlanPayload JSON",
+        title="Asynchronous Token Streamer & DegreePlan JSON",
+        subtitle="Yielding SSE Event Tokens kata-per-kata\nCompiling DegreePlanPayload JSON Widget",
         badge="SSE Streaming"
     )
 
@@ -474,7 +474,7 @@ def build_ftmm_compass_flowchart():
     builder.add_terminal(
         node_id="end", cx=7.25, cy=1.80, w=6.2, h=0.75,
         title="Output SSE Stream & DegreePlanCardWidget",
-        subtitle="Live Typing Effect & Visualisasi Roadmap Semester 1–8"
+        subtitle="Live Typing Effect & Visual Semester 1–8 Roadmap"
     )
 
     # CONNECTIONS & ROUTING
@@ -483,7 +483,7 @@ def build_ftmm_compass_flowchart():
 
     # Tier 1 -> Refusal T1 (Blocked)
     builder.draw_horizontal_branch("tier1", "refusal_t1", from_snap="left", to_snap="right",
-                                   label="SQL Syntax Attack", label_color="#E11D48")
+                                   label="SQL Injection Attack", label_color="#E11D48")
 
     # Tier 1 -> Embed (Allowed)
     builder.draw_direct_arrow("tier1", "embed", from_snap="bottom", to_snap="top",
@@ -495,11 +495,11 @@ def build_ftmm_compass_flowchart():
 
     # Tier 2 -> Refusal T2 (OOD Blocked)
     builder.draw_horizontal_branch("tier2", "refusal_t2", from_snap="left", to_snap="right",
-                                   label="OOD Non-Akademik", label_color="#E11D48")
+                                   label="OOD Non-Academic", label_color="#E11D48")
 
     # Tier 2 -> Memory (In-Scope)
     builder.draw_direct_arrow("tier2", "memory", from_snap="bottom", to_snap="top",
-                              label="In-Scope Akademik", label_color="#059669", label_side="right")
+                              label="In-Scope Academic", label_color="#059669", label_side="right")
 
     # Memory -> Decider
     builder.draw_direct_arrow("memory", "decider", from_snap="bottom", to_snap="top",
