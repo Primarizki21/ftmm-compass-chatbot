@@ -31,6 +31,7 @@
 | **`exp-020`** | 2026-10-14 | Hardening Neuro-Symbolic CSP Degree Planner & Dense Gazetteer Normalizer (Card 114) | `nomic-embed-text` (FAISS Track Retrieval + Dense Gazetteer) + CSP Engine | Overall Success: **100.0%** (20/20)<br>Prodi Acc: **100.0%** | Zero-Fallback: **100.0%** (0% nyasar prodi lain)<br>Parity: **100.0%** | SKS Adherence: **100.0%**<br>Single Religion: **100.0%** | FAISS Semantic Retrieval: **3.8 ms** (avg) | Turn Latency: **36.5 ms** (Avg)<br>P50: **31.5 ms**<br>P95: **62.6 ms** | Zero False Fallback<br>82/82 Pytest PASS | **Eliminasi Silent Fallback Bug & Naive Substring Tuntas**: Memadukan Dense Vector Gazetteer untuk normalisasi prodi tanpa pemotongan `catalog[:40]`, FAISS semantic expansion untuk peminatan (`LLM` $\to$ NLP), serta penegakan paritas semester, batas SKS, dan dedup agama tunggal. Menjawab Card 114. | `docs/exp-020_neuro_symbolic_degree_planner/` |
 | **`exp-021`** | 2026-10-16 | Two-Tier Native Embedding Benchmark (Card 118) | `nomic-embed-text` (768d/256d), `nomic-embed-text-v2-moe` (768d/256d), `qwen3-embedding:0.6b` (1024d), `bge-m3` (1024d) | Task A (Course Retrieval 369 MK):<br>Qwen3: **Hit@3 87.25%**, Hit@1 76.51%, MRR 0.8173, NDCG@5 0.8247<br>Nomic-v2-MoE-256d: **Hit@3 83.89%**, Hit@1 71.81%, MRR 0.7795<br>BGE-M3: Hit@3 81.88%, Hit@1 73.15%<br>Nomic-v1-768d: Hit@3 73.83%, Hit@1 52.35% | Task B (System-1 Router 6-Class):<br>Qwen3: **98.33%** (Margin 0.0962)<br>Nomic-v2-MoE-256d: **96.67%** (Margin **0.1316**)<br>BGE-M3: 95.00% (Margin 0.1146)<br>Nomic-v1: 86.67% (Margin 0.0343) | Multilingual Parity (Bilingual Hit@3):<br>BGE-M3: **95.0%**<br>Qwen3: **90.0%**<br>Nomic-v2-MoE: **85.0%**<br>Nomic-v1: 55.0% (-24.6% drop) | FAISS Indexing (369 MK):<br>Nomic-v1-256d: 4.9s<br>Nomic-v1-768d: 5.7s<br>Nomic-v2-256d: 8.7s<br>Nomic-v2-768d: 20.4s<br>BGE-M3: 24.4s<br>Qwen3: 31.5s | P50 Retrieval Latency:<br>Nomic-v1: **29.8 ms**<br>Qwen3: **123.6 ms**<br>Nomic-v2-MoE: 163.0 ms<br>BGE-M3: 168.0 ms | Zero Disk Swap Thrashing<br>VRAM Peak: Qwen3 5.28 GB, Nomic-v2 3.60 GB, BGE-M3 3.69 GB | **Two-Tier Native Embedding Benchmark Tuntas**: Nomic v2 MoE 256d menjuarai Tier 1 Iso-Dimension (Composite 90.28 vs Nomic v1 80.25). Pada Tier 2 Frontier Pareto, Qwen3-0.6B meraih akurasi puncak (Hit@3 87.25%, Router 98.33%), sementara Nomic v2 MoE 256d menjadi titik Pareto efisiensi tertinggi (Hit@3 83.89%, Router 96.67%, Margin tertinggi 0.1316, VRAM 3.6 GB). Menjawab Card 118. | `docs/exp-021_native_embedding_benchmark/` |
 | **`exp-022`** | 2026-10-16 | Komparasi Model SLM Lokal & Kuantisasi (Card 105) | `qwen2.5:1.5b`, `qwen2.5:3b`, `llama3.2:3b`, `qwen2.5:7b` (Q4_K_M) | Tool Selection Acc:<br>Qwen 7B: **96.00%**<br>Qwen 3B: **92.00%**<br>Llama 3B: **90.00%**<br>Qwen 1.5B: 34.00% | JSON Schema Compliance:<br>Qwen 7B: **98.00%**<br>Llama 3B: **98.00%**<br>Qwen 3B: **92.00%**<br>Qwen 1.5B: 36.00% | Param Error Rate:<br>Qwen 7B: **4.00%**<br>Qwen 3B: **8.00%**<br>Llama 3B: 10.00%<br>Qwen 1.5B: 66.00% | Physical Exec Success:<br>Qwen 7B: **96.00%**<br>Qwen 3B: **92.00%**<br>Llama 3B: 84.00%<br>Qwen 1.5B: 34.00% | P50 TTFT (Hardware / Perceived):<br>Llama 3B: **53.6 ms** / 723.8 ms<br>Qwen 1.5B: 123.6 ms / 305.8 ms<br>Qwen 3B: 156.5 ms / 650.9 ms<br>Qwen 7B: 468.9 ms / 1054.4 ms | Mean TPS:<br>Qwen 1.5B: **157.1**<br>Qwen 3B: **99.6**<br>Llama 3B: **98.8**<br>Qwen 7B: 56.1 | Peak VRAM Footprint:<br>Qwen 3B: **2914 MiB**<br>Llama 3B: **3136 MiB**<br>Qwen 1.5B: 4071 MiB<br>Qwen 7B: 5346 MiB | **Justifikasi Sizing SLM & Kuantisasi Tuntas**: Qwen2.5 3B terbukti sebagai model paling optimal untuk produksi harian (92% akurasi eksekusi, P50 TTFT 156 ms, 99.6 TPS, VRAM 2.9 GB). Qwen2.5 7B memimpin akurasi absolut (96%), sementara 1.5B gagal total pada tool-calling (34% akurasi). Menjawab Card 105. | `docs/exp-022_slm_sizing_quantization/` |
+| **`exp-023`** | 2026-10-16 | Uji Ketahanan Perturbasi Typo/STT & Integrasi Levenshtein Normalizer (Card 106) | `AcademicNormalizer` (O(1) Lexicon + Bounded Damerau-Levenshtein $d \le 2$ + STT Regex) + `nomic-embed-text` | Entity Extraction F1:<br>Raw: 0.3167<br>Norm: **0.9333** (+61.67%) | Param Error Rate:<br>Raw: 75.00%<br>Norm: **16.67%** (-58.33%) | Slang Subset F1: **1.0000** (100%)<br>Typo QWERTY F1: **0.9000**<br>STT Noise F1: **0.9000** | Normalizer Mean: **2.12 ms**<br>P50: **1.74 ms**<br>P95: **5.56 ms** | Routing Acc:<br>Raw: 63.33%<br>Norm: **65.00%** | Zero False Mutations on Stopwords<br>113/113 Pytest PASS | **Ketahanan Perturbasi & Normalisasi Typo/STT Tuntas**: Menyelamatkan kegagalan ekstraksi parameter dan entitas kurikulum (+61.67% F1 recovery, 58.33% error drop) dengan overhead sub-2.5 ms tanpa beban komputasi model neural tambahan. | `docs/exp-023_noise_robustness_normalizer/` |
 
 ---
 
@@ -726,3 +727,41 @@
   - `scripts/evaluate_slm_sizing.py`
   - `tests/test_slm_sizing.py`
   - `data/ground_truth/slm_sizing_eval_dataset.json` (50 kueri terstratifikasi)
+
+### [exp-023] Uji Ketahanan Perturbasi Typo/STT & Integrasi Levenshtein Normalizer
+- **Tanggal:** 2026-10-16
+- **Kartu Trello:** Card 106 (`[Nauval & Ario] Uji Ketahanan Noise Typo/STT & Integrasi Levenshtein Normalizer`).
+- **Tujuan / Hipotesis:**
+  Menguji ketahanan pipeline NLP akademik FTMM COMPASS terhadap degradasi akibat kesalahan ketik keyboard QWERTY, slang/akronim percakapan mahasiswa, dan noise transkripsi fonetik Speech-to-Text (STT), serta mengimplementasikan modul normalizer deterministik ringan (`AcademicNormalizer`) untuk memulihkan akurasi ekstraksi entitas dan mengurangi parameter error rate dengan latensi overhead $<5$ ms.
+- **Konfigurasi Sistem & Arsitektur:**
+  - Modul Normalizer: `src/engine/normalizer.py` memadukan Kamus Leksikal O(1), penanganan fonetik homofon STT (multi-word regex), dan Bounded Damerau-Levenshtein ($d \le 2$) dengan length-indexed candidate pruning.
+  - Dataset Evaluasi: `data/ground_truth/noise_eval_dataset.json` (60 kueri terstratifikasi: 20 Typo QWERTY, 20 Slang FTMM, 20 Noise Fonetik STT).
+  - Skrip Benchmark: `scripts/evaluate_noise_robustness.py`.
+- **Hasil Kuantitatif (Komparasi Raw vs Normalized):**
+  | Subset Perturbasi | Sampel | Raw Entity F1 | Norm Entity F1 | Delta F1 | Raw Param Error (%) | Norm Param Error (%) | Error Drop (%) | Raw Routing Acc (%) | Norm Routing Acc (%) | Latency Overhead (ms) |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | `typo_qwerty` | 20 | 0.3500 | **0.9000** | +0.5500 | 75.0% | **20.0%** | -55.0% | 65.0% | **65.0%** | 3.48 ms |
+  | `slang_acronym` | 20 | 0.2500 | **1.0000** | +0.7500 | 75.0% | **0.0%** | -75.0% | 70.0% | **70.0%** | 1.07 ms |
+  | `stt_phonetic` | 20 | 0.3500 | **0.9000** | +0.5500 | 75.0% | **30.0%** | -45.0% | 55.0% | **60.0%** | 1.81 ms |
+  | **OVERALL** | **60** | 0.3167 | **0.9333** | **+0.6167** | 75.0% | **16.67%** | **-58.33%** | 63.33% | **65.0%** | **2.12 ms** |
+- **Temuan Kunci:**
+  1. **Pemulihan Entity Extraction F1 Drastis (+61.67%):**
+     - Tanpa normalizer, kueri mahasiswa yang memuat typo atau slang mengalami degradasi parah pada ekstraksi entitas mata kuliah (F1 0.3167). Normalizer memulihkan skor ke 0.9333.
+  2. **Penurunan Signifikan Parameter Extraction Error Rate (-58.33%):**
+     - Parameter extraction error rate anjlok dari 75.00% pada teks mentah menjadi 16.67% pasca-normalisasi.
+  3. **Akurasi 100% Sempurna pada Slang & Akronim FTMM:**
+     - Seluruh istilah slang akademik (`alpro`, `strukdat`, `metpen`, `jarkom`, `sisop`, `pbo`, `basdat`) terpetakan sempurna ke entitas resmi (F1 1.0000, Parameter Error 0.00%).
+  4. **Latensi Sangat Ringan (Mean 2.12 ms, P50 1.74 ms):**
+     - Pendekatan in-memory Damerau-Levenshtein terindeks panjang karakter memastikan waktu eksekusi sub-3 ms, tanpa menambah beban alokasi VRAM/Host RAM.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - **Injeksi Hulu (Upstream Normalization):** Terapkan `AcademicNormalizer` pada gerbang NLU sebelum ekstraksi entitas dan kalkulasi vektor embedding query agar downstream modules (Dense Gazetteer, System-1 Decider, Hybrid Router) menerima representasi teks kanonik.
+  - Memperbarui 4 butir DoD Card 106 pada Trello Board (100% PASS).
+- **Artefak:**
+  - `docs/exp-023_noise_robustness_normalizer/README.md`
+  - `docs/exp-023_noise_robustness_normalizer/benchmark_summary.md`
+  - `docs/exp-023_noise_robustness_normalizer/benchmark_metrics.csv`
+  - `docs/exp-023_noise_robustness_normalizer/benchmark_results.json`
+  - `docs/exp-023_noise_robustness_normalizer/benchmark_raw_traces.jsonl`
+  - `scripts/evaluate_noise_robustness.py`
+  - `tests/test_normalizer.py`
+  - `data/ground_truth/noise_eval_dataset.json` (60 kueri terstratifikasi)
