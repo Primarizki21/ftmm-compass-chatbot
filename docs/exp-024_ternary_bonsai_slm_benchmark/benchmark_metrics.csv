@@ -1,0 +1,7 @@
+model,total_queries,tool_selection_accuracy_pct,json_schema_compliance_pct,parameter_extraction_error_pct,physical_execution_success_pct,adherence_composite_score,mean_hardware_ttft_ms,p50_hardware_ttft_ms,p95_hardware_ttft_ms,mean_perceived_ttft_ms,p50_perceived_ttft_ms,mean_tps,p50_tps,peak_vram_mib,vram_delta_mib,pareto_efficiency_score,is_pareto_frontier
+qwen2.5:1.5b,50,26.0,26.0,74.0,26.0,26.0,194.45,180.49,226.83,194.45,180.49,255.47,162.38,1218,0,55.58,True
+qwen2.5:3b,50,94.0,94.0,12.0,88.0,92.0,482.5,479.22,808.67,482.5,479.22,1629.13,1577.38,2833,665,61.12,False
+qwen2.5:7b,50,84.0,84.0,16.0,84.0,84.0,512.2,205.13,1106.89,512.2,205.13,603.42,58.8,5305,0,58.13,False
+bonsai-2-2b,50,92.0,92.0,8.0,92.0,92.0,64.87,54.45,130.08,78.88,68.47,200.4,200.94,2097,667,90.62,True
+bonsai-2-4b,50,98.0,98.0,2.0,98.0,98.0,128.71,105.45,222.72,142.65,119.98,129.53,130.33,3015,665,85.01,True
+bonsai-2-9b,50,90.0,94.0,12.0,88.0,90.67,117.7,108.33,172.16,131.68,121.94,81.19,81.36,4327,665,73.14,False

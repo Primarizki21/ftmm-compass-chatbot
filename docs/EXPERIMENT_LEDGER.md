@@ -32,6 +32,7 @@
 | **`exp-021`** | 2026-10-16 | Two-Tier Native Embedding Benchmark (Card 118) | `nomic-embed-text` (768d/256d), `nomic-embed-text-v2-moe` (768d/256d), `qwen3-embedding:0.6b` (1024d), `bge-m3` (1024d) | Task A (Course Retrieval 369 MK):<br>Qwen3: **Hit@3 87.25%**, Hit@1 76.51%, MRR 0.8173, NDCG@5 0.8247<br>Nomic-v2-MoE-256d: **Hit@3 83.89%**, Hit@1 71.81%, MRR 0.7795<br>BGE-M3: Hit@3 81.88%, Hit@1 73.15%<br>Nomic-v1-768d: Hit@3 73.83%, Hit@1 52.35% | Task B (System-1 Router 6-Class):<br>Qwen3: **98.33%** (Margin 0.0962)<br>Nomic-v2-MoE-256d: **96.67%** (Margin **0.1316**)<br>BGE-M3: 95.00% (Margin 0.1146)<br>Nomic-v1: 86.67% (Margin 0.0343) | Multilingual Parity (Bilingual Hit@3):<br>BGE-M3: **95.0%**<br>Qwen3: **90.0%**<br>Nomic-v2-MoE: **85.0%**<br>Nomic-v1: 55.0% (-24.6% drop) | FAISS Indexing (369 MK):<br>Nomic-v1-256d: 4.9s<br>Nomic-v1-768d: 5.7s<br>Nomic-v2-256d: 8.7s<br>Nomic-v2-768d: 20.4s<br>BGE-M3: 24.4s<br>Qwen3: 31.5s | P50 Retrieval Latency:<br>Nomic-v1: **29.8 ms**<br>Qwen3: **123.6 ms**<br>Nomic-v2-MoE: 163.0 ms<br>BGE-M3: 168.0 ms | Zero Disk Swap Thrashing<br>VRAM Peak: Qwen3 5.28 GB, Nomic-v2 3.60 GB, BGE-M3 3.69 GB | **Two-Tier Native Embedding Benchmark Tuntas**: Nomic v2 MoE 256d menjuarai Tier 1 Iso-Dimension (Composite 90.28 vs Nomic v1 80.25). Pada Tier 2 Frontier Pareto, Qwen3-0.6B meraih akurasi puncak (Hit@3 87.25%, Router 98.33%), sementara Nomic v2 MoE 256d menjadi titik Pareto efisiensi tertinggi (Hit@3 83.89%, Router 96.67%, Margin tertinggi 0.1316, VRAM 3.6 GB). Menjawab Card 118. | `docs/exp-021_native_embedding_benchmark/` |
 | **`exp-022`** | 2026-10-16 | Komparasi Model SLM Lokal & Kuantisasi (Card 105) | `qwen2.5:1.5b`, `qwen2.5:3b`, `llama3.2:3b`, `qwen2.5:7b` (Q4_K_M) | Tool Selection Acc:<br>Qwen 7B: **96.00%**<br>Qwen 3B: **92.00%**<br>Llama 3B: **90.00%**<br>Qwen 1.5B: 34.00% | JSON Schema Compliance:<br>Qwen 7B: **98.00%**<br>Llama 3B: **98.00%**<br>Qwen 3B: **92.00%**<br>Qwen 1.5B: 36.00% | Param Error Rate:<br>Qwen 7B: **4.00%**<br>Qwen 3B: **8.00%**<br>Llama 3B: 10.00%<br>Qwen 1.5B: 66.00% | Physical Exec Success:<br>Qwen 7B: **96.00%**<br>Qwen 3B: **92.00%**<br>Llama 3B: 84.00%<br>Qwen 1.5B: 34.00% | P50 TTFT (Hardware / Perceived):<br>Llama 3B: **53.6 ms** / 723.8 ms<br>Qwen 1.5B: 123.6 ms / 305.8 ms<br>Qwen 3B: 156.5 ms / 650.9 ms<br>Qwen 7B: 468.9 ms / 1054.4 ms | Mean TPS:<br>Qwen 1.5B: **157.1**<br>Qwen 3B: **99.6**<br>Llama 3B: **98.8**<br>Qwen 7B: 56.1 | Peak VRAM Footprint:<br>Qwen 3B: **2914 MiB**<br>Llama 3B: **3136 MiB**<br>Qwen 1.5B: 4071 MiB<br>Qwen 7B: 5346 MiB | **Justifikasi Sizing SLM & Kuantisasi Tuntas**: Qwen2.5 3B terbukti sebagai model paling optimal untuk produksi harian (92% akurasi eksekusi, P50 TTFT 156 ms, 99.6 TPS, VRAM 2.9 GB). Qwen2.5 7B memimpin akurasi absolut (96%), sementara 1.5B gagal total pada tool-calling (34% akurasi). Menjawab Card 105. | `docs/exp-022_slm_sizing_quantization/` |
 | **`exp-023`** | 2026-10-16 | Uji Ketahanan Perturbasi Typo/STT & Integrasi Levenshtein Normalizer (Card 106) | `AcademicNormalizer` (O(1) Lexicon + Bounded Damerau-Levenshtein $d \le 2$ + STT Regex) + `nomic-embed-text` | Entity Extraction F1:<br>Raw: 0.3167<br>Norm: **0.9333** (+61.67%) | Param Error Rate:<br>Raw: 75.00%<br>Norm: **16.67%** (-58.33%) | Slang Subset F1: **1.0000** (100%)<br>Typo QWERTY F1: **0.9000**<br>STT Noise F1: **0.9000** | Normalizer Mean: **2.12 ms**<br>P50: **1.74 ms**<br>P95: **5.56 ms** | Routing Acc:<br>Raw: 63.33%<br>Norm: **65.00%** | Zero False Mutations on Stopwords<br>113/113 Pytest PASS | **Ketahanan Perturbasi & Normalisasi Typo/STT Tuntas**: Menyelamatkan kegagalan ekstraksi parameter dan entitas kurikulum (+61.67% F1 recovery, 58.33% error drop) dengan overhead sub-2.5 ms tanpa beban komputasi model neural tambahan. | `docs/exp-023_noise_robustness_normalizer/` |
+| **`exp-024`** | 2026-10-17 | Komparasi Model Native Ternary (Bonsai 2: 2B, 4B, 9B) vs Baseline Qwen2.5 (Card 119) | Bonsai 2 (`2B`, `4B`, `9B` Ternary PQ2_0) vs Qwen2.5 (`1.5B`, `3B`, `7B` Q4_K_M) | Tool Selection Acc:<br>Bonsai 4B: **98.00%**<br>Qwen 3B: **94.00%**<br>Bonsai 2B: **92.00%**<br>Bonsai 9B: **90.00%**<br>Qwen 7B: 84.00%<br>Qwen 1.5B: 26.00% | JSON Schema Compliance:<br>Bonsai 4B: **98.00%**<br>Qwen 3B: **94.00%**<br>Bonsai 9B: **94.00%**<br>Bonsai 2B: **92.00%**<br>Qwen 7B: 84.00%<br>Qwen 1.5B: 26.00% | Param Error Rate:<br>Bonsai 4B: **2.00%**<br>Bonsai 2B: **8.00%**<br>Qwen 3B: 12.00%<br>Bonsai 9B: 12.00%<br>Qwen 7B: 16.00%<br>Qwen 1.5B: 74.00% | Physical Exec Success:<br>Bonsai 4B: **98.00%**<br>Bonsai 2B: **92.00%**<br>Qwen 3B: 88.00%<br>Bonsai 9B: 88.00%<br>Qwen 7B: 84.00%<br>Qwen 1.5B: 26.00% | P50 TTFT (Hardware):<br>Bonsai 2B: **54.45 ms**<br>Bonsai 4B: **105.45 ms**<br>Bonsai 9B: 108.33 ms<br>Qwen 1.5B: 180.49 ms<br>Qwen 7B: 205.13 ms<br>Qwen 3B: 479.22 ms | Mean Throughput (TPS):<br>Qwen 3B: **1629.1** (batch prefill)<br>Qwen 7B: 603.4<br>Qwen 1.5B: 255.5<br>Bonsai 2B: **200.4**<br>Bonsai 4B: 129.5<br>Bonsai 9B: 81.2 | Peak VRAM Footprint:<br>Qwen 1.5B: **1218 MiB**<br>Bonsai 2B: **2097 MiB**<br>Qwen 3B: 2833 MiB<br>Bonsai 4B: **3015 MiB**<br>Bonsai 9B: 4327 MiB<br>Qwen 7B: 5305 MiB | **Bonsai-2-4B mendominasi akurasi eksekusi fisik tertinggi (98.00%) dan error terendah (2.00%)** dengan footprint VRAM hanya 3.0 GB. Bonsai-2-2B mencatat latensi TTFT tercepat (54.45 ms) dan skor Pareto tertinggi (90.62). Menjawab Card 119. | `docs/exp-024_ternary_bonsai_slm_benchmark/` |
 
 ---
 
@@ -765,3 +766,51 @@
   - `scripts/evaluate_noise_robustness.py`
   - `tests/test_normalizer.py`
   - `data/ground_truth/noise_eval_dataset.json` (60 kueri terstratifikasi)
+
+### [exp-024] Komparasi Model Native Ternary (Bonsai 2: 2B, 4B, 9B) vs Baseline Produksi Qwen2.5
+- **Tanggal:** 2026-10-17
+- **Kartu Trello:** Card 119 (`[Nauval & Ario] Komparasi Model Native Ternary (Bonsai 2: 2B, 4B, 9B) vs Baseline Produksi Qwen2.5`).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi secara empiris efisiensi kuantisasi ekstrem Ternary 1.58-bit {-1, 0, +1} (Bonsai 2: 2B, 4B, 9B format PQ2_0) dibandingkan dengan baseline model produksi Qwen2.5 (1.5B, 3B, 7B format Q4_K_M) pada tugas pemanggilan alat (*function calling*), kepatuhan skema JSON, ekstraksi parameter kurikulum, latensi TTFT, throughput (TPS), dan efisiensi alokasi VRAM pada GPU NVIDIA GeForce RTX 5050 (8GB VRAM).
+- **Setup Teknis (Low-Level Architecture):**
+  - **Kandidat Model:**
+    - Baseline Ollama: `qwen2.5:1.5b` (Q4_K_M, 986 MB), `qwen2.5:3b` (Q4_K_M, 1.9 GB), `qwen2.5:7b` (Q4_K_M, 4.7 GB) via HTTP port 11434.
+    - Native Ternary Bonsai 2: `bonsai-2-2b` (PQ2_0, 494 MB), `bonsai-2-4b` (PQ2_0, 1.1 GB), `bonsai-2-9b` (PQ2_0, 2.3 GB) via binary CUDA `llama-server` port 8080 dengan kernel Hadamard-aware.
+  - **Dataset Terstratifikasi:** 50 kueri uji akademik FTMM (`data/ground_truth/slm_sizing_eval_dataset.json`) mencakup 5 domain: SKS Calculation (10), Prerequisite DAG (10), Course Discovery (10), Degree Planning (10), dan Chitchat (10).
+  - **Dual-Dispatch Streaming Adapter:** HTTP client non-blocking berbasis `httpx` dengan streaming Server-Sent Events (SSE) dan parser ganda: OpenAI-native `tool_calls` dan fallback Markdown JSON / ReAct action parser.
+  - **Isolasi Zero-Swapping VRAM:** Pengujian sekuensial 1 model per run dengan pembersihan memori total (`ollama stop` dan `pkill -f llama-server`), diverifikasi via `nvidia-smi` sebelum warm-up tiap model.
+- **Hasil Kuantitatif (Komparasi 6 Model):**
+  | Model | Tool Sel Acc (%) | Schema Comp (%) | Param Err (%) | Exec Success (%) | P50 TTFT (ms) | Mean TPS | Peak VRAM (MiB) | Pareto Score | Frontier |
+  |---|---|---|---|---|---|---|---|---|---|
+  | `bonsai-2-4b` | **98.00%** | **98.00%** | **2.00%** | **98.00%** | **105.45 ms** | 129.53 | 3015 MiB | **85.01** | **YES** |
+  | `bonsai-2-2b` | **92.00%** | **92.00%** | **8.00%** | **92.00%** | **54.45 ms** | 200.40 | **2097 MiB** | **90.62** | **YES** |
+  | `qwen2.5:3b` | 94.00% | 94.00% | 12.00% | 88.00% | 479.22 ms | **1629.13** | 2833 MiB | 61.12 | NO |
+  | `bonsai-2-9b` | 90.00% | 94.00% | 12.00% | 88.00% | 108.33 ms | 81.19 | 4327 MiB | 73.14 | NO |
+  | `qwen2.5:7b` | 84.00% | 84.00% | 16.00% | 84.00% | 205.13 ms | 603.42 | 5305 MiB | 58.13 | NO |
+  | `qwen2.5:1.5b` | 26.00% | 26.00% | 74.00% | 26.00% | 180.49 ms | 255.47 | **1218 MiB** | 55.58 | **YES** |
+- **Temuan Kunci:**
+  1. **Keunggulan Mutlak Bonsai-2-4B pada Pemanggilan Alat (98.00% Physical Execution Success):**
+     - Bonsai-2-4B meraih akurasi tertinggi di seluruh kategori (10/10 SKS, 10/10 Course Discovery, 10/10 Degree Planning, 10/10 Chitchat, dan 9/10 Prerequisite DAG).
+     - Parameter error rate hanya **2.00%** (1 dari 50 kueri), mengungguli baseline produksi Qwen2.5-3B (88.00% eksekusi, 12.00% error).
+     - VRAM footprint sangat hemat (**3015 MiB**) dengan TTFT hardware responsif P50 **105.45 ms**.
+  2. **Bonsai-2-2B Menjadi Juara Efisiensi Pareto (Pareto Score 90.62, P50 TTFT 54.45 ms):**
+     - Bonsai-2-2B mencatat latensi TTFT tercepat di antara seluruh model (54.45 ms P50, 4x lebih cepat dari Qwen2.5-7B dan 8.8x lebih cepat dari Qwen2.5-3B).
+     - Berhasil mencapai akurasi eksekusi 92.00% pada bobot file GGUF hanya 494 MB dan Peak VRAM 2097 MiB.
+  3. **Efisiensi Kompresi Bobot Ternary (1.58-bit PQ2_0):**
+     - Bonsai-2-9B beroperasi penuh pada VRAM 4327 MiB (berkas 2.3 GB), jauh lebih hemat dibanding Qwen2.5-7B (5305 MiB, berkas 4.7 GB).
+     - Model 9B Ternary mempertahankan akurasi 88.00% dengan throughput 81.19 TPS.
+  4. **Degradasi Qwen2.5-1.5B vs Keberhasilan Bonsai-2-2B:**
+     - Pada skala parameter 1.5B-2B, model standar FP16/4-bit (Qwen 1.5B) runtuh pada penalaran tool (hanya 26.00% eksekusi, 74.00% error), sementara Bonsai-2-2B mampu mempertahankan 92.00% keberhasilan eksekusi.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - **Kandidat Utama Upgrade SLM Engine:** Bonsai-2-4B direkomendasikan sebagai kandidat utama pengganti Qwen2.5-3B pada deployment produksi karena peningkatan akurasi eksekusi (+10.00% absolut: 98% vs 88%) dan penurunan drastis error rate (2% vs 12%), dengan konsumsi VRAM seimbang (~3 GB).
+  - **Ultra-Fast Edge Mode:** Bonsai-2-2B direkomendasikan untuk skenario latensi ultra-kritis (P50 TTFT sub-60 ms) dan perangkat dengan batasan VRAM ketat ($\le 4$ GB).
+  - Memperbarui 5 butir DoD Card 119 pada Trello Board (100% PASS).
+- **Artefak:**
+  - `docs/exp-024_ternary_bonsai_slm_benchmark/README.md`
+  - `docs/exp-024_ternary_bonsai_slm_benchmark/benchmark_summary.md`
+  - `docs/exp-024_ternary_bonsai_slm_benchmark/benchmark_metrics.csv`
+  - `docs/exp-024_ternary_bonsai_slm_benchmark/benchmark_results.json`
+  - `docs/exp-024_ternary_bonsai_slm_benchmark/benchmark_raw_traces.jsonl` (300 kueri)
+  - `scripts/evaluate_ternary_bonsai.py`
+  - `tests/test_ternary_bonsai.py`
+  - `data/ground_truth/slm_sizing_eval_dataset.json` (50 kueri terstratifikasi)
