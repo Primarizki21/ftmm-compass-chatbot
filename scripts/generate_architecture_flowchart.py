@@ -358,7 +358,7 @@ def build_ftmm_compass_flowchart():
     builder = FlowchartBuilder(width=14.5, height=22.0, dpi=300)
     builder.render_header(
         "FTMM COMPASS — AI Engine Microservice End-to-End Pipeline",
-        "Single-Embed Shared Latent Vector (Exp-019) + Cascaded Guardrails + System-1 Decider + CSP Planner (Exp-020)"
+        "Single-Embed Shared Latent Vector + Cascaded Guardrails + System-1 Decider + CSP Planner"
     )
 
     # 1. Start Node
@@ -372,7 +372,7 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="tier1", cx=7.25, cy=18.6, w=6.2, h=1.2,
         title="Tier 1: Deterministic Syntax Filter",
-        subtitle="Sanitasi Format SQL Injection & Parameter Tampering\nModul: src/guardrails/tier1_filter.py",
+        subtitle="Sanitasi Format SQL Injection &\nParameter Tampering Berpola Malicious",
         badge="0.0 ms Latency"
     )
 
@@ -388,7 +388,7 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="embed", cx=7.25, cy=16.7, w=6.4, h=1.2,
         title="Single-Embed Step (Ollama C++ Native Daemon)",
-        subtitle="1x Call nomic-embed-text -> L2-Normalized Shared Vector (d=768)\nZero Redundancy Memory Sharing (Exp-019)",
+        subtitle="1x Inference nomic-embed-text -> L2-Normalized Vector (d=768)\nZero-Redundancy Shared Memory Latent Pipeline",
         theme="embed", badge="~30 ms Latency"
     )
 
@@ -396,7 +396,7 @@ def build_ftmm_compass_flowchart():
     builder.add_decision(
         node_id="tier2", cx=7.25, cy=14.65, w=5.8, h=1.75,
         title="Tier 2: Semantic Dual-Centroid Gate",
-        subtitle="L2 Cosine Boundary vs OOD & Adversarial\nModul: tier2_semantic_gate.py (<35 ms)"
+        subtitle="L2 Cosine Centroid Boundary (<35 ms)\nDeteksi Kueri Non-Akademik & Adversarial Jailbreak"
     )
 
     # 6. Tier 2 Refusal Node
@@ -411,7 +411,7 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="memory", cx=7.25, cy=12.55, w=6.6, h=1.2,
         title="Conversation Memory & Structured Context Injection",
-        subtitle="Dense Gazetteer Linking (369 Kurikulum FTMM) + Latent Ellipsis\nModul: src/engine/memory.py (Exp-009, Exp-019)",
+        subtitle="Dense Gazetteer Linking (369 Kurikulum FTMM)\nInjeksi Profil Mahasiswa & Resolusi Latent Ellipsis",
         badge="In-Memory State"
     )
 
@@ -419,7 +419,7 @@ def build_ftmm_compass_flowchart():
     builder.add_decision(
         node_id="decider", cx=7.25, cy=10.45, w=6.6, h=1.85,
         title="System-1 Decider (6-Class Intent Matrix)",
-        subtitle="Matrix Dot-Product BLAS O(1) (<0.1 ms)\nShared Latent Intent Classification (Exp-011, Exp-017)"
+        subtitle="Matrix Dot-Product BLAS O(1) (<0.1 ms)\nKlasifikasi Intent Semantik Ruang Laten"
     )
 
     # 9. Execution Subsystems (4 Parallel Blocks)
@@ -430,10 +430,9 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="exec_chat", cx=1.85, cy=exec_y, w=exec_w, h=exec_h,
         title="ReAct Direct (Sapaan)",
-        subtitle="Intent: CHAT_ONLY\nZero Tool Schema (~400-700 ms)\nDeepSeek Prefix Cache (Exp-010)",
+        subtitle="Intent: CHAT_ONLY\nZero Tool Schema (~400-700 ms)\nDeepSeek-Style Prefix Caching",
         theme="route", badge="Fast Path"
     )
-
     builder.add_process(
         node_id="exec_cag", cx=5.45, cy=exec_y, w=exec_w, h=exec_h,
         title="Direct CAG Route",
@@ -444,22 +443,22 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="exec_tools", cx=9.05, cy=exec_y, w=exec_w, h=exec_h,
         title="Tools ReAct Agent",
-        subtitle="Intent: PREREQUISITE / SKS\nFAISS Dense + BM25 RRF (Exp-002)\nPrereq DAG & Pasal 5.4 Rail",
+        subtitle="Intent: PREREQUISITE / SKS / DISCOV\nHybrid FAISS Dense + BM25 RRF\nPrasyarat DAG & Penegakan Aturan SKS",
         theme="route", badge="Tool-Calling"
     )
 
     builder.add_process(
         node_id="exec_csp", cx=12.65, cy=exec_y, w=exec_w, h=exec_h,
         title="Neuro-Symbolic CSP Planner",
-        subtitle="Intent: DEGREE_PLANNING\nDense Gazetteer + FAISS Track Exp\nParitas, SKS & Single Religion Dedup",
-        theme="route", badge="Exp-020 CSP"
+        subtitle="Intent: DEGREE_PLANNING\nDense Gazetteer + FAISS Track Expansion\nParitas Semester, Batas SKS & Dedup Agama",
+        theme="route", badge="CSP Solver"
     )
 
     # 10. Tier 4 Process: Physical Parameter Rail
     builder.add_process(
         node_id="tier4", cx=7.25, cy=5.05, w=6.6, h=1.15,
         title="Tier 4: Physical Parameter Rail",
-        subtitle="Validasi Deterministik Argumen Fisik (Semester 1–8, SKS 0–24)\nModul: src/guardrails/tier4_tool_rail.py",
+        subtitle="Validasi Deterministik Argumen Fisik\nSemester Legal 1–8 & Batas Beban SKS 0–24",
         badge="Safety Invariant"
     )
 
@@ -467,7 +466,7 @@ def build_ftmm_compass_flowchart():
     builder.add_process(
         node_id="stream", cx=7.25, cy=3.40, w=6.8, h=1.15,
         title="Asynchronous Token Streamer & DegreePlan JSON Compilation",
-        subtitle="Yielding SSE Event Tokens kata-per-kata + DegreePlanPayload JSON\nModul: src/api/server.py (/api/v1/chat/stream)",
+        subtitle="Yielding SSE Event Token Kata-per-Kata\nKompilasi Widget DegreePlanPayload JSON",
         badge="SSE Streaming"
     )
 
@@ -475,7 +474,7 @@ def build_ftmm_compass_flowchart():
     builder.add_terminal(
         node_id="end", cx=7.25, cy=1.80, w=6.2, h=0.75,
         title="Output SSE Stream & DegreePlanCardWidget",
-        subtitle="Live Typing Effect & Visual Semester 1-8 Roadmap di DegreePlanner.tsx"
+        subtitle="Live Typing Effect & Visualisasi Roadmap Semester 1–8"
     )
 
     # CONNECTIONS & ROUTING

@@ -12,6 +12,8 @@ dependencies = [
     "numpy>=2.5.3",
     "ollama>=0.6.3",
     "pydantic>=2.13.5",
+    "pymupdf>=1.28.2",
+    "pypdf>=6.20.1",
     "uvicorn[standard]>=0.54.0",
 ]
 
