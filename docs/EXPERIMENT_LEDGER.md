@@ -29,6 +29,7 @@
 | **`exp-018`** | 2026-10-14 | Intent Disambiguation Kurikulum vs Homework Solver (Card 112) | `nomic-embed-text` (768d Closed-Form Ridge Hyperplane) | Disambiguation Acc: **100.0%** (120/120)<br>Formal: 100%<br>Slang: 100% | Homework Recall: **100.0%** (60/60)<br>Curriculum Acc: **100.0%** (60/60) | FRR: **0.0%** (0/60 false refusals)<br>ASR: **0.0%** | BLAS Projection: **<0.05 ms** ($O(1)$) | P50: **30.5 ms**<br>Avg: **33.2 ms**<br>P95: **48.6 ms** | Zero Semantic Regex<br>91/91 Pytest PASS | **Pemisahan Task-Intent Sains vs Homework Solver Tuntas**: Membuktikan bahwa tumpang tindih kosakata sains (mekanika kuantum, termodinamika) dapat dipisahkan secara sempurna dalam ruang laten semantik kontinu tanpa regex, menekan False Refusal Rate ke 0.0% pada slang mahasiswa. | `docs/exp-018_intent_disambiguation/` |
 | **`exp-019`** | 2026-10-13 | Eliminasi Total Regex Semantik & Unifikasi Single-Embed Shared Latent Pipeline (Card 113) | `nomic-embed-text` (768d Shared Vector) + `qwen2.5:3b` | Routing Acc: **100.0%** (60/60)<br>Formal: 100%<br>Slang: 100%<br>Implicit: 100% | OOD & Adv Recall: **100.0%**<br>ASR: **0.0%**<br>FRR: **0.0%** | Anaphora Res: **100.0%**<br>Semantic Regex: **0** (dari 24) | Shared Embed Calls: **1x/turn** (Avg 0.97)<br>BLAS Dot-Product: **<0.2 ms** | P50: **39.67 ms**<br>Avg: **39.19 ms**<br>P95: **54.82 ms** | Zero Semantic Regex<br>74/74 Pytest PASS | **Eliminasi 100% Regex Semantik Tuntas**: Seluruh 24 regex intent/anafora/topik digantikan oleh Single-Embed Shared Latent Vector + 6-Class System-1 Decider (`REGULATION_SOP` CAG) + Dense Gazetteer Linker. Menjawab Card 113. | `docs/exp-019_zero_regex_shared_latent_pipeline/` |
 | **`exp-020`** | 2026-10-14 | Hardening Neuro-Symbolic CSP Degree Planner & Dense Gazetteer Normalizer (Card 114) | `nomic-embed-text` (FAISS Track Retrieval + Dense Gazetteer) + CSP Engine | Overall Success: **100.0%** (20/20)<br>Prodi Acc: **100.0%** | Zero-Fallback: **100.0%** (0% nyasar prodi lain)<br>Parity: **100.0%** | SKS Adherence: **100.0%**<br>Single Religion: **100.0%** | FAISS Semantic Retrieval: **3.8 ms** (avg) | Turn Latency: **36.5 ms** (Avg)<br>P50: **31.5 ms**<br>P95: **62.6 ms** | Zero False Fallback<br>82/82 Pytest PASS | **Eliminasi Silent Fallback Bug & Naive Substring Tuntas**: Memadukan Dense Vector Gazetteer untuk normalisasi prodi tanpa pemotongan `catalog[:40]`, FAISS semantic expansion untuk peminatan (`LLM` $\to$ NLP), serta penegakan paritas semester, batas SKS, dan dedup agama tunggal. Menjawab Card 114. | `docs/exp-020_neuro_symbolic_degree_planner/` |
+| **`exp-021`** | 2026-10-16 | Two-Tier Native Embedding Benchmark (Card 118) | `nomic-embed-text` (768d/256d), `nomic-embed-text-v2-moe` (768d/256d), `qwen3-embedding:0.6b` (1024d), `bge-m3` (1024d) | Task A (Course Retrieval 369 MK):<br>Qwen3: **Hit@3 87.25%**, Hit@1 76.51%, MRR 0.8173, NDCG@5 0.8247<br>Nomic-v2-MoE-256d: **Hit@3 83.89%**, Hit@1 71.81%, MRR 0.7795<br>BGE-M3: Hit@3 81.88%, Hit@1 73.15%<br>Nomic-v1-768d: Hit@3 73.83%, Hit@1 52.35% | Task B (System-1 Router 6-Class):<br>Qwen3: **98.33%** (Margin 0.0962)<br>Nomic-v2-MoE-256d: **96.67%** (Margin **0.1316**)<br>BGE-M3: 95.00% (Margin 0.1146)<br>Nomic-v1: 86.67% (Margin 0.0343) | Multilingual Parity (Bilingual Hit@3):<br>BGE-M3: **95.0%**<br>Qwen3: **90.0%**<br>Nomic-v2-MoE: **85.0%**<br>Nomic-v1: 55.0% (-24.6% drop) | FAISS Indexing (369 MK):<br>Nomic-v1-256d: 4.9s<br>Nomic-v1-768d: 5.7s<br>Nomic-v2-256d: 8.7s<br>Nomic-v2-768d: 20.4s<br>BGE-M3: 24.4s<br>Qwen3: 31.5s | P50 Retrieval Latency:<br>Nomic-v1: **29.8 ms**<br>Qwen3: **123.6 ms**<br>Nomic-v2-MoE: 163.0 ms<br>BGE-M3: 168.0 ms | Zero Disk Swap Thrashing<br>VRAM Peak: Qwen3 5.28 GB, Nomic-v2 3.60 GB, BGE-M3 3.69 GB | **Two-Tier Native Embedding Benchmark Tuntas**: Nomic v2 MoE 256d menjuarai Tier 1 Iso-Dimension (Composite 90.28 vs Nomic v1 80.25). Pada Tier 2 Frontier Pareto, Qwen3-0.6B meraih akurasi puncak (Hit@3 87.25%, Router 98.33%), sementara Nomic v2 MoE 256d menjadi titik Pareto efisiensi tertinggi (Hit@3 83.89%, Router 96.67%, Margin tertinggi 0.1316, VRAM 3.6 GB). Menjawab Card 118. | `docs/exp-021_native_embedding_benchmark/` |
 
 ---
 
@@ -646,3 +647,42 @@
   - `docs/exp-020_neuro_symbolic_degree_planner/benchmark_raw_traces.jsonl`
   - `scripts/evaluate_degree_planner.py`
   - `tests/test_degree_planner_csp.py`
+
+### [exp-021] Two-Tier Native Embedding Benchmark: Task A Retrieval + Task B Routing
+- **Tanggal:** 2026-10-16
+- **Kartu Trello:** Card 118 (`[Nauval & Ario] Benchmarking Model Embedding Native Alternatif & Dense Course Retrieval Multilingual`).
+- **Tujuan / Hipotesis:**
+  Mengevaluasi secara kuantitatif performa empat arsitektur model embedding native pada daemon C++ Ollama (`nomic-embed-text`, `nomic-embed-text-v2-moe`, `qwen3-embedding:0.6b`, `bge-m3`) menggunakan desain Two-Tier:
+  1. Tier 1 (Iso-Dimension Control): Nomic v1 vs Nomic v2 MoE pada dimensi identik (768d & 256d Matryoshka).
+  2. Tier 2 (Frontier Pareto Analysis): Pemenang Tier 1 vs Qwen3 (1024d) vs BGE-M3 (1024d).
+  Evaluasi ganda mencakup Task A (Dense Course Retrieval 369 mata kuliah FTMM pada 149 kueri terstratifikasi Formal, Slang, Bilingual) dan Task B (System-1 Router Separability 6-kelas pada 60 kueri).
+- **Setup Teknis (Low-Level Architecture):**
+  - **Katalog Kurikulum SSOT:** `data/courses_catalog.json` (369 mata kuliah, 100% valid skema), diformat via `format_course_chunk`.
+  - **Indeks Vektor FAISS:** `faiss.IndexFlatIP(dimension)` dinamis in-memory dengan L2 normalization untuk Cosine Similarity.
+  - **Task A IR Evaluation (149 Kueri):** 108 Formal + 21 Slang + 20 Bilingual (EN/ID). Metrik: Hit@1, Hit@3, Hit@5, MRR, NDCG@5.
+  - **Task B Router Evaluation (60 Kueri):** 6 kategori (`CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`), diuji dengan Centroid dot-product BLAS in-memory (`<0.1 ms`).
+  - **Telemetri Perangkat Keras:** Latensi per-turn P50/P95 via `time.perf_counter()`, VRAM via `nvidia-smi`, dan pemantauan swap WSL2 via `/proc/meminfo`.
+- **Temuan Kunci:**
+  1. **Tier 1 Iso-Dimension Control — Dominasi Nomic v2 MoE:**
+     - `Nomic-v2-MoE-256d` meraih skor komposit tertinggi di Tier 1 (**90.28**), mengungguli Nomic v1 768d (**80.25**) dan Nomic v1 256d (**74.72**).
+     - Nomic v2 MoE meningkatkan Hit@3 retrieval dari 73.83% menjadi **83.89%–85.23%** (+10.0% hingga +11.4%), dengan lonjakan drastis pada kueri Bilingual dari 55.0% menjadi **85.0%** (+30.0%).
+     - Separabilitas router melonjak dari margin 0.0343 (Nomic v1) menjadi **0.1316–0.1487** (hampir 4x lipat lebih tegas memisahkan kelas).
+  2. **Tier 2 Frontier Pareto Analysis — Puncak Akurasi vs Efisiensi:**
+     - `Qwen3-0.6B-1024d` meraih akurasi absolut tertinggi: **Hit@3 87.25%**, Hit@1 76.51%, MRR 0.8173, NDCG@5 0.8247, dan Router Accuracy **98.33%** (Formal 88.89%, Slang 76.19%, Bilingual 90.0%), dengan Peak VRAM 5.28 GB.
+     - `Nomic-v2-MoE-256d` memenangkan efisiensi Pareto: Hit@3 **83.89%**, Router **96.67%**, Margin pemisah tertinggi (**0.1316**), P50 latensi stabil, dan VRAM hanya 3.60 GB (hemat 32% VRAM dibanding Qwen3).
+     - `BGE-M3-1024d` unggul pada kueri Bilingual (Hit@3 95.0%), namun memiliki kelemahan pada kueri Slang mahasiswa (Hit@3 61.9% vs 76.19% pada Qwen3 dan Nomic-v2).
+  3. **Verifikasi Zero Disk Swapping WSL2:**
+     - Seluruh evaluasi 6 varian embedding berjalan 100% pada daemon native Ollama C++ dan FAISS CPU in-memory tanpa memicu swap disk thrashing WSL2 (Swap Delta stabil, Host RAM Python bebas overhead model).
+- **Keputusan Arsitektur & Rekomendasi:**
+  - **Rekomendasi Akurasi Maksimal (High-Capacity Mode):** `qwen3-embedding:0.6b` (1024d) untuk katalog retrieval dan routing 6-kelas.
+  - **Rekomendasi Efisiensi Maksimal (Resource-Constrained Mode):** `nomic-embed-text-v2-moe` (256d Matryoshka) untuk memangkas dimensi 75% dengan retensi akurasi >95% dan margin pemisah tertinggi.
+  - Memperbarui checklist DoD Card 118 pada Trello Board (100% PASS).
+- **Artefak:**
+  - `docs/exp-021_native_embedding_benchmark/README.md`
+  - `docs/exp-021_native_embedding_benchmark/benchmark_summary.md`
+  - `docs/exp-021_native_embedding_benchmark/benchmark_metrics.csv`
+  - `docs/exp-021_native_embedding_benchmark/benchmark_results.json`
+  - `docs/exp-021_native_embedding_benchmark/benchmark_raw_traces.jsonl`
+  - `scripts/evaluate_embedding_benchmark.py`
+  - `tests/test_embedding_benchmark.py`
+  - `data/ground_truth/ir_eval_dataset.json` (149 kueri terstratifikasi)

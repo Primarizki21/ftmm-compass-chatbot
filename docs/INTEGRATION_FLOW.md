@@ -62,6 +62,7 @@ graph TD
 | **ReAct Agent Engine** | `src/engine/react_agent.py` | Qwen2.5-3B VRAM Pinned (`OLLAMA_MAX_LOADED_MODELS=2`) + DeepSeek-style prefix cache. | Tuntas (Exp-010, P50 1.39s) |
 | **CSP Degree Planner** | `src/engine/tools/academic_tools.py` | Neuro-Symbolic CSP Planner (`generate_degree_plan`) dengan Dense Gazetteer Normalizer, FAISS focus track expansion, penegakan paritas semester, batas SKS, dan dedup agama tunggal. | Tuntas (Exp-020, 100.0% Success, 0% Fallback) |
 | **Tier 4 Argument Rail** | `src/guardrails/tier4_tool_rail.py` | Validasi batas legal semester (1–8) dan SKS (0–24) sebelum pemanggilan tool fisik. | Tuntas (Exp-008) |
+| **Embedding Backbone** | `src/knowledge/retriever.py` & `src/engine/decider.py` | Two-Tier Native Embedding Benchmark: High-Capacity Mode `qwen3-embedding:0.6b` (1024d, Hit@3 87.25%, Router 98.33%) & Resource-Constrained Mode `nomic-embed-text-v2-moe` (256d Matryoshka, Hit@3 83.89%, Router 96.67%, Margin 0.1316, Peak VRAM 3.6 GB). | Tuntas (Exp-021) |
 
 ## 2. Sequence Diagram Alur Integrasi End-to-End
 
