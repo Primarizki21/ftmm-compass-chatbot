@@ -19,8 +19,9 @@ META_NOMIC_PATH = Path("data/faiss/ftmm_courses_meta.pkl")
 META_JSON_NOMIC_PATH = Path("data/faiss/ftmm_courses_meta.json")
 
 INDEX_PATH = INDEX_NOMIC_PATH
-META_PATH = META_NOMIC_PATH
-DEFAULT_EMBED_MODEL = "nomic-embed-text"
+DEFAULT_EMBED_MODEL = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text")
+DEFAULT_EMBED_DIM = int(os.getenv("EMBED_DIMENSION", "768"))
+
 class CourseRetriever:
     def __init__(
         self,
@@ -29,9 +30,11 @@ class CourseRetriever:
         index_path: Path | str | None = None,
         meta_path: Path | str | None = None,
         model_instance: Any = None,
+        embed_model: str | None = None,
     ):
-        self.backend = "nomic"
-        self.dimension = dimension if dimension is not None else 768
+        self.backend = backend or "nomic"
+        self.embed_model = embed_model or DEFAULT_EMBED_MODEL
+        self.dimension = dimension if dimension is not None else DEFAULT_EMBED_DIM
         self.index_path = Path(index_path) if index_path is not None else INDEX_NOMIC_PATH
         self.meta_path = Path(meta_path) if meta_path is not None else META_NOMIC_PATH
         self.index: faiss.IndexFlatIP | None = None
@@ -75,8 +78,13 @@ class CourseRetriever:
         if not self._loaded:
             self.load()
         from src.engine.base import get_ollama_client
-        resp = get_ollama_client().embed(model=DEFAULT_EMBED_MODEL, input=query, keep_alive=-1)
+        embed_kwargs = {"model": self.embed_model, "input": query, "keep_alive": -1}
+        if self.dimension and self.dimension < 768:
+            embed_kwargs["dimensions"] = self.dimension
+        resp = get_ollama_client().embed(**embed_kwargs)
         q_vec = np.array(resp["embeddings"][0], dtype=np.float32).reshape(1, -1)
+        if self.dimension and q_vec.shape[1] > self.dimension:
+            q_vec = q_vec[:, :self.dimension]
         norm = np.linalg.norm(q_vec)
         if norm > 0:
             q_vec = q_vec / norm

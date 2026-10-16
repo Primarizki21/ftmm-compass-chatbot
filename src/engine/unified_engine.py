@@ -44,10 +44,10 @@ class UnifiedChatEngine:
         self,
         model: str = DEFAULT_MODEL,
         memory_manager: ConversationMemoryManager | None = None,
-        embed_model: str = "nomic-embed-text",
+        embed_model: str | None = None,
     ):
         self.model = model
-        self.embed_model = embed_model
+        self.embed_model = embed_model or os.getenv("EMBED_MODEL_NAME", "nomic-embed-text")
         self.memory = memory_manager or ConversationMemoryManager()
         self.tier1_filter = Tier1DeterministicFilter()
         self.tier2_gate = Tier2SemanticGate(embed_model=self.embed_model)
