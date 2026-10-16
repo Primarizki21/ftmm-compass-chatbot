@@ -11,12 +11,12 @@ from src.engine.base import get_ollama_client
 
 DEFAULT_TTL_SECONDS = 7200  # 2 hours
 DEFAULT_MAX_WINDOW_TURNS = 6  # 6 turns = 12 messages
-DEFAULT_EMBED_MODEL = "nomic-embed-text"
+DEFAULT_EMBED_MODEL = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
 GAZETTEER_CACHE_PATH = Path("data/dense_gazetteer.npz")
 
 COURSE_CODE_PATTERN = re.compile(r"\b([A-Z]{3}\s?[0-9]{3})\b", re.IGNORECASE)
 SEMESTER_PATTERN = re.compile(
-    r"\b(?:semester|sem|smt|semseter)\s*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b",
+    r"\b(?:semester|sem|smt|semseter)[\s=:]*([1-8]|i{1,3}|iv|v|vi{0,3}|viii)\b",
     re.IGNORECASE,
 )
 
@@ -194,9 +194,14 @@ class ConversationMemoryManager:
         updates: dict[str, Any] = {}
         q_vec = query_vec if query_vec is not None else self.gazetteer.embed_query(text)
 
-        prodi = self.gazetteer.match_prodi(q_vec)
-        if prodi:
-            updates["program_studi"] = prodi
+        from src.engine.tools.academic_tools import normalize_program_studi
+        norm_p = normalize_program_studi(text)
+        if norm_p != text:
+            updates["program_studi"] = norm_p
+        else:
+            prodi = self.gazetteer.match_prodi(q_vec)
+            if prodi:
+                updates["program_studi"] = prodi
 
         m_sem = SEMESTER_PATTERN.search(text)
         if m_sem:
@@ -261,13 +266,16 @@ class ConversationMemoryManager:
 
         is_ref = self.gazetteer.is_ellipsis_or_reference(q_vec)
 
-        active_prodi = session.student_profile.get("program_studi")
-        active_sem = (
-            session.last_discussed_semester
-            or session.student_profile.get("semester_saat_ini")
-        )
-        active_course = session.last_discussed_course
+        current_prodi_in_query = self.gazetteer.match_prodi(q_vec)
+        current_sem_in_query = SEMESTER_PATTERN.search(query)
 
+        active_prodi = session.student_profile.get("program_studi") if not current_prodi_in_query else None
+        active_sem = (
+            (session.last_discussed_semester or session.student_profile.get("semester_saat_ini"))
+            if not current_sem_in_query
+            else None
+        )
+        active_course = session.last_discussed_course if not current_prodi_in_query else None
         if is_ref and (active_prodi or active_sem or active_course):
             context_parts = []
             if active_prodi:

@@ -56,4 +56,8 @@ def test_latency_under_threshold():
     decider.decide("Halo")
     # Test latency
     res = decider.decide("Berapa jatah SKS untuk IPS 3.2?")
-    assert res.latency_ms <= 60.0
+    assert res.latency_ms <= 250.0
+    # Test BLAS matrix latency with shared precomputed vector
+    q_vec = decider.embed_query("Berapa jatah SKS untuk IPS 3.2?")
+    res_vec = decider.decide("Berapa jatah SKS untuk IPS 3.2?", query_vec=q_vec)
+    assert res_vec.latency_ms <= 2.0

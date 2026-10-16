@@ -10,7 +10,7 @@ import ollama
 from src.engine.base import get_ollama_client
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS
 
-DEFAULT_EMBED_MODEL = "nomic-embed-text"
+DEFAULT_EMBED_MODEL = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
 CENTROIDS_PATH = Path("data/decider_centroids.npz")
 
 class DecisionCategory(str, Enum):
@@ -192,6 +192,14 @@ class System1Decider:
         """Dynamically update MRL dimension in-memory without re-reading centroids."""
         self.mrl_dim = mrl_dim
         self._apply_mrl_truncation()
+
+    def embed_query(self, query: str) -> np.ndarray:
+        resp = get_ollama_client().embed(model=self.embed_model, input=query, keep_alive=-1)
+        q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
+        norm = np.linalg.norm(q_vec)
+        if norm > 0:
+            q_vec = q_vec / norm
+        return q_vec
 
     def initialize(self, force_recompute: bool = False):
         if self._initialized and not force_recompute:

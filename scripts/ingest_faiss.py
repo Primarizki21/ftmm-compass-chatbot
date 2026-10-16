@@ -21,8 +21,8 @@ OUTPUT_DIR = Path("data/faiss")
 INDEX_PATH = OUTPUT_DIR / "ftmm_courses.faiss"
 META_PATH = OUTPUT_DIR / "ftmm_courses_meta.pkl"
 META_JSON_PATH = OUTPUT_DIR / "ftmm_courses_meta.json"
-EMBED_MODEL = "nomic-embed-text"
-EMBED_DIM = 768
+EMBED_MODEL = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
+EMBED_DIM = int(os.getenv("EMBED_DIMENSION", "768"))
 BATCH_SIZE = 32
 
 def format_course_chunk(mk: dict) -> str:
@@ -138,7 +138,11 @@ def load_all_courses():
     return courses
 
 
-def generate_embeddings(texts: list[str]) -> np.ndarray:
+def generate_embeddings(
+    texts: list[str],
+    model: str = EMBED_MODEL,
+    dimension: int | None = None,
+) -> np.ndarray:
     """Menghasilkan embedding via Ollama dalam batch dan menormalisasi L2."""
     all_embeddings = []
     total = len(texts)
@@ -146,12 +150,16 @@ def generate_embeddings(texts: list[str]) -> np.ndarray:
     for i in range(0, total, BATCH_SIZE):
         batch = texts[i : i + BATCH_SIZE]
         print(f"  Proses embedding batch {i // BATCH_SIZE + 1} / {int(np.ceil(total / BATCH_SIZE))} ({len(batch)} matkul)...")
-        resp = ollama.embed(model=EMBED_MODEL, input=batch)
+        embed_kwargs = {"model": model, "input": batch}
+        if dimension is not None and dimension < 768:
+            embed_kwargs["dimensions"] = dimension
+        resp = ollama.embed(**embed_kwargs)
         batch_vecs = resp.get("embeddings", [])
         all_embeddings.extend(batch_vecs)
         
     vecs = np.array(all_embeddings, dtype=np.float32)
-    # L2 normalize agar inner product = Cosine Similarity
+    if dimension is not None and vecs.shape[1] > dimension:
+        vecs = vecs[:, :dimension]
     norms = np.linalg.norm(vecs, axis=1, keepdims=True)
     norms[norms == 0] = 1e-12
     vecs_norm = vecs / norms
@@ -179,6 +187,12 @@ def parse_args(argv=None):
         type=str,
         default=EMBED_MODEL,
         help="Model embedding Ollama (default: nomic-embed-text)",
+    )
+    parser.add_argument(
+        "--dimension",
+        type=int,
+        default=EMBED_DIM,
+        help="Dimensi embedding (default: 768, atau 256 untuk Matryoshka)",
     )
     parser.add_argument(
         "--validate-only",
@@ -226,11 +240,12 @@ def main(argv=None):
     print(f"\nContoh representasi chunk pertama:\n{'-'*50}\n{chunks[0]}\n{'-'*50}\n")
 
     print(f"Menghasilkan vector embeddings via Ollama ({args.embed_model})...")
-    embeddings = generate_embeddings(chunks)
-    print(f"Bentuk matriks embedding: {embeddings.shape}")
+    embeddings = generate_embeddings(chunks, model=args.embed_model, dimension=args.dimension)
+    actual_dim = embeddings.shape[1]
+    print(f"Bentuk matriks embedding: {embeddings.shape} ({actual_dim}d)")
 
     # Buat FAISS IndexFlatIP (Cosine Similarity)
-    index = faiss.IndexFlatIP(EMBED_DIM)
+    index = faiss.IndexFlatIP(actual_dim)
     index.add(embeddings)
     print(f"Total vektor diindeks ke FAISS: {index.ntotal}")
 
@@ -240,7 +255,7 @@ def main(argv=None):
         "courses": courses,
         "chunks": chunks,
         "embed_model": args.embed_model,
-        "dim": EMBED_DIM,
+        "dim": actual_dim,
         "total": len(courses),
     }
 

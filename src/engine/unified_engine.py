@@ -11,6 +11,7 @@ from src.engine.decider import System1Decider, DecisionCategory
 from src.engine.memory import ConversationMemoryManager
 from src.engine.react_agent import ReActAgentEngine
 from src.knowledge.cag_store import get_cag_system_prompt
+from src.engine.normalizer import get_academic_normalizer
 
 DEFAULT_MODEL = "qwen2.5:3b"
 
@@ -48,7 +49,7 @@ class UnifiedChatEngine:
         embed_model: str | None = None,
     ):
         self.model = model
-        self.embed_model = embed_model or os.getenv("EMBED_MODEL_NAME", "nomic-embed-text")
+        self.embed_model = embed_model or os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
         self.memory = memory_manager or ConversationMemoryManager()
         self.tier1_filter = Tier1DeterministicFilter()
         self.tier2_gate = Tier2SemanticGate(embed_model=self.embed_model)
@@ -56,6 +57,7 @@ class UnifiedChatEngine:
         self.decider = System1Decider(embed_model=self.embed_model)
         self.decider.initialize()
         self.react_engine = ReActAgentEngine(model=self.model)
+        self.normalizer = get_academic_normalizer()
 
     def _embed_once(self, text: str) -> tuple[np.ndarray, float]:
         t_start = time.perf_counter()
@@ -93,9 +95,12 @@ class UnifiedChatEngine:
                 metadata={"tier": "TIER_1", "category": t1_res.category, "reason": t1_res.reason},
             )
 
-        # Step 2: 1x Shared Embedding for Normalized Query Vector
-        q_vec, shared_embed_ms = self._embed_once(q_raw)
+        # Step 1b: Upstream Academic Normalization (slang O(1), STT phonetic, Bounded Levenshtein d<=2)
+        norm_res = self.normalizer.normalize(q_raw)
+        q_clean = norm_res.normalized_query
 
+        # Step 2: 1x Shared Embedding for Normalized Query Vector
+        q_vec, shared_embed_ms = self._embed_once(q_clean)
         # Step 3: Session State Sync & Multi-Turn Contextualization
         session = self.memory.get_or_create_session(session_id)
         if history and not session.messages:
@@ -117,9 +122,9 @@ class UnifiedChatEngine:
                 session.last_discussed_semester = student_profile["semester_saat_ini"]
 
         contextualized_q = self.memory.contextualize_query(
-            session_id, q_raw, query_vec=q_vec
+            session_id, q_clean, query_vec=q_vec
         )
-        if contextualized_q != q_raw:
+        if contextualized_q != q_clean:
             q_vec, shared_embed_ms = self._embed_once(contextualized_q)
         # Step 4: Tier 2 Semantic Cosine Centroid Gating (OOD Detection)
         t2_res = self.tier2_gate.check(contextualized_q, query_vec=q_vec)
@@ -283,4 +288,11 @@ class UnifiedChatEngine:
         react_res.metadata["updated_profile"] = updated_prof
         react_res.metadata["contextualized_query"] = contextualized_q
 
+        react_res.metadata["normalized_query"] = q_clean
+        react_res.metadata["normalizer_latency_ms"] = norm_res.latency_ms
+        if norm_res.traces:
+            react_res.metadata["normalizer_traces"] = [
+                {"original": t.original, "normalized": t.normalized, "rule_type": t.rule_type, "distance": t.distance}
+                for t in norm_res.traces
+            ]
         return react_res

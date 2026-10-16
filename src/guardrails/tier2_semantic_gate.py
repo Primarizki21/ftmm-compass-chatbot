@@ -6,7 +6,7 @@ import numpy as np
 import ollama
 from src.engine.base import get_ollama_client
 
-DEFAULT_EMBED_MODEL = "nomic-embed-text"
+DEFAULT_EMBED_MODEL = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
 CACHE_PATH = Path("data/guardrails_centroids_v3.npz")
 
 
@@ -74,7 +74,7 @@ class Tier2SemanticGate:
     def __init__(
         self,
         embed_model: str = DEFAULT_EMBED_MODEL,
-        academic_threshold: float = 0.45,
+        academic_threshold: float = 0.35,
         margin: float = 0.02,
     ):
         self.embed_model = embed_model
@@ -83,7 +83,7 @@ class Tier2SemanticGate:
         self.academic_vectors: np.ndarray | None = None
         self.ood_vectors: np.ndarray | None = None
         self.task_direction: np.ndarray | None = None
-        self.task_threshold: float = 0.0
+        self.task_threshold: float = 0.06
         self._initialized = False
 
     def initialize(self, force_recompute: bool = False):
@@ -149,12 +149,18 @@ class Tier2SemanticGate:
 
         # Dual boundary decision logic (pure semantic vector boundary):
         # 1. Homework / Concept Problem Solving intent dominance (Task-Intent Disambiguation)
-        is_hw = bool(task_score >= self.task_threshold)
-        # 2. Out-of-scope dominance: Query similarity to non-academic prototypes exceeds academic margin
-        is_general_ood = bool((max_ood > max_ac + self.margin) or (max_ac < self.academic_threshold))
-        is_ood = is_hw or is_general_ood
+        is_adversarial_attack = bool(max_ood >= 0.55 or max_ac < 0.22)
+        is_hw = bool(task_score >= self.task_threshold and not is_adversarial_attack)
+        is_general_ood = bool((max_ood > max_ac + self.margin) or (max_ac < self.academic_threshold and max_ood > max_ac))
+        is_ood = is_adversarial_attack or is_hw or is_general_ood
 
-        if is_hw:
+        if is_adversarial_attack:
+            category = "OUT_OF_SCOPE_GENERAL"
+            reason = (
+                f"Kueri di luar cakupan atau melanggar kebijakan sistem akademik FTMM UNAIR "
+                f"(Skor Akademik: {max_ac:.3f}, Skor Non-Akademik: {max_ood:.3f})."
+            )
+        elif is_hw:
             category = "OUT_OF_SCOPE_HOMEWORK"
             reason = (
                 f"Kueri terdeteksi sebagai permintaan pengerjaan tugas/soal/rumus sains mandiri "

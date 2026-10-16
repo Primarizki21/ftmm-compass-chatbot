@@ -196,13 +196,15 @@ class ReActAgentEngine:
             msg = resp.message
             tool_calls = getattr(msg, "tool_calls", None)
             if step_count == 1 and not tools_executed:
-                is_planning = (
-                    (precomputed_decision and precomputed_decision.category.value == "DEGREE_PLANNING")
-                    or any(w in query.lower() for w in ["rencana studi", "degree plan", "sampai semester", "hingga semester"])
+                detected_p = normalize_program_studi(query)
+                detected_s = extract_semester_from_text(query)
+                has_explicit_planning = any(w in query.lower() for w in ["rencana studi", "degree plan", "sampai semester", "hingga semester", "plotting", "rancangan studi"])
+                is_planning = has_explicit_planning or (
+                    precomputed_decision
+                    and precomputed_decision.category.value == "DEGREE_PLANNING"
+                    and not (detected_p != query and detected_s is not None)
                 )
                 if not is_planning:
-                    detected_p = normalize_program_studi(query)
-                    detected_s = extract_semester_from_text(query)
                     if detected_p != query and detected_s is not None:
                         if not tool_calls:
                             class _Fn:

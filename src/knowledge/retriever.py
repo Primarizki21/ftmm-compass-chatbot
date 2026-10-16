@@ -19,7 +19,7 @@ META_NOMIC_PATH = Path("data/faiss/ftmm_courses_meta.pkl")
 META_JSON_NOMIC_PATH = Path("data/faiss/ftmm_courses_meta.json")
 
 INDEX_PATH = INDEX_NOMIC_PATH
-DEFAULT_EMBED_MODEL = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text")
+DEFAULT_EMBED_MODEL = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
 DEFAULT_EMBED_DIM = int(os.getenv("EMBED_DIMENSION", "768"))
 
 class CourseRetriever:
