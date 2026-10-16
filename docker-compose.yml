@@ -19,6 +19,10 @@ services:
       - MKL_NUM_THREADS=2
       - TOKENIZERS_PARALLELISM=false
       - OLLAMA_NUM_CTX=2048
+      - LLM_BACKEND=bonsai
+      - LLM_MODEL_NAME=bonsai-2-4b
+      - BONSAI_HOST=http://host.docker.internal:8080
+      - OLLAMA_HOST=http://host.docker.internal:11434
     volumes:
       - ./data:/app/data:ro
       - ./src:/app/src:ro

@@ -4,7 +4,13 @@ from typing import Any
 import numpy as np
 import ollama
 
-from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
+from src.engine.base import (
+    EngineResult,
+    DEFAULT_NUM_CTX,
+    get_ollama_client,
+    get_llm_client,
+    LLMClientAdapter,
+)
 from src.guardrails.tier1_filter import Tier1DeterministicFilter
 from src.guardrails.tier2_semantic_gate import Tier2SemanticGate
 from src.engine.decider import System1Decider, DecisionCategory
@@ -13,7 +19,7 @@ from src.engine.react_agent import ReActAgentEngine
 from src.knowledge.cag_store import get_cag_system_prompt
 from src.engine.normalizer import get_academic_normalizer
 
-DEFAULT_MODEL = "qwen2.5:3b"
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
 
 TIER1_REFUSAL_MESSAGE = (
     "Permintaan tidak dapat diproses karena melanggar kebijakan keamanan sistem akademik FTMM UNAIR."
@@ -47,6 +53,7 @@ class UnifiedChatEngine:
         model: str = DEFAULT_MODEL,
         memory_manager: ConversationMemoryManager | None = None,
         embed_model: str | None = None,
+        llm_adapter: LLMClientAdapter | None = None,
     ):
         self.model = model
         self.embed_model = embed_model or os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
@@ -56,9 +63,9 @@ class UnifiedChatEngine:
         self.tier2_gate.initialize()
         self.decider = System1Decider(embed_model=self.embed_model)
         self.decider.initialize()
-        self.react_engine = ReActAgentEngine(model=self.model)
+        self.llm_adapter = llm_adapter or get_llm_client()
+        self.react_engine = ReActAgentEngine(model=self.model, llm_client=self.llm_adapter)
         self.normalizer = get_academic_normalizer()
-
     def _embed_once(self, text: str) -> tuple[np.ndarray, float]:
         t_start = time.perf_counter()
         resp_embed = get_ollama_client().embed(model=self.embed_model, input=text, keep_alive=-1)
@@ -177,7 +184,7 @@ class UnifiedChatEngine:
                 {"role": "system", "content": chitchat_prompt},
                 {"role": "user", "content": q_raw},
             ]
-            resp = get_ollama_client().chat(
+            resp = self.llm_adapter.chat(
                 model=self.model,
                 messages=messages,
                 options={"temperature": 0.3, "num_predict": 256, "num_ctx": DEFAULT_NUM_CTX},
@@ -216,7 +223,7 @@ class UnifiedChatEngine:
                 messages.extend(sliding_history[-4:])
             messages.append({"role": "user", "content": q_raw})
 
-            resp = get_ollama_client().chat(
+            resp = self.llm_adapter.chat(
                 model=self.model,
                 messages=messages,
                 options={"temperature": 0.0, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX},

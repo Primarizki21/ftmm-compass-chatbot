@@ -83,6 +83,12 @@ class ChatResponse(BaseModel):
     latency_ms: float = 0.0
 
 
+class BonsaiHealthDetail(BaseModel):
+    online: bool
+    host: str
+    default_model: str
+
+
 class OllamaHealthDetail(BaseModel):
     online: bool
     host: str
@@ -92,8 +98,13 @@ class OllamaHealthDetail(BaseModel):
 class HealthResponse(BaseModel):
     status: str = "healthy"
     service: str = "FTMM COMPASS Chatbot Backend"
+    active_backend: str = "bonsai"
+    bonsai_online: bool = False
     ollama_online: bool = True
-    default_model: str = "qwen2.5:3b"
+    generator_model: str = "bonsai-2-4b"
+    embedding_model: str = "nomic-embed-text-v2-moe"
+    default_model: str = "bonsai-2-4b"
+    bonsai: BonsaiHealthDetail | None = None
     ollama: OllamaHealthDetail | None = None
 
 

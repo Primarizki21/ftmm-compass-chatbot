@@ -3,7 +3,13 @@ import os
 import time
 from typing import Any
 import ollama
-from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
+from src.engine.base import (
+    EngineResult,
+    DEFAULT_NUM_CTX,
+    get_ollama_client,
+    get_llm_client,
+    LLMClientAdapter,
+)
 from src.engine.decider import System1Decider, DecisionResult
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
 from src.engine.tools.academic_tools import (
@@ -13,7 +19,7 @@ from src.engine.tools.academic_tools import (
     format_degree_plan_response,
     compress_degree_plan_for_llm,
 )
-DEFAULT_MODEL = "qwen2.5:3b"
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
 
 
 def detect_query_language(query: str, history: list[dict[str, str]] | None = None) -> str:
@@ -118,9 +124,15 @@ def select_relevant_tools(
 
 
 class ReActAgentEngine:
-    def __init__(self, model: str = DEFAULT_MODEL, max_steps: int = 5):
+    def __init__(
+        self,
+        model: str = DEFAULT_MODEL,
+        max_steps: int = 5,
+        llm_client: LLMClientAdapter | None = None,
+    ):
         self.model = model
         self.max_steps = max_steps
+        self.llm_client = llm_client or get_llm_client()
 
     def generate_answer(
         self,
@@ -179,8 +191,7 @@ class ReActAgentEngine:
                     }
                     if active_tools and step_count == 1:
                         chat_kwargs["tools"] = active_tools
-                    client = _get_ollama_client()
-                    resp = client.chat(**chat_kwargs)
+                    resp = self.llm_client.chat(**chat_kwargs)
                     break
                 except Exception as e:
                     if attempt == 0:

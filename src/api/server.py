@@ -19,6 +19,7 @@ from src.api.schemas import (
     ChatRequest,
     ChatResponse,
     HealthResponse,
+    BonsaiHealthDetail,
     OllamaHealthDetail,
     StudentProfile,
     DegreePlanPayload,
@@ -69,6 +70,12 @@ def _get_ollama_base_url() -> str:
         return f"http://{host}"
     return host.rstrip("/")
 
+
+def _get_bonsai_base_url() -> str:
+    host = os.getenv("BONSAI_HOST", "http://127.0.0.1:8080").strip()
+    if not host.startswith(("http://", "https://")):
+        return f"http://{host}"
+    return host.rstrip("/")
 
 def _normalize_course_type(jenis: str | None) -> str:
     j = str(jenis or "").lower()
@@ -153,32 +160,71 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 # ============================================================================
 
 async def handle_health_check(strict: bool = False) -> HealthResponse:
-    """Status kesehatan backend dan konektivitas Ollama."""
-    ollama_online = False
-    base_url = _get_ollama_base_url()
-    try:
-        async with httpx.AsyncClient(timeout=2.0) as client:
-            resp = await client.get(f"{base_url}/api/tags")
-            if resp.status_code == 200:
-                ollama_online = True
-    except Exception:
-        ollama_online = False
+    """Status kesehatan backend dan pengecekan kesehatan ganda (Bonsai llama-server & Ollama daemon)."""
+    active_backend = os.getenv("LLM_BACKEND", "bonsai").strip().lower()
+    generator_model = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
+    embedding_model = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
 
-    service_status = "healthy" if ollama_online else "degraded"
-    if strict and not ollama_online:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Ollama daemon is offline",
-        )
+    bonsai_base_url = _get_bonsai_base_url()
+    ollama_base_url = _get_ollama_base_url()
+
+    bonsai_online = False
+    ollama_online = False
+
+    async with httpx.AsyncClient(timeout=2.0) as client:
+        try:
+            b_resp = await client.get(f"{bonsai_base_url}/health")
+            if b_resp.status_code == 200:
+                bonsai_online = True
+        except Exception:
+            bonsai_online = False
+
+        try:
+            o_resp = await client.get(f"{ollama_base_url}/api/tags")
+            if o_resp.status_code == 200:
+                ollama_online = True
+        except Exception:
+            ollama_online = False
+
+    if active_backend == "bonsai":
+        if bonsai_online:
+            service_status = "healthy"
+        elif ollama_online:
+            service_status = "degraded"
+        else:
+            service_status = "unhealthy"
+    else:
+        service_status = "healthy" if ollama_online else "degraded"
+
+    if strict:
+        if active_backend == "bonsai" and not (bonsai_online or ollama_online):
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Both Bonsai generator and Ollama fallback are offline",
+            )
+        elif active_backend == "ollama" and not ollama_online:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Ollama daemon is offline",
+            )
 
     return HealthResponse(
         status=service_status,
         service="FTMM COMPASS Chatbot Backend",
+        active_backend=active_backend,
+        bonsai_online=bonsai_online,
         ollama_online=ollama_online,
-        default_model=engine.model,
+        generator_model=generator_model,
+        embedding_model=embedding_model,
+        default_model=generator_model,
+        bonsai=BonsaiHealthDetail(
+            online=bonsai_online,
+            host=bonsai_base_url,
+            default_model=generator_model,
+        ),
         ollama=OllamaHealthDetail(
             online=ollama_online,
-            host=base_url,
+            host=ollama_base_url,
             default_model=engine.model,
         ),
     )
