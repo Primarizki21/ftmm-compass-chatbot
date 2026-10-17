@@ -62,6 +62,12 @@ SHEET_CONFIGS = [
         "description": "Buku Panduan Yudisium Kelulusan",
         "expected_min_rows": 20,
     },
+    {
+        "gid": "1377454251",
+        "output_file": "gt_baru_courses.json",
+        "description": "369 Mata Kuliah FTMM Ground Truth Silabus",
+        "expected_min_rows": 369,
+    },
 ]
 
 
