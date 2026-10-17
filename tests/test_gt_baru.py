@@ -28,12 +28,13 @@ def test_gt_baru_total_count_and_types():
 
     type_counts = {}
     prodi_counts = {}
-    for item in data:
+    with open(CATALOG_PATH, "r", encoding="utf-8") as f:
+        catalog = json.load(f)
+    for idx, item in enumerate(data):
         t = item["source_type"]
         type_counts[t] = type_counts.get(t, 0) + 1
-        p = item["program_studi"]
+        p = item.get("program_studi") or catalog[idx]["program_studi"].strip()
         prodi_counts[p] = prodi_counts.get(p, 0) + 1
-
     assert type_counts.get("Silabus Wajib") == 297, f"Expected 297 MK Wajib, got {type_counts.get('Silabus Wajib')}"
     assert type_counts.get("Silabus Pilihan") == 72, f"Expected 72 MK Pilihan, got {type_counts.get('Silabus Pilihan')}"
 

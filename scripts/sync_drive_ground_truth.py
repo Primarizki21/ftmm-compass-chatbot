@@ -68,6 +68,18 @@ SHEET_CONFIGS = [
         "description": "369 Mata Kuliah FTMM Ground Truth Silabus",
         "expected_min_rows": 369,
     },
+    {
+        "gid": "1428033810",
+        "output_file": "gt_master.json",
+        "description": "Master Ground Truth QA (369 MK + 80 Regulasi/SOP)",
+        "expected_min_rows": 440,
+    },
+    {
+        "gid": "1603934730",
+        "output_file": "literatur.json",
+        "description": "Kompilasi Literatur Akademik 5 Kolom Terstruktur",
+        "expected_min_rows": 30,
+    },
 ]
 
 
