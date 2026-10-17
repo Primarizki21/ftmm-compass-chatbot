@@ -16,7 +16,7 @@ graph LR
     FE <--> GW[API Gateway Backend<br/>Mantra: FastAPI /api/v1]
     GW <--> AI[AI Engine Microservice<br/>Nauval & Ario: port 8000]
     GW <--> DB[(PostgreSQL Database<br/>Darryl: schema_v2_1_rc1)]
-    AI <--> LocalOllama[Ollama Qwen2.5 Local GPU]
+    AI <--> LocalEngine[Ternary Bonsai-2-4B + Nomic Embed v2 MoE]
     AI <--> VectorStore[(FAISS IndexFlatIP + BM25)]
 ```
 
@@ -28,7 +28,7 @@ graph LR
 | **Tier 4: Relational DB** | PostgreSQL 16 (`schema_v2_1_rc1.sql`) | Darryl (Database) | Relasi prasyarat matkul (`course_prerequisites` DAG), paritas ganjil/genap, dan persistensi rencana studi. |
 
 
-### 1.1 Pipeline Internal AI Engine Microservice (Hasil Riset Exp-008 s.d. Exp-019)
+### 1.1 Pipeline Internal AI Engine Microservice (Hasil Riset Exp-008 s.d. Exp-025)
 
 AI Engine mengimplementasikan arsitektur *Cascaded Defense-in-Depth* dan *Single-Embed Shared Latent Pipeline*:
 

@@ -145,10 +145,7 @@ class ReActAgentEngine:
         active_tools, decider_telemetry = select_relevant_tools(
             query, precomputed_decision=precomputed_decision
         )
-        messages: list[dict[str, Any]] = [
-            {"role": "system", "content": REACT_SYSTEM_PROMPT}
-        ]
-        
+        sys_content = REACT_SYSTEM_PROMPT
         if student_profile:
             profile_context = (
                 f"[PROFIL MAHASISWA]:\n"
@@ -159,8 +156,11 @@ class ReActAgentEngine:
                 f"- Target Kelulusan: Semester {student_profile.get('target_kelulusan_semester', 8)}\n"
                 f"- Batas SKS Maksimal: {student_profile.get('maks_sks_per_semester', 24)} SKS\n"
             )
-            messages.append({"role": "system", "content": profile_context})
+            sys_content = f"{sys_content}\n\n{profile_context}"
 
+        messages: list[dict[str, Any]] = [
+            {"role": "system", "content": sys_content}
+        ]
         if history:
             messages.extend(history[-4:])
 

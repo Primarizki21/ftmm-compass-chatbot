@@ -1,0 +1,46 @@
+{
+  "eval_count": 449,
+  "model_generator": "bonsai-2-4b",
+  "model_embedding": "nomic-embed-text-v2-moe",
+  "tier2_frr_pct": 4.231625835189309,
+  "routing_accuracy_pct": 68.8195991091314,
+  "routing_latency_p50_ms": 0.09757199995874544,
+  "information_retrieval_369_courses": {
+    "hit@1": 0.9242424242424242,
+    "hit@3": 0.997289972899729,
+    "hit@5": 0.9924242424242424,
+    "mrr": 0.9765130984643179,
+    "ndcg@5": 0.9662684699134216,
+    "p50_latency_ms": 159.36401650014886
+  },
+  "architecture_comparison": {
+    "Pure CAG": {
+      "mean_fact_recall": 0.0,
+      "mean_semantic_sim": 0.0,
+      "mean_total_latency_ms": 2355.611163532296,
+      "p50_total_latency_ms": 2342.7534249995006,
+      "p95_total_latency_ms": 2505.7048088000556,
+      "mean_tokens": 256.0
+    },
+    "Pure RAG": {
+      "mean_fact_recall": 0.0,
+      "mean_semantic_sim": 0.0,
+      "mean_total_latency_ms": 2232.4435387015633,
+      "p50_total_latency_ms": 2225.022911999986,
+      "p95_total_latency_ms": 2418.951671200375,
+      "mean_tokens": 256.0
+    },
+    "Hybrid RAG-CAG": {
+      "mean_fact_recall": 0.5596003750268105,
+      "mean_semantic_sim": 0.5895201166249596,
+      "mean_total_latency_ms": 8471.238820879707,
+      "p50_total_latency_ms": 9121.638935999727,
+      "p95_total_latency_ms": 12010.037029199975,
+      "mean_tokens": 1048.1714922048998
+    }
+  },
+  "hardware_invariants": {
+    "peak_vram_mib": 2173.0,
+    "wsl2_swap_used_mib": 172.78515625
+  }
+}

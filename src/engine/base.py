@@ -129,6 +129,7 @@ class LLMClientAdapter:
         ollama_host: str | None = None,
         fallback_model: str = "qwen2.5:3b",
         timeout: float = 60.0,
+        enable_fallback: bool | None = None,
     ):
         self.backend = (backend or os.getenv("LLM_BACKEND", "bonsai")).strip().lower()
         b_host = bonsai_host or os.getenv("BONSAI_HOST", "http://127.0.0.1:8080")
@@ -143,7 +144,10 @@ class LLMClientAdapter:
 
         self.fallback_model = fallback_model
         self.timeout = timeout
-
+        if enable_fallback is not None:
+            self.enable_fallback = enable_fallback
+        else:
+            self.enable_fallback = os.getenv("ENABLE_OLLAMA_FALLBACK", "false").strip().lower() in ("true", "1")
     @staticmethod
     def _normalize_messages(messages: list[Any], for_openai: bool = True) -> list[dict[str, Any]]:
         clean: list[dict[str, Any]] = []
@@ -219,7 +223,21 @@ class LLMClientAdapter:
                         formatted_tcs.append(entry)
                     d["tool_calls"] = formatted_tcs
                 clean.append(d)
-        return clean
+
+        # Consolidate multiple system messages into a single leading system message
+        # to prevent strict Jinja template errors (e.g. llama-server loop.first invariant).
+        system_chunks: list[str] = []
+        non_system_messages: list[dict[str, Any]] = []
+        for item in clean:
+            if item.get("role") == "system":
+                c = str(item.get("content", "")).strip()
+                if c:
+                    system_chunks.append(c)
+            else:
+                non_system_messages.append(item)
+        if system_chunks:
+            return [{"role": "system", "content": "\n\n".join(system_chunks)}] + non_system_messages
+        return non_system_messages
 
     @staticmethod
     def _parse_tool_calls(
@@ -342,6 +360,13 @@ class LLMClientAdapter:
                     **kwargs,
                 )
             except (httpx.ConnectError, httpx.ConnectTimeout, httpx.TimeoutException, httpx.HTTPStatusError, Exception) as e:
+                if not self.enable_fallback:
+                    logger.error(
+                        "Bonsai server (%s) request failed: %s (Ollama failover disabled to prevent WSL2 multi-generator OOM)",
+                        self.bonsai_host,
+                        e,
+                    )
+                    raise e
                 logger.warning(
                     "Bonsai server (%s) unreachable or failed: %s. Gracefully falling back to Ollama (%s) with model %s",
                     self.bonsai_host,
@@ -382,7 +407,7 @@ class LLMClientAdapter:
         temperature = 0.1
         top_p = 0.9
         if options:
-            num_predict = options.get("num_predict", 1024)
+            num_predict = max(options.get("num_predict", 1024), 1024)
             temperature = options.get("temperature", 0.1)
             top_p = options.get("top_p", 0.9)
 
@@ -407,7 +432,8 @@ class LLMClientAdapter:
         content = msg_dict.get("content", "") or ""
         raw_tool_calls = msg_dict.get("tool_calls")
         reasoning = msg_dict.get("reasoning_content", "") or ""
-
+        if not content and reasoning and not raw_tool_calls:
+            content = reasoning.strip().split("\n\n")[-1].strip()
         parsed_tool_calls = self._parse_tool_calls(
             content=content,
             raw_tool_calls=raw_tool_calls,

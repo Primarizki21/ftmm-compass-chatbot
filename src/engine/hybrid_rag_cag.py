@@ -9,20 +9,20 @@ Menerapkan arsitektur CAIDA (Hamza & Ajam, ACM 2026) dan riset Mindmap V3:
    - Guarded Path: Pertanyaan out-of-scope ditolak secara aman.
 """
 
+import os
 import time
 from typing import Any
-import ollama
 from src.knowledge.cag_store import get_cag_system_prompt
 from src.knowledge.retriever import get_course_retriever
 from src.engine.router import get_router, RoutingMode, RoutingDecision
-from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
+from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_llm_client, LLMClientAdapter
 from src.engine.tools.academic_tools import (
     get_courses_by_semester,
     normalize_program_studi,
     extract_semester_from_text,
 )
 from src.engine.decider import System1Decider, DecisionCategory
-DEFAULT_MODEL = "qwen2.5:3b"
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
 
 GUARDRAIL_REFUSAL_MESSAGE = (
     "Maaf, saya adalah **Compass AI**, asisten penasihat akademik khusus Fakultas Teknologi Maju dan "
@@ -32,12 +32,13 @@ GUARDRAIL_REFUSAL_MESSAGE = (
 
 
 class HybridRAGCAGEngine:
-    def __init__(self, model: str = DEFAULT_MODEL, top_k: int = 3):
+    def __init__(self, model: str = DEFAULT_MODEL, top_k: int = 3, llm_client: LLMClientAdapter | None = None):
         self.model = model
         self.top_k = top_k
         self.router = get_router()
         self.retriever = get_course_retriever()
         self.cag_base_prompt = get_cag_system_prompt()
+        self.llm_client = llm_client or get_llm_client()
 
     def generate_answer(
         self,
@@ -88,7 +89,7 @@ class HybridRAGCAGEngine:
             messages.append({"role": "user", "content": query})
 
             t_gen_start = time.perf_counter()
-            resp = get_ollama_client().chat(
+            resp = self.llm_client.chat(
                 model=self.model,
                 messages=messages,
                 options={"temperature": 0.0, "top_p": 0.9, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX}
@@ -160,7 +161,7 @@ class HybridRAGCAGEngine:
             messages.append({"role": "user", "content": query})
 
             t_gen_start = time.perf_counter()
-            resp = get_ollama_client().chat(
+            resp = self.llm_client.chat(
                 model=self.model,
                 messages=messages,
                 options={"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": DEFAULT_NUM_CTX}
@@ -214,7 +215,7 @@ class HybridRAGCAGEngine:
             messages.append({"role": "user", "content": query})
 
             t_gen_start = time.perf_counter()
-            resp = get_ollama_client().chat(
+            resp = self.llm_client.chat(
                 model=self.model,
                 messages=messages,
                 options={"temperature": 0.2, "top_p": 0.9, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX}
@@ -242,7 +243,7 @@ class HybridRAGCAGEngine:
             messages.append({"role": "user", "content": query})
 
             t_gen_start = time.perf_counter()
-            resp = get_ollama_client().chat(
+            resp = self.llm_client.chat(
                 model=self.model,
                 messages=messages,
                 options={"temperature": 0.3, "num_ctx": DEFAULT_NUM_CTX}

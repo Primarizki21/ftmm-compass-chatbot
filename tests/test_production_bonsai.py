@@ -120,6 +120,7 @@ def test_bonsai_failover_to_ollama():
         backend="bonsai",
         bonsai_host="http://offline-bonsai:8080",
         fallback_model="qwen2.5:3b",
+        enable_fallback=True,
     )
 
     # Mock Ollama fallback response

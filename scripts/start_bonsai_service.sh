@@ -2,11 +2,11 @@
 set -euo pipefail
 
 # Configuration
-PORT="${PORT:-8080}"
+PORT="${BONSAI_PORT:-8080}"
 HOST="${HOST:-0.0.0.0}"
 MODEL_PATH="${MODEL_PATH:-/home/primarizki/project/Bonsai-demo/models/bonsai2-gguf/4B/Ternary-Bonsai-2-4B-PQ2_0.gguf}"
 LLAMA_SERVER_BIN="${LLAMA_SERVER_BIN:-/home/primarizki/project/Bonsai-demo/bin/cuda/llama-server}"
-CTX_SIZE="${CTX_SIZE:-2048}"
+CTX_SIZE="${CTX_SIZE:-4096}"
 N_GPU_LAYERS="${N_GPU_LAYERS:-99}"
 
 # CUDA runtime libraries
@@ -36,4 +36,7 @@ exec "$LLAMA_SERVER_BIN" \
     --host "$HOST" \
     --port "$PORT" \
     -c "$CTX_SIZE" \
-    -ngl "$N_GPU_LAYERS"
+    -ngl "$N_GPU_LAYERS" \
+    -np 1 \
+    --cache-ram 0 \
+    --no-cache-prompt

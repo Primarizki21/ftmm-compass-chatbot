@@ -5,18 +5,18 @@ Seluruh basis pengetahuan (SOP, regulasi akademik, profil prodi) dimuat ke conte
 Proses inferensi tanpa retrieval step sama sekali (0 ms retrieval latency).
 """
 
+import os
 import time
 from typing import Any
-import ollama
 from src.knowledge.cag_store import get_cag_system_prompt
-from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
+from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_llm_client, LLMClientAdapter
 
-DEFAULT_MODEL = "qwen2.5:3b"
-
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
 
 class PureCAGEngine:
-    def __init__(self, model: str = DEFAULT_MODEL):
+    def __init__(self, model: str = DEFAULT_MODEL, llm_client: LLMClientAdapter | None = None):
         self.model = model
+        self.llm_client = llm_client or get_llm_client()
         self.system_prompt = get_cag_system_prompt(
             custom_instructions="Jawablah pertanyaan mahasiswa secara langsung dan lugas berbasis pengetahuan resmi yang telah dihafal di atas. Jangan berhalusinasi. Perhatikan secara teliti perbedaan antara batas SKS semester (Pasal 5.4) dan syarat kumulatif kelulusan/kegiatan (contoh: PKL minimal 80 SKS kumulatif, Proposal Skripsi minimal 108 SKS)."
         )
@@ -40,10 +40,10 @@ class PureCAGEngine:
 
         # 3. Generation Step
         t_gen_start = time.perf_counter()
-        resp = get_ollama_client().chat(
+        resp = self.llm_client.chat(
             model=self.model,
             messages=messages,
-            options={"temperature": 0.2, "top_p": 0.9, "num_ctx": DEFAULT_NUM_CTX}
+            options={"temperature": 0.2, "top_p": 0.9, "num_predict": 256, "num_ctx": DEFAULT_NUM_CTX}
         )
         generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
         total_latency_ms = (time.perf_counter() - t0) * 1000.0

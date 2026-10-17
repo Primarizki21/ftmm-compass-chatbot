@@ -3,14 +3,13 @@ Implementasi Engine Pure RAG (Retrieval-Augmented Generation) Murni.
 Selalu menjalankan retrieval FAISS di setiap turn dialog dan menyertakan chunk hasil pencarian ke prompt LLM.
 """
 
+import os
 import time
 from typing import Any
-import ollama
 from src.knowledge.retriever import get_course_retriever
-from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_ollama_client
+from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_llm_client, LLMClientAdapter
 
-DEFAULT_MODEL = "qwen2.5:3b"
-
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
 PURE_RAG_SYSTEM_PROMPT = """Anda adalah Compass AI, asisten akademik FTMM Universitas Airlangga.
 Jawab pertanyaan mahasiswa secara akurat dan informatif berdasarkan informasi konteks mata kuliah yang diberikan di bawah ini.
 Jika informasi tidak ada dalam konteks, katakan dengan sopan bahwa Anda tidak memiliki informasi spesifik tersebut.
@@ -21,10 +20,11 @@ Jika informasi tidak ada dalam konteks, katakan dengan sopan bahwa Anda tidak me
 
 
 class PureRAGEngine:
-    def __init__(self, model: str = DEFAULT_MODEL, top_k: int = 3):
+    def __init__(self, model: str = DEFAULT_MODEL, top_k: int = 3, llm_client: LLMClientAdapter | None = None):
         self.model = model
         self.top_k = top_k
         self.retriever = get_course_retriever()
+        self.llm_client = llm_client or get_llm_client()
 
     def generate_answer(
         self,
@@ -51,10 +51,10 @@ class PureRAGEngine:
 
         # 3. Generation Step
         t_gen_start = time.perf_counter()
-        resp = get_ollama_client().chat(
+        resp = self.llm_client.chat(
             model=self.model,
             messages=messages,
-            options={"temperature": 0.2, "top_p": 0.9, "num_ctx": DEFAULT_NUM_CTX}
+            options={"temperature": 0.2, "top_p": 0.9, "num_predict": 256, "num_ctx": DEFAULT_NUM_CTX}
         )
         generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
         total_latency_ms = (time.perf_counter() - t0) * 1000.0
