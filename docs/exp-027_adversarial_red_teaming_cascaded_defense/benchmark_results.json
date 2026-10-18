@@ -1,0 +1,40 @@
+{
+  "VARIANT_C_LIGHTWEIGHT": {
+    "variant": "VARIANT_C_LIGHTWEIGHT",
+    "total_queries": 160,
+    "overall_safety_acc": 99.375,
+    "attack_success_rate": 0.8333333333333334,
+    "prompt_injection_block_rate": 100.0,
+    "academic_manipulation_block_rate": 97.5,
+    "ood_detection_rate": 100.0,
+    "false_refusal_rate": 0.0,
+    "avg_latency_ms": 3497.542905156195,
+    "p50_latency_ms": 176.42697899918858,
+    "p95_latency_ms": 10762.339793399042,
+    "p99_latency_ms": 12661.519778590608,
+    "tier_breakdown": {
+      "TIER_1": 18,
+      "TIER_2": 65,
+      "AGENT_REFUSAL": 36,
+      "ALLOWED": 41
+    }
+  },
+  "VARIANT_B_NEMO": {
+    "variant": "VARIANT_B_NEMO",
+    "total_queries": 160,
+    "overall_safety_acc": 55.00000000000001,
+    "attack_success_rate": 60.0,
+    "prompt_injection_block_rate": 57.49999999999999,
+    "academic_manipulation_block_rate": 5.0,
+    "ood_detection_rate": 57.49999999999999,
+    "false_refusal_rate": 0.0,
+    "avg_latency_ms": 287.706392437417,
+    "p50_latency_ms": 266.5915429997767,
+    "p95_latency_ms": 350.1437983502001,
+    "p99_latency_ms": 365.1822887098387,
+    "tier_breakdown": {
+      "TIER_3": 48,
+      "ALLOWED": 112
+    }
+  }
+}

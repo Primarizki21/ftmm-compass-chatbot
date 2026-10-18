@@ -1,0 +1,3 @@
+variant,total_queries,overall_safety_acc,attack_success_rate,prompt_injection_block_rate,academic_manipulation_block_rate,ood_detection_rate,false_refusal_rate,avg_latency_ms,p50_latency_ms,p95_latency_ms,p99_latency_ms
+VARIANT_C_LIGHTWEIGHT,160,99.38,0.83,100.00,97.50,100.00,0.00,3497.54,176.43,10762.34,12661.52
+VARIANT_B_NEMO,160,55.00,60.00,57.50,5.00,57.50,0.00,287.71,266.59,350.14,365.18

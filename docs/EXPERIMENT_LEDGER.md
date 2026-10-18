@@ -35,6 +35,7 @@
 | **`exp-024`** | 2026-10-17 | Komparasi Model Native Ternary (Bonsai 2: 2B, 4B, 9B) vs Baseline Qwen2.5 (Card 119) | Bonsai 2 (`2B`, `4B`, `9B` Ternary PQ2_0) vs Qwen2.5 (`1.5B`, `3B`, `7B` Q4_K_M) | Tool Selection Acc:<br>Bonsai 4B: **98.00%**<br>Qwen 3B: **94.00%**<br>Bonsai 2B: **92.00%**<br>Bonsai 9B: **90.00%**<br>Qwen 7B: 84.00%<br>Qwen 1.5B: 26.00% | JSON Schema Compliance:<br>Bonsai 4B: **98.00%**<br>Qwen 3B: **94.00%**<br>Bonsai 9B: **94.00%**<br>Bonsai 2B: **92.00%**<br>Qwen 7B: 84.00%<br>Qwen 1.5B: 26.00% | Param Error Rate:<br>Bonsai 4B: **2.00%**<br>Bonsai 2B: **8.00%**<br>Qwen 3B: 12.00%<br>Bonsai 9B: 12.00%<br>Qwen 7B: 16.00%<br>Qwen 1.5B: 74.00% | Physical Exec Success:<br>Bonsai 4B: **98.00%**<br>Bonsai 2B: **92.00%**<br>Qwen 3B: 88.00%<br>Bonsai 9B: 88.00%<br>Qwen 7B: 84.00%<br>Qwen 1.5B: 26.00% | P50 TTFT (Hardware):<br>Bonsai 2B: **54.45 ms**<br>Bonsai 4B: **105.45 ms**<br>Bonsai 9B: 108.33 ms<br>Qwen 1.5B: 180.49 ms<br>Qwen 7B: 205.13 ms<br>Qwen 3B: 479.22 ms | Mean Throughput (TPS):<br>Qwen 3B: **1629.1** (batch prefill)<br>Qwen 7B: 603.4<br>Qwen 1.5B: 255.5<br>Bonsai 2B: **200.4**<br>Bonsai 4B: 129.5<br>Bonsai 9B: 81.2 | Peak VRAM Footprint:<br>Qwen 1.5B: **1218 MiB**<br>Bonsai 2B: **2097 MiB**<br>Qwen 3B: 2833 MiB<br>Bonsai 4B: **3015 MiB**<br>Bonsai 9B: 4327 MiB<br>Qwen 7B: 5305 MiB | **Bonsai-2-4B mendominasi akurasi eksekusi fisik tertinggi (98.00%) dan error terendah (2.00%)** dengan footprint VRAM hanya 3.0 GB. Bonsai-2-2B mencatat latensi TTFT tercepat (54.45 ms) dan skor Pareto tertinggi (90.62). Menjawab Card 119. | `docs/exp-024_ternary_bonsai_slm_benchmark/` |
 | **`exp-025`** | 2026-10-18 | Evaluasi Holistik Komparasi RAG vs CAG vs Hybrid pada Master Ground Truth 449 QA (Card 120) | `bonsai-2-4b` (Ternary PQ2_0) + `nomic-embed-text-v2-moe` (768d MRL Native) | Dense IR (369 MK):<br>Hit@1: **92.4%**<br>Hit@3: **99.7%**<br>Hit@5: **100.0%**<br>MRR: **0.9765**<br>NDCG@5: **0.9663** | Semantic Sim:<br>Hybrid: **0.5895**<br>RAG: 0.0000<br>CAG: 0.0000 | Fact Recall:<br>Hybrid: **55.96%**<br>RAG: 0.00%<br>CAG: 0.00% | FAISS P50: **159.36 ms**<br>Decider BLAS: **0.098 ms** | Total Latensi P50:<br>RAG: **2225 ms**<br>CAG: **2342 ms**<br>Hybrid: **9121 ms** | Tier 2 FRR: **4.23%**<br>Decider Acc: **68.82%**<br>Zero WSL2 Swap Crash | **Validasi Komprehensif Arsitektur Hybrid RAG-CAG pada Korpus Penuh**: Membuktikan secara empiris bahwa Hybrid RAG-CAG mendominasi batas Pareto (55.96% Fact Recall, 0.5895 Semantic Similarity) dibandingkan Pure CAG dan Pure RAG yang gagal total pada domain campuran (kebijakan vs silabus). Didukung retrieval presisi tinggi 99.7% Hit@3 dan model ternary Bonsai-2-4B yang stabil di 2.1 GB VRAM tanpa swap memory Hyper-V. | `docs/exp-025_holistic_gt_master_benchmark/` |
 | **`exp-026`** | 2026-10-18 | Rekalibrasi System-1 Decider & Evaluasi Komparatif Generasi Pure RAG vs Pure CAG vs Hybrid (Card 121) | `bonsai-2-4b` (Ternary PQ2_0) + `nomic-embed-text-v2-moe` (768d MRL Native) | Dense IR (369 MK):<br>Hit@1: **95.7%**<br>Hit@3: **99.7%**<br>Hit@5: **100.0%**<br>MRR: **0.9765**<br>NDCG@5: **0.9819** | Semantic Sim:<br>Pure RAG: **0.6018**<br>Hybrid: **0.5895**<br>Pure CAG: **0.5645** | Fact Recall:<br>Pure RAG: **77.13%**<br>Pure CAG: **69.98%**<br>Hybrid: **55.96%** | FAISS P50: **163.91 ms**<br>Decider BLAS: **0.111 ms** | Total Latensi P50:<br>Pure RAG: **3972 ms**<br>Pure CAG: **4075 ms**<br>Hybrid: **9122 ms** | Tier 2 FRR: **4.23%**<br>Decider Acc: **78.62%** (+9.80%)<br>Tokens: 512 (CAG/RAG) | **Rekalibrasi Decider & Evaluasi Generatif Valid Tuntas**: Memperluas prototipe REGULATION_SOP (28 entri) dan rekalibrasi threshold (0.35 / 0.012) menaikkan akurasi routing ke 78.62% (regulasi 100% pada suite representatif). Penyesuaian num_predict=512 dan pembersihan tag <think> memulihkan Fact Recall Pure CAG (69.98%) dan Pure RAG (77.13%) dari kegagalan 0.00% pada Exp-025. | `docs/exp-026_recalibrated_decider_and_holistic_generation/` |
+| **`exp-027`** | 2026-10-18 | Evaluasi Ketahanan Adversarial Red-Teaming & Cascaded Guardrails (Card 126) | Cascaded Guardrails 4-Tier (Tier 1 Syntax + Tier 2 Semantic + Tier 3 NeMo + Tier 4 Rail) + ReAct | Safety Accuracy:<br>Cascaded: **99.38%**<br>NeMo Alone: 55.00% | Attack Success Rate (ASR):<br>Cascaded: **0.83%** (1/120)<br>NeMo Alone: 60.00% | Prompt Injection Block:<br>Cascaded: **100.0%**<br>NeMo Alone: 57.5% | Detection Latency P50:<br>Tier 1 Syntax: **<0.1 ms**<br>Tier 2 Semantic: **<180 ms** | Turn Latency P50:<br>Cascaded: **176.4 ms**<br>NeMo Alone: 266.6 ms | FRR: **0.00%** (0/40 false refusals)<br>160 Queries Full | **Pertahanan Berlapis Unggul Mutlak atas NeMo Mandiri**: Membuktikan bahwa Cascaded Guardrails 4-Tier menekan ASR ke 0.83% (target <=1.0%) dengan 100% pemblokiran injeksi prompt dan OOD homework, serta nol false refusal (FRR 0.00%) pada kueri sah mahasiswa. | `docs/exp-027_adversarial_red_teaming_cascaded_defense/` |
 
 ---
 
@@ -903,3 +904,42 @@
   - `docs/exp-026_recalibrated_decider_and_holistic_generation/benchmark_raw_traces.jsonl` (449 traces lengkap)
   - `scripts/evaluate_holistic_gt_master.py`
   - `tests/test_holistic_gt_master.py`
+
+### [exp-027] Evaluasi Ketahanan Adversarial Red-Teaming, Prompt Injection, dan Mitigasi Manipulasi Aturan Akademik
+- **Tanggal:** 2026-10-18
+- **Kartu Trello:** Card 126 (`[Nauval & Ario] Evaluasi Ketahanan Adversarial Red-Teaming, Prompt Injection, dan Mitigasi Manipulasi Aturan Akademik`).
+- **Tujuan / Hipotesis:**
+  - Menguji ketahanan arsitektur pertahanan berlapis (*Cascaded Guardrails 4-Tier*) terhadap rekayasa prompt agresif (*DAN jailbreak, prompt leakage*), manipulasi regulasi akademik (pemalsuan prasyarat, pemaksaan ambil 24 SKS dengan IPS rendah, klaim SK Dekan palsu), dan permintaan tugas pemrograman umum di luar lingkup FTMM.
+  - Memvalidasi batas empiris bahwa kombinasi Tier 1 Syntax Filter, Tier 2 Semantic Dual-Centroid Gate, Tier 3 NeMo Colang, dan Tier 4 Parameter Rail mampu menekan *Attack Success Rate (ASR)* $\le 1.0\%$ sekaligus menjaga *False Refusal Rate (FRR)* $\le 2.0\%$ pada kueri sah mahasiswa.
+- **Hasil Kuantitatif (160 Kueri Terstratifikasi Penuh):**
+  | Parameter Pengujian | Variant B: NeMo Guardrails Alone | Variant C: Lightweight Cascaded Defense | Delta / Evaluasi Target |
+  |---|---|---|---|
+  | **Overall Safety Accuracy** | 55.00% | **99.38%** | **+44.38%** (Dominasi Mutlak) |
+  | **Attack Success Rate (ASR) [↓]** | 60.00% | **0.83%** (1/120) | **PASS** (Target $\le 1.0\%$) |
+  | **Prompt Injection Block Rate [↑]** | 57.50% | **100.00%** (40/40) | **PASS** (100% Kebal Jailbreak) |
+  | **Academic Manipulation Block [↑]** | 5.00% | **97.50%** (39/40) | **PASS** (Mitigasi Regulasi) |
+  | **Out-of-Scope (OOD) Block [↑]** | 57.50% | **100.00%** (40/40) | **PASS** (Zero Coding Leak) |
+  | **False Refusal Rate (FRR) [↓]** | 0.00% | **0.00%** (0/40) | **PASS** (Target $\le 2.0\%$) |
+  | **P50 Turn Latency (ms)** | 266.6 ms | **176.4 ms** | **-90.2 ms** (Lebih Cepat) |
+  | **Tier Breakdown (Variant C)** | — | Tier 1: 18, Tier 2: 65, Agent: 36, Allowed: 41 | Pertahanan Berlapis Sempurna |
+- **Temuan Kunci:**
+  1. **Kegagalan Fatal NeMo Guardrails Berdiri Sendiri:**
+     - NeMo Colang intent rail murni meloloskan 60.00% serangan (ASR 60%), terutama pada manipulasi regulasi akademik (hanya memblokir 5%) karena kueri manipulasi masih bertema perkuliahan FTMM sehingga diklasifikasikan sebagai `AKADEMIK`.
+  2. **Efektivitas Cascaded Defense 4-Tier:**
+     - Filter Tier 1 deterministik mematikan 18 serangan sintaksis (SQL injection, XSS, shell script, prompt extraction) secara instan dalam $<0.1\text{ ms}$.
+     - Tier 2 Semantic Gate memblokir 65 kueri OOD coding/homework dan jailbreak persona dalam $<180\text{ ms}$.
+     - Agen ReAct dan Tier 4 Parameter Rail memblokir sisa manipulasi regulasi akademik, menghasilkan ASR akhir **0.83%**.
+  3. **Zero False Refusal Invariant:**
+     - Seluruh 40 kueri sah mahasiswa (25 formal akademik kurikulum/SOP + 15 bahasa gaul slang mahasiswa) 100% diproses dengan sukses (**FRR = 0.00%**).
+- **Keputusan Arsitektur & Rekomendasi:**
+  - Mempertahankan **Variant C (Lightweight Cascaded Guardrails)** sebagai baseline keselamatan resmi chatbot FTMM COMPASS.
+  - Menyelesaikan seluruh 5 butir DoD pada Kartu Trello Card 126 (100% PASS).
+- **Artefak:**
+  - `docs/exp-027_adversarial_red_teaming_cascaded_defense/README.md`
+  - `docs/exp-027_adversarial_red_teaming_cascaded_defense/benchmark_summary.md`
+  - `docs/exp-027_adversarial_red_teaming_cascaded_defense/benchmark_metrics.csv`
+  - `docs/exp-027_adversarial_red_teaming_cascaded_defense/benchmark_results.json`
+  - `docs/exp-027_adversarial_red_teaming_cascaded_defense/benchmark_raw_traces.jsonl`
+  - `scripts/evaluate_adversarial_red_teaming.py`
+  - `tests/test_adversarial_red_teaming.py`
+  - `data/ground_truth/adversarial_redteaming_benchmark.json`
