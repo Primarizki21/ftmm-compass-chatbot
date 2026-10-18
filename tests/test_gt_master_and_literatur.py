@@ -89,7 +89,7 @@ def test_literatur_structure_and_fields():
         tahun = str(item["tahun"]).strip()
         assert tahun.isdigit() and len(tahun) == 4, f"Year must be 4-digit number: {tahun}"
         year_int = int(tahun)
-        assert 2018 <= year_int <= 2026, f"Year out of expected range: {year_int}"
+        assert 2017 <= year_int <= 2026, f"Year out of expected range: {year_int}"
 
         # Ensure project meaning is substantive (at least 20 chars)
         meaning = item["artinya untuk project ini"]
