@@ -7,7 +7,7 @@ import os
 import time
 from typing import Any
 from src.knowledge.retriever import get_course_retriever
-from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_llm_client, LLMClientAdapter
+from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_llm_client, LLMClientAdapter, clean_thinking_content
 
 DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
 PURE_RAG_SYSTEM_PROMPT = """Anda adalah Compass AI, asisten akademik FTMM Universitas Airlangga.
@@ -54,12 +54,13 @@ class PureRAGEngine:
         resp = self.llm_client.chat(
             model=self.model,
             messages=messages,
-            options={"temperature": 0.2, "top_p": 0.9, "num_predict": 256, "num_ctx": DEFAULT_NUM_CTX}
+            options={"temperature": 0.2, "top_p": 0.9, "num_predict": 512, "num_ctx": DEFAULT_NUM_CTX}
         )
         generation_latency_ms = (time.perf_counter() - t_gen_start) * 1000.0
         total_latency_ms = (time.perf_counter() - t0) * 1000.0
 
-        answer = resp.message.content.strip()
+        raw_answer = resp.message.content.strip()
+        answer = clean_thinking_content(raw_answer)
         tokens_eval = resp.get("eval_count", 0)
 
         return EngineResult(

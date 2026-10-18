@@ -407,7 +407,7 @@ class LLMClientAdapter:
         temperature = 0.1
         top_p = 0.9
         if options:
-            num_predict = max(options.get("num_predict", 1024), 1024)
+            num_predict = options.get("num_predict", 1024)
             temperature = options.get("temperature", 0.1)
             top_p = options.get("top_p", 0.9)
 
@@ -433,7 +433,11 @@ class LLMClientAdapter:
         raw_tool_calls = msg_dict.get("tool_calls")
         reasoning = msg_dict.get("reasoning_content", "") or ""
         if not content and reasoning and not raw_tool_calls:
-            content = reasoning.strip().split("\n\n")[-1].strip()
+            ans_marker = re.search(r"(?:Draft|Jawaban|Final Answer|Summary):\s*([\s\S]+)$", reasoning, re.IGNORECASE)
+            if ans_marker:
+                content = ans_marker.group(1).strip()
+            else:
+                content = reasoning.strip()
         parsed_tool_calls = self._parse_tool_calls(
             content=content,
             raw_tool_calls=raw_tool_calls,
@@ -537,6 +541,16 @@ def get_llm_client(backend: str | None = None, force_new: bool = False) -> LLMCl
     if _LLM_CLIENT_INSTANCE is None or force_new or (_LLM_CLIENT_INSTANCE.backend != effective_backend):
         _LLM_CLIENT_INSTANCE = LLMClientAdapter(backend=effective_backend)
     return _LLM_CLIENT_INSTANCE
+
+def clean_thinking_content(text: str) -> str:
+    """Ekstraksi dan pembersihan tag <think>...</think> serta unclosed <think>.* jika token terpotong."""
+    if not text:
+        return ""
+    cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
+    cleaned = re.sub(r"<think>.*$", "", cleaned, flags=re.DOTALL).strip()
+    if not cleaned and "<think>" in text:
+        cleaned = re.sub(r"</?think>", "", text, flags=re.IGNORECASE).strip()
+    return cleaned
 
 @dataclass
 class EngineResult:
