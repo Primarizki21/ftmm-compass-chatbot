@@ -557,13 +557,32 @@ async def handle_chat_stream(request: ChatRequest) -> StreamingResponse:
         if not request.history:
             engine.memory.clear_session(session_id)
 
-        result = await asyncio.to_thread(
-            engine.generate_answer,
-            query=msg,
-            history=history,
-            student_profile=profile.model_dump(),
-            session_id=session_id,
-        )
+        try:
+            result = await asyncio.to_thread(
+                engine.generate_answer,
+                query=msg,
+                history=history,
+                student_profile=profile.model_dump(),
+                session_id=session_id,
+            )
+        except ConnectionError as exc:
+            err_payload = {
+                "error": {
+                    "code": "upstream_service_unavailable",
+                    "message": f"Koneksi ke server AI lokal (Bonsai / Ollama) gagal: {exc}",
+                }
+            }
+            yield f"data: {json.dumps(err_payload, ensure_ascii=False)}\n\n"
+            return
+        except Exception as exc:
+            err_payload = {
+                "error": {
+                    "code": "internal_server_error",
+                    "message": f"Terjadi kesalahan pemrosesan streaming: {exc}",
+                }
+            }
+            yield f"data: {json.dumps(err_payload, ensure_ascii=False)}\n\n"
+            return
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
         updated_prof_data = result.metadata.get("updated_profile", {})

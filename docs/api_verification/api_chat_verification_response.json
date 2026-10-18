@@ -1,0 +1,402 @@
+[
+  {
+    "step": "health",
+    "endpoint": "/api/v1/health",
+    "status": 200,
+    "response": {
+      "status": "degraded",
+      "service": "FTMM COMPASS Chatbot Backend",
+      "active_backend": "bonsai",
+      "bonsai_online": false,
+      "ollama_online": true,
+      "generator_model": "bonsai-2-4b",
+      "embedding_model": "nomic-embed-text-v2-moe",
+      "default_model": "bonsai-2-4b",
+      "bonsai": {
+        "online": false,
+        "host": "http://127.0.0.1:8080",
+        "default_model": "bonsai-2-4b"
+      },
+      "ollama": {
+        "online": true,
+        "host": "http://0.0.0.0:11434",
+        "default_model": "bonsai-2-4b"
+      }
+    }
+  },
+  {
+    "step": "health",
+    "endpoint": "/api/health",
+    "status": 200,
+    "response": {
+      "status": "degraded",
+      "service": "FTMM COMPASS Chatbot Backend",
+      "active_backend": "bonsai",
+      "bonsai_online": false,
+      "ollama_online": true,
+      "generator_model": "bonsai-2-4b",
+      "embedding_model": "nomic-embed-text-v2-moe",
+      "default_model": "bonsai-2-4b",
+      "bonsai": {
+        "online": false,
+        "host": "http://127.0.0.1:8080",
+        "default_model": "bonsai-2-4b"
+      },
+      "ollama": {
+        "online": true,
+        "host": "http://0.0.0.0:11434",
+        "default_model": "bonsai-2-4b"
+      }
+    }
+  },
+  {
+    "step": "catalog_flat",
+    "endpoint": "/api/v1/courses",
+    "status": 200,
+    "sample": [
+      {
+        "id": "MK-001",
+        "code": "AGI101",
+        "name": "Agama Islam I",
+        "credits": 2,
+        "semester": 1,
+        "type": "Wajib",
+        "parity": "odd",
+        "desc": "Mata kuliah Agama Islam I membahas tentang: a). \nKonsep Ketuhanan dalam Islam, b) Keimanan, \nKetakwaan dan Implementasinya dalam Kehidupan, c). \nHakikat Manusia Menurut Islam, d). Hukum, HAM dan \nDemokrasi dalam Islam, e). Hukum Islam dan \nKontribusi Umat Islam Indonesia, f). Etika, Moral dan \nAkhlak, g). IPTEK dalam Islam, h). Masyarakat \nMadani, i). Kerukunan Antar Umat Beragama, j). \nEkonomi \nIslam \ndan \nKesejahteraan \nUmat, \nk). \nKebudayaan dan Seni dalam Islam, serta l). Sistem \nPolitik Islam.",
+        "program": "Teknologi Sains Data",
+        "prerequisites": []
+      },
+      {
+        "id": "MK-002",
+        "code": "AGK101",
+        "name": "Agama Katolik I",
+        "credits": 2,
+        "semester": 1,
+        "type": "Wajib",
+        "parity": "odd",
+        "desc": "1. Tuhan Yang Maha Esa \n2. Manusia \n3. Etika Moral \n4. Dialog dan Kerukunan Umat Beragama \n5. IPTEKS dan Iman Katolik \n6. Budaya dan Iman Katolik \n7. Iman dan Sosial Politik \n8. Hukum, HAM dan Demokrasi",
+        "program": "Teknologi Sains Data",
+        "prerequisites": []
+      }
+    ]
+  },
+  {
+    "step": "catalog_flat",
+    "endpoint": "/api/courses",
+    "status": 200,
+    "sample": [
+      {
+        "id": "MK-001",
+        "code": "AGI101",
+        "name": "Agama Islam I",
+        "credits": 2,
+        "semester": 1,
+        "type": "Wajib",
+        "parity": "odd",
+        "desc": "Mata kuliah Agama Islam I membahas tentang: a). \nKonsep Ketuhanan dalam Islam, b) Keimanan, \nKetakwaan dan Implementasinya dalam Kehidupan, c). \nHakikat Manusia Menurut Islam, d). Hukum, HAM dan \nDemokrasi dalam Islam, e). Hukum Islam dan \nKontribusi Umat Islam Indonesia, f). Etika, Moral dan \nAkhlak, g). IPTEK dalam Islam, h). Masyarakat \nMadani, i). Kerukunan Antar Umat Beragama, j). \nEkonomi \nIslam \ndan \nKesejahteraan \nUmat, \nk). \nKebudayaan dan Seni dalam Islam, serta l). Sistem \nPolitik Islam.",
+        "program": "Teknologi Sains Data",
+        "prerequisites": []
+      },
+      {
+        "id": "MK-002",
+        "code": "AGK101",
+        "name": "Agama Katolik I",
+        "credits": 2,
+        "semester": 1,
+        "type": "Wajib",
+        "parity": "odd",
+        "desc": "1. Tuhan Yang Maha Esa \n2. Manusia \n3. Etika Moral \n4. Dialog dan Kerukunan Umat Beragama \n5. IPTEKS dan Iman Katolik \n6. Budaya dan Iman Katolik \n7. Iman dan Sosial Politik \n8. Hukum, HAM dan Demokrasi",
+        "program": "Teknologi Sains Data",
+        "prerequisites": []
+      }
+    ]
+  },
+  {
+    "step": "catalog_paginated",
+    "meta": {
+      "total": 369,
+      "page": 1,
+      "per_page": 10,
+      "total_pages": 37
+    },
+    "links": {
+      "self": "/api/v1/courses?per_page=10&page=1",
+      "next": "/api/v1/courses?per_page=10&page=2",
+      "prev": null,
+      "first": "/api/v1/courses?per_page=10&page=1",
+      "last": "/api/v1/courses?per_page=10&page=37"
+    }
+  },
+  {
+    "step": "chat_general",
+    "endpoint": "/api/v1/chat",
+    "request": {
+      "message": "Halo Compass AI, apa saja layanan yang kamu sediakan?",
+      "history": [],
+      "student_profile": {
+        "program_studi": "Teknologi Sains Data",
+        "semester_saat_ini": 2
+      },
+      "session_id": "session_verify_001"
+    },
+    "response": {
+      "reply": "Halo! Saya Compass AI, asisten akademik pintar FTMM Universitas Airlangga. Ada yang bisa saya bantu seputar kurikulum, SKS, atau prasyarat mata kuliah?",
+      "updated_profile": {
+        "program_studi": "Teknologi Sains Data",
+        "semester_saat_ini": 2,
+        "riwayat_matkul_lulus": [],
+        "minat_fokus": [],
+        "target_kelulusan_semester": 8,
+        "maks_sks_per_semester": 24,
+        "is_confirmed_by_user": false
+      },
+      "action_type": "GENERAL",
+      "plan_payload": null,
+      "routing_mode": "CAG",
+      "latency_ms": 0.6694779999634193
+    }
+  },
+  {
+    "step": "chat_general",
+    "endpoint": "/api/chat",
+    "request": {
+      "message": "Halo Compass AI, apa saja layanan yang kamu sediakan?",
+      "history": [],
+      "student_profile": {
+        "program_studi": "Teknologi Sains Data",
+        "semester_saat_ini": 2
+      },
+      "session_id": "session_verify_001"
+    },
+    "response": {
+      "reply": "Halo! Saya Compass AI, asisten akademik pintar FTMM Universitas Airlangga. Ada yang bisa saya bantu seputar kurikulum, SKS, atau prasyarat mata kuliah?",
+      "updated_profile": {
+        "program_studi": "Teknologi Sains Data",
+        "semester_saat_ini": 2,
+        "riwayat_matkul_lulus": [],
+        "minat_fokus": [],
+        "target_kelulusan_semester": 8,
+        "maks_sks_per_semester": 24,
+        "is_confirmed_by_user": false
+      },
+      "action_type": "GENERAL",
+      "plan_payload": null,
+      "routing_mode": "CAG",
+      "latency_ms": 0.3111999999418913
+    }
+  },
+  {
+    "step": "chat_plan_generation",
+    "request": {
+      "message": "Saya mahasiswa TSD semester 5, tolong buatkan rencana studi AI sampai semester 7",
+      "history": [
+        {
+          "role": "user",
+          "content": "Halo"
+        },
+        {
+          "role": "assistant",
+          "content": "Halo! Ada yang bisa dibantu?"
+        }
+      ],
+      "student_profile": {
+        "program_studi": "TSD",
+        "semester_saat_ini": 5
+      },
+      "session_id": "session_plan_002"
+    },
+    "response": {
+      "reply": "Rencana studi percepatan lulus 7 semester untuk peminatan Artificial Intelligence telah berhasil disusun.",
+      "updated_profile": {
+        "program_studi": "Teknologi Sains Data",
+        "semester_saat_ini": 5,
+        "riwayat_matkul_lulus": [
+          "Kalkulus I",
+          "Alpro I",
+          "Struktur Data"
+        ],
+        "minat_fokus": [
+          "Artificial Intelligence"
+        ],
+        "target_kelulusan_semester": 8,
+        "maks_sks_per_semester": 24,
+        "is_confirmed_by_user": false
+      },
+      "action_type": "PLAN_GENERATED",
+      "plan_payload": {
+        "action": "APPLY_DEGREE_PLAN",
+        "summary": {
+          "program_studi": "Teknologi Sains Data",
+          "current_semester": 5,
+          "target_semester": 7,
+          "total_credits": 144,
+          "focus_tracks": [
+            "Artificial Intelligence"
+          ],
+          "note": "Rencana studi rekomendasi AI berdasarkan kurikulum resmi dan prasyarat FTMM."
+        },
+        "plan": {
+          "6": [
+            {
+              "code": "TSD301",
+              "name": "Deep Learning",
+              "credits": 3,
+              "parity": "even"
+            },
+            {
+              "code": "TSD303",
+              "name": "Natural Language Processing",
+              "credits": 3,
+              "parity": "even"
+            },
+            {
+              "code": "TSD305",
+              "name": "Computer Vision",
+              "credits": 3,
+              "parity": "even"
+            }
+          ],
+          "7": [
+            {
+              "code": "TSD401",
+              "name": "Tugas Akhir / Skripsi",
+              "credits": 6,
+              "parity": "odd"
+            }
+          ]
+        }
+      },
+      "routing_mode": "HYBRID",
+      "latency_ms": 0.30341499996211496
+    }
+  },
+  {
+    "step": "chat_stream",
+    "endpoint": "/api/v1/chat/stream",
+    "token_chunks_count": 12,
+    "terminal_event": {
+      "token": "",
+      "done": true,
+      "reply": "Halo! Ini adalah demonstrasi respons streaming Server-Sent Events untuk live typing UI.",
+      "updated_profile": {
+        "program_studi": null,
+        "semester_saat_ini": null,
+        "riwayat_matkul_lulus": [],
+        "minat_fokus": [],
+        "target_kelulusan_semester": 8,
+        "maks_sks_per_semester": 24,
+        "is_confirmed_by_user": false
+      },
+      "action_type": "GENERAL",
+      "plan_payload": null,
+      "routing_mode": "DIRECT",
+      "latency_ms": 0.3415070000301057
+    }
+  },
+  {
+    "step": "chat_stream",
+    "endpoint": "/api/chat/stream",
+    "token_chunks_count": 12,
+    "terminal_event": {
+      "token": "",
+      "done": true,
+      "reply": "Halo! Ini adalah demonstrasi respons streaming Server-Sent Events untuk live typing UI.",
+      "updated_profile": {
+        "program_studi": null,
+        "semester_saat_ini": null,
+        "riwayat_matkul_lulus": [],
+        "minat_fokus": [],
+        "target_kelulusan_semester": 8,
+        "maks_sks_per_semester": 24,
+        "is_confirmed_by_user": false
+      },
+      "action_type": "GENERAL",
+      "plan_payload": null,
+      "routing_mode": "DIRECT",
+      "latency_ms": 0.39493599979323335
+    }
+  },
+  {
+    "step": "plan_validation",
+    "endpoint": "/api/v1/plans/validations",
+    "response": {
+      "is_valid": true,
+      "errors": [],
+      "warnings": [],
+      "total_sks_planned": 8,
+      "details_per_semester": {
+        "1": {
+          "total_sks": 4,
+          "course_count": 1,
+          "errors": []
+        },
+        "2": {
+          "total_sks": 4,
+          "course_count": 1,
+          "errors": []
+        }
+      }
+    }
+  },
+  {
+    "step": "plan_validation",
+    "endpoint": "/api/plan/validate",
+    "response": {
+      "is_valid": true,
+      "errors": [],
+      "warnings": [],
+      "total_sks_planned": 8,
+      "details_per_semester": {
+        "1": {
+          "total_sks": 4,
+          "course_count": 1,
+          "errors": []
+        },
+        "2": {
+          "total_sks": 4,
+          "course_count": 1,
+          "errors": []
+        }
+      }
+    }
+  },
+  {
+    "step": "error_422",
+    "response": {
+      "error": {
+        "code": "validation_error",
+        "message": "Request validation failed",
+        "details": [
+          {
+            "field": "body.plan",
+            "message": "Input should be a valid dictionary",
+            "code": "dict_type"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "step": "error_503",
+    "response": {
+      "error": {
+        "code": "upstream_service_unavailable",
+        "message": "Layanan Ollama tidak dapat dihubungi. Pastikan daemon Ollama aktif pada host port 11434.",
+        "details": [
+          {
+            "message": "Upstream timeout"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "step": "sse_error_frame",
+    "response": {
+      "error": {
+        "code": "upstream_service_unavailable",
+        "message": "Koneksi ke server AI lokal (Bonsai / Ollama) gagal: Daemon down"
+      }
+    }
+  }
+]
