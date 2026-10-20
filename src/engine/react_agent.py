@@ -9,6 +9,7 @@ from src.engine.base import (
     get_ollama_client,
     get_llm_client,
     LLMClientAdapter,
+    clean_thinking_content,
 )
 from src.engine.decider import System1Decider, DecisionResult
 from src.engine.tools import ACADEMIC_TOOL_DEFINITIONS, TOOL_REGISTRY
@@ -424,6 +425,7 @@ class ReActAgentEngine:
             if isinstance(p_data, dict) and p_data.get("plan"):
                 final_answer = format_degree_plan_response(p_data, language=detected_lang)
         total_latency_ms = (time.perf_counter() - t0) * 1000.0
+        final_answer = clean_thinking_content(final_answer)
 
         return EngineResult(
             answer=final_answer,

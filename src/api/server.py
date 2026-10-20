@@ -63,6 +63,10 @@ app.add_middleware(
 
 engine = UnifiedChatEngine()
 
+MAX_CONCURRENT_INFERENCE = int(os.getenv("MAX_CONCURRENT_INFERENCE", "1"))
+MAX_QUEUE_WAIT_SECONDS = float(os.getenv("MAX_QUEUE_WAIT_SECONDS", "10.0"))
+_inference_semaphore = asyncio.Semaphore(MAX_CONCURRENT_INFERENCE)
+
 
 def _get_ollama_base_url() -> str:
     host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").strip()
@@ -350,14 +354,38 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     if not request.history:
         engine.memory.clear_session(session_id)
 
-    # Eksekusi sinkron engine pada thread pool agar non-blocking
-    result = await asyncio.to_thread(
-        engine.generate_answer,
-        query=msg,
-        history=history,
-        student_profile=profile.model_dump(),
-        session_id=session_id,
-    )
+    acquired = False
+    try:
+        await asyncio.wait_for(_inference_semaphore.acquire(), timeout=MAX_QUEUE_WAIT_SECONDS)
+        acquired = True
+    except asyncio.TimeoutError:
+        return JSONResponse(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            headers={"Retry-After": "3"},
+            content={
+                "error": {
+                    "code": "inference_capacity_exceeded",
+                    "message": "Server sedang melayani antrean mahasiswa lain. Silakan coba sesaat lagi.",
+                    "details": {
+                        "active_slots": MAX_CONCURRENT_INFERENCE,
+                        "retry_after_seconds": 3,
+                    },
+                }
+            },
+        )
+
+    try:
+        # Eksekusi sinkron engine pada thread pool agar non-blocking
+        result = await asyncio.to_thread(
+            engine.generate_answer,
+            query=msg,
+            history=history,
+            student_profile=profile.model_dump(),
+            session_id=session_id,
+        )
+    finally:
+        if acquired:
+            _inference_semaphore.release()
     latency_ms = (time.perf_counter() - t0) * 1000.0
 
     # Sync updated profile dari metadata engine
@@ -557,14 +585,75 @@ async def handle_chat_stream(request: ChatRequest) -> StreamingResponse:
         if not request.history:
             engine.memory.clear_session(session_id)
 
+        acquired = False
         try:
-            result = await asyncio.to_thread(
-                engine.generate_answer,
+            await asyncio.wait_for(_inference_semaphore.acquire(), timeout=MAX_QUEUE_WAIT_SECONDS)
+            acquired = True
+        except asyncio.TimeoutError:
+            err_payload = {
+                "error": {
+                    "code": "inference_capacity_exceeded",
+                    "message": "Server sedang melayani antrean mahasiswa lain. Silakan coba sesaat lagi.",
+                    "details": {
+                        "active_slots": MAX_CONCURRENT_INFERENCE,
+                        "retry_after_seconds": 3,
+                    },
+                }
+            }
+            yield f"data: {json.dumps(err_payload, ensure_ascii=False)}\n\n"
+            return
+
+        try:
+            async for chunk in engine.stream_generate_answer(
                 query=msg,
                 history=history,
                 student_profile=profile.model_dump(),
                 session_id=session_id,
-            )
+            ):
+                if chunk.get("type") == "token":
+                    data_payload = json.dumps({"token": chunk["token"], "done": False}, ensure_ascii=False)
+                    yield f"data: {data_payload}\n\n"
+                elif chunk.get("type") == "done":
+                    action_type = chunk.get("action_type", "GENERAL")
+                    plan_raw = chunk.get("plan_payload")
+                    plan_payload: DegreePlanPayload | None = None
+                    if plan_raw and isinstance(plan_raw, dict) and "summary" in plan_raw and "plan" in plan_raw:
+                        try:
+                            summary_raw = plan_raw.get("summary", {})
+                            plan_payload = DegreePlanPayload(
+                                action="APPLY_DEGREE_PLAN",
+                                summary=DegreePlanSummary(
+                                    program_studi=summary_raw.get("program_studi", profile.program_studi or "Teknologi Sains Data"),
+                                    current_semester=summary_raw.get("current_semester", profile.semester_saat_ini or 1),
+                                    target_semester=summary_raw.get("target_semester", profile.target_kelulusan_semester),
+                                    total_credits=summary_raw.get("total_credits", 144),
+                                    focus_tracks=summary_raw.get("focus_tracks", profile.minat_fokus or ["Umum"]),
+                                    note=summary_raw.get("note", "Rencana studi rekomendasi AI berdasarkan kurikulum resmi dan prasyarat FTMM."),
+                                ),
+                                plan={int(k): v for k, v in plan_raw.get("plan", {}).items()},
+                            )
+                            action_type = "PLAN_GENERATED"
+                        except Exception:
+                            plan_payload = None
+
+                    updated_prof = chunk.get("updated_profile")
+                    if isinstance(updated_prof, dict) and updated_prof:
+                        for k, v in updated_prof.items():
+                            if hasattr(profile, k) and v is not None:
+                                setattr(profile, k, v)
+
+                    final_payload = {
+                        "token": "",
+                        "done": True,
+                        "reply": chunk.get("reply", ""),
+                        "updated_profile": profile.model_dump(),
+                        "action_type": action_type,
+                        "plan_payload": plan_payload.model_dump() if plan_payload else None,
+                        "routing_mode": chunk.get("routing_mode", "DIRECT"),
+                        "latency_ms": chunk.get("latency_ms", (time.perf_counter() - t0) * 1000.0),
+                        "ttft_ms": chunk.get("ttft_ms", 0.0),
+                    }
+                    yield f"data: {json.dumps(final_payload, ensure_ascii=False)}\n\n"
         except ConnectionError as exc:
             err_payload = {
                 "error": {
@@ -573,7 +662,6 @@ async def handle_chat_stream(request: ChatRequest) -> StreamingResponse:
                 }
             }
             yield f"data: {json.dumps(err_payload, ensure_ascii=False)}\n\n"
-            return
         except Exception as exc:
             err_payload = {
                 "error": {
@@ -582,63 +670,19 @@ async def handle_chat_stream(request: ChatRequest) -> StreamingResponse:
                 }
             }
             yield f"data: {json.dumps(err_payload, ensure_ascii=False)}\n\n"
-            return
-        latency_ms = (time.perf_counter() - t0) * 1000.0
+        finally:
+            if acquired:
+                _inference_semaphore.release()
 
-        updated_prof_data = result.metadata.get("updated_profile", {})
-        if updated_prof_data:
-            if updated_prof_data.get("program_studi"):
-                profile.program_studi = updated_prof_data["program_studi"]
-            if updated_prof_data.get("semester_saat_ini"):
-                profile.semester_saat_ini = updated_prof_data["semester_saat_ini"]
-            if updated_prof_data.get("minat_fokus"):
-                profile.minat_fokus = updated_prof_data["minat_fokus"]
-            if updated_prof_data.get("riwayat_matkul_lulus"):
-                profile.riwayat_matkul_lulus = updated_prof_data["riwayat_matkul_lulus"]
-
-        action_type = result.metadata.get("action_type", "GENERAL")
-        plan_raw = result.metadata.get("plan_payload")
-        plan_payload: DegreePlanPayload | None = None
-        if plan_raw and isinstance(plan_raw, dict) and "summary" in plan_raw and "plan" in plan_raw:
-            try:
-                summary_raw = plan_raw.get("summary", {})
-                plan_payload = DegreePlanPayload(
-                    action="APPLY_DEGREE_PLAN",
-                    summary=DegreePlanSummary(
-                        program_studi=summary_raw.get("program_studi", profile.program_studi or "Teknologi Sains Data"),
-                        current_semester=summary_raw.get("current_semester", profile.semester_saat_ini or 1),
-                        target_semester=summary_raw.get("target_semester", profile.target_kelulusan_semester),
-                        total_credits=summary_raw.get("total_credits", 144),
-                        focus_tracks=summary_raw.get("focus_tracks", profile.minat_fokus or ["Umum"]),
-                        note=summary_raw.get("note", "Rencana studi rekomendasi AI berdasarkan kurikulum resmi dan prasyarat FTMM."),
-                    ),
-                    plan={int(k): v for k, v in plan_raw.get("plan", {}).items()},
-                )
-                action_type = "PLAN_GENERATED"
-            except Exception:
-                plan_payload = None
-
-        words = result.answer.split(" ")
-        for i, word in enumerate(words):
-            token_chunk = word + (" " if i < len(words) - 1 else "")
-            data_payload = json.dumps({"token": token_chunk, "done": False}, ensure_ascii=False)
-            yield f"data: {data_payload}\n\n"
-            await asyncio.sleep(0.015)
-
-        final_payload = {
-            "token": "",
-            "done": True,
-            "reply": result.answer,
-            "updated_profile": profile.model_dump(),
-            "action_type": action_type,
-            "plan_payload": plan_payload.model_dump() if plan_payload else None,
-            "routing_mode": result.routing_mode,
-            "latency_ms": latency_ms,
-        }
-        yield f"data: {json.dumps(final_payload, ensure_ascii=False)}\n\n"
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
-
+    return StreamingResponse(
+        event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 # ============================================================================
 # Canonical Router: /api/v1 (RESTful Modern Standard)

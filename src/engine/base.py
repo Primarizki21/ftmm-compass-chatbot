@@ -8,7 +8,7 @@ import os
 import re
 import time
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, AsyncGenerator
 import httpx
 import ollama
 
@@ -531,6 +531,163 @@ class LLMClientAdapter:
             raw_response=resp if isinstance(resp, dict) else getattr(resp, "__dict__", {}),
         )
 
+    async def stream_chat(
+        self,
+        messages: list[Any],
+        model: str | None = None,
+        options: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[str, None]:
+        if self.backend == "bonsai":
+            try:
+                async for chunk in self._stream_chat_bonsai(messages=messages, model=model, options=options, **kwargs):
+                    yield chunk
+                return
+            except (httpx.ConnectError, httpx.ConnectTimeout, httpx.TimeoutException, httpx.HTTPStatusError, Exception) as e:
+                if not self.enable_fallback:
+                    logger.error("Bonsai server stream request failed: %s (Ollama failover disabled)", e)
+                    raise e
+                logger.warning("Bonsai stream failed: %s. Falling back to Ollama.", e)
+                async for chunk in self._stream_chat_ollama(messages=messages, model=self.fallback_model, options=options, **kwargs):
+                    yield chunk
+                return
+
+        async for chunk in self._stream_chat_ollama(messages=messages, model=model, options=options, **kwargs):
+            yield chunk
+
+    async def _stream_chat_bonsai(
+        self,
+        messages: list[Any],
+        model: str | None = None,
+        options: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[str, None]:
+        target_model = model or os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
+        clean_messages = self._normalize_messages(messages, for_openai=True)
+        num_predict = 1024
+        temperature = 0.1
+        top_p = 0.9
+        if options:
+            num_predict = options.get("num_predict", 1024)
+            temperature = options.get("temperature", 0.1)
+            top_p = options.get("top_p", 0.9)
+
+        payload = {
+            "model": target_model,
+            "messages": clean_messages,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_tokens": num_predict,
+            "stream": True,
+        }
+        url = f"{self.bonsai_host}/v1/chat/completions"
+        thought_filter = StreamingThoughtFilter()
+
+        async with httpx.AsyncClient(timeout=httpx.Timeout(self.timeout, connect=5.0)) as client:
+            async with client.stream("POST", url, json=payload) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line or not line.startswith("data:"):
+                        continue
+                    raw_data = line[5:].strip()
+                    if raw_data == "[DONE]":
+                        break
+                    try:
+                        chunk_json = json.loads(raw_data)
+                        delta = chunk_json.get("choices", [{}])[0].get("delta", {})
+                        token = delta.get("content") or ""
+                        if token:
+                            filtered = thought_filter.process(token)
+                            if filtered:
+                                yield filtered
+                    except Exception:
+                        continue
+        flushed = thought_filter.flush()
+        if flushed:
+            yield flushed
+
+    async def _stream_chat_ollama(
+        self,
+        messages: list[Any],
+        model: str | None = None,
+        options: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[str, None]:
+        target_model = model or os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
+        clean_messages = self._normalize_messages(messages, for_openai=False)
+        payload = {
+            "model": target_model,
+            "messages": clean_messages,
+            "stream": True,
+        }
+        if options:
+            payload["options"] = options
+        url = f"{self.ollama_host}/api/chat"
+        thought_filter = StreamingThoughtFilter()
+
+        async with httpx.AsyncClient(timeout=httpx.Timeout(self.timeout, connect=5.0)) as client:
+            async with client.stream("POST", url, json=payload) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line:
+                        continue
+                    try:
+                        chunk_json = json.loads(line)
+                        token = chunk_json.get("message", {}).get("content", "")
+                        if token:
+                            filtered = thought_filter.process(token)
+                            if filtered:
+                                yield filtered
+                        if chunk_json.get("done"):
+                            break
+                    except Exception:
+                        continue
+        flushed = thought_filter.flush()
+        if flushed:
+            yield flushed
+
+
+class StreamingThoughtFilter:
+    """Filter real-time token stream untuk mengeliminasi tag internal <think>...</think>."""
+
+    def __init__(self) -> None:
+        self.in_think = False
+        self.buffer = ""
+        self.header_checked = False
+
+    def process(self, token: str) -> str:
+        if not self.header_checked:
+            self.buffer += token
+            if "<think>" in self.buffer:
+                self.in_think = True
+                self.buffer = self.buffer.split("<think>", 1)[1]
+                self.header_checked = True
+            elif len(self.buffer) >= 8:
+                self.header_checked = True
+                out = self.buffer
+                self.buffer = ""
+                return out
+            else:
+                return ""
+
+        if self.in_think:
+            self.buffer += token
+            if "</think>" in self.buffer:
+                self.in_think = False
+                out = self.buffer.split("</think>", 1)[1].lstrip("\n ")
+                self.buffer = ""
+                return out
+            return ""
+
+        return token
+
+    def flush(self) -> str:
+        if self.in_think:
+            return ""
+        out = self.buffer
+        self.buffer = ""
+        return out
+
 
 _LLM_CLIENT_INSTANCE: LLMClientAdapter | None = None
 
@@ -548,8 +705,6 @@ def clean_thinking_content(text: str) -> str:
         return ""
     cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
     cleaned = re.sub(r"<think>.*$", "", cleaned, flags=re.DOTALL).strip()
-    if not cleaned and "<think>" in text:
-        cleaned = re.sub(r"</?think>", "", text, flags=re.IGNORECASE).strip()
     return cleaned
 
 @dataclass

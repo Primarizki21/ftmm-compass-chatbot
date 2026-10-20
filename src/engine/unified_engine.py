@@ -1,6 +1,7 @@
+import asyncio
 import os
 import time
-from typing import Any
+from typing import Any, AsyncGenerator
 import numpy as np
 import ollama
 
@@ -10,6 +11,7 @@ from src.engine.base import (
     get_ollama_client,
     get_llm_client,
     LLMClientAdapter,
+    clean_thinking_content,
 )
 from src.guardrails.tier1_filter import Tier1DeterministicFilter
 from src.guardrails.tier2_semantic_gate import Tier2SemanticGate
@@ -192,7 +194,7 @@ class UnifiedChatEngine:
             )
             gen_dt = (time.perf_counter() - t_gen_start) * 1000.0
             total_dt = (time.perf_counter() - t0) * 1000.0
-            final_reply = resp.message.content.strip()
+            final_reply = clean_thinking_content(resp.message.content.strip())
 
             self.memory.add_turn(session_id, q_raw, final_reply)
 
@@ -231,7 +233,7 @@ class UnifiedChatEngine:
             )
             gen_dt = (time.perf_counter() - t_gen_start) * 1000.0
             total_dt = (time.perf_counter() - t0) * 1000.0
-            final_reply = resp.message.content.strip()
+            final_reply = clean_thinking_content(resp.message.content.strip())
 
             self.memory.add_turn(session_id, q_raw, final_reply)
             _, updated_prof = self.memory.get_context_for_llm(session_id)
@@ -302,4 +304,268 @@ class UnifiedChatEngine:
                 {"original": t.original, "normalized": t.normalized, "rule_type": t.rule_type, "distance": t.distance}
                 for t in norm_res.traces
             ]
+        react_res.answer = clean_thinking_content(react_res.answer)
         return react_res
+
+    async def stream_generate_answer(
+        self,
+        query: str,
+        history: list[dict[str, str]] | None = None,
+        student_profile: dict[str, Any] | None = None,
+        session_id: str = "default_session",
+    ) -> AsyncGenerator[dict[str, Any], None]:
+        """
+        Real asynchronous token streaming pipeline untuk FTMM COMPASS.
+        Mengalirkan token secara live (TTFT sub-detik) dari LLM generator
+        sekaligus mempertahankan pertahanan Cascaded Defense 4-Tier & CSP planning.
+        """
+        t0 = time.perf_counter()
+        q_raw = query.strip()
+        first_token = True
+        ttft_ms = 0.0
+
+        # Step 1: Tier 1 Instant Regex Defense
+        t1_res = self.tier1_filter.check(q_raw)
+        if t1_res.blocked:
+            total_dt = (time.perf_counter() - t0) * 1000.0
+            yield {"type": "token", "token": TIER1_REFUSAL_MESSAGE, "done": False}
+            yield {
+                "type": "done",
+                "done": True,
+                "token": "",
+                "reply": TIER1_REFUSAL_MESSAGE,
+                "updated_profile": student_profile or {},
+                "action_type": "GENERAL",
+                "plan_payload": None,
+                "routing_mode": "GUARDED",
+                "latency_ms": total_dt,
+                "ttft_ms": total_dt,
+            }
+            return
+
+        # Step 1b: Upstream Academic Normalization
+        norm_res = self.normalizer.normalize(q_raw)
+        q_clean = norm_res.normalized_query
+
+        # Step 2: 1x Shared Embedding for Normalized Query Vector
+        q_vec, _ = await asyncio.to_thread(self._embed_once, q_clean)
+
+        # Step 3: Session State Sync & Multi-Turn Contextualization
+        session = self.memory.get_or_create_session(session_id)
+        if history and not session.messages:
+            for m in history:
+                session.messages.append(m)
+                if m.get("role") == "user":
+                    updates = self.memory.extract_profile_updates(m["content"])
+                    if "semester_saat_ini" in updates:
+                        session.last_discussed_semester = updates["semester_saat_ini"]
+                        session.student_profile["semester_saat_ini"] = updates["semester_saat_ini"]
+                    if "program_studi" in updates:
+                        session.student_profile["program_studi"] = updates["program_studi"]
+
+        if student_profile:
+            for k, v in student_profile.items():
+                if v is not None and v != [] and not session.student_profile.get(k):
+                    session.student_profile[k] = v
+            if student_profile.get("semester_saat_ini") and not session.last_discussed_semester:
+                session.last_discussed_semester = student_profile["semester_saat_ini"]
+
+        contextualized_q = self.memory.contextualize_query(
+            session_id, q_clean, query_vec=q_vec
+        )
+        if contextualized_q != q_clean:
+            q_vec, _ = await asyncio.to_thread(self._embed_once, contextualized_q)
+
+        # Step 4: Tier 2 Semantic Cosine Centroid Gating (OOD Detection)
+        t2_res = self.tier2_gate.check(contextualized_q, query_vec=q_vec)
+        if t2_res.is_ood:
+            total_dt = (time.perf_counter() - t0) * 1000.0
+            refusal_ans = (
+                TIER2_HOMEWORK_REFUSAL_MESSAGE
+                if getattr(t2_res, "category", "") == "OUT_OF_SCOPE_HOMEWORK"
+                else TIER2_REFUSAL_MESSAGE
+            )
+            yield {"type": "token", "token": refusal_ans, "done": False}
+            yield {
+                "type": "done",
+                "done": True,
+                "token": "",
+                "reply": refusal_ans,
+                "updated_profile": student_profile or {},
+                "action_type": "GENERAL",
+                "plan_payload": None,
+                "routing_mode": "GUARDED",
+                "latency_ms": total_dt,
+                "ttft_ms": total_dt,
+            }
+            return
+
+        # Step 5: Assemble Context & Profile
+        sliding_history, current_profile = self.memory.get_context_for_llm(session_id)
+        if history and len(sliding_history) < len(history):
+            sliding_history = history[-self.memory.max_window_turns * 2 :]
+
+        # Step 6: System-1 Decider Semantic Routing
+        dec_res = self.decider.decide(contextualized_q, query_vec=q_vec)
+        is_pure_chitchat = (
+            dec_res.category == DecisionCategory.CHAT_ONLY
+            and dec_res.confidence >= 0.50
+            and not (history or sliding_history)
+        )
+
+        # Case A: Pure Chitchat Direct Live Streaming
+        if is_pure_chitchat:
+            chitchat_prompt = (
+                "Anda adalah Compass AI, asisten akademik pintar Fakultas Teknologi Maju dan Multidisiplin (FTMM) "
+                "Universitas Airlangga. Berikan sapaan ramah, padat, dan tawarkan bantuan seputar kurikulum, SKS, "
+                "prasyarat matkul, atau perencanaan studi."
+            )
+            messages = [
+                {"role": "system", "content": chitchat_prompt},
+                {"role": "user", "content": q_raw},
+            ]
+            tokens = []
+            async for tok in self.llm_adapter.stream_chat(
+                messages=messages,
+                model=self.model,
+                options={"temperature": 0.3, "num_predict": 256, "num_ctx": DEFAULT_NUM_CTX},
+            ):
+                if first_token:
+                    ttft_ms = (time.perf_counter() - t0) * 1000.0
+                    first_token = False
+                tokens.append(tok)
+                yield {"type": "token", "token": tok, "done": False}
+
+            final_reply = clean_thinking_content("".join(tokens).strip())
+            self.memory.add_turn(session_id, q_raw, final_reply)
+            total_dt = (time.perf_counter() - t0) * 1000.0
+
+            yield {
+                "type": "done",
+                "done": True,
+                "token": "",
+                "reply": final_reply,
+                "updated_profile": student_profile or {},
+                "action_type": "GENERAL",
+                "plan_payload": None,
+                "routing_mode": "DIRECT",
+                "latency_ms": total_dt,
+                "ttft_ms": ttft_ms if ttft_ms > 0 else total_dt,
+            }
+            return
+
+        # Case B: Regulation & SOP FAQ (CAG Route - Live Streaming)
+        if dec_res.category == DecisionCategory.REGULATION_SOP:
+            cag_prompt = (
+                f"{get_cag_system_prompt()}\n\n"
+                "## PERAN SAAT INI (CAG REGULATION FAQ):\n"
+                "Jawab pertanyaan mahasiswa mengenai regulasi akademik atau SOP administrasi FTMM secara tepat, "
+                "padat, dan lugas sesuai basis pengetahuan resmi di atas. Jangan berhalusinasi. "
+                "Sebutkan angka SKS atau ketentuan SOP secara eksplisit (contoh: PKL minimal 80 SKS kumulatif)."
+            )
+            messages = [{"role": "system", "content": cag_prompt}]
+            if sliding_history:
+                messages.extend(sliding_history[-4:])
+            messages.append({"role": "user", "content": q_raw})
+
+            tokens = []
+            async for tok in self.llm_adapter.stream_chat(
+                messages=messages,
+                model=self.model,
+                options={"temperature": 0.0, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX},
+            ):
+                if first_token:
+                    ttft_ms = (time.perf_counter() - t0) * 1000.0
+                    first_token = False
+                tokens.append(tok)
+                yield {"type": "token", "token": tok, "done": False}
+
+            final_reply = clean_thinking_content("".join(tokens).strip())
+            self.memory.add_turn(session_id, q_raw, final_reply)
+            _, updated_prof = self.memory.get_context_for_llm(session_id)
+            total_dt = (time.perf_counter() - t0) * 1000.0
+
+            yield {
+                "type": "done",
+                "done": True,
+                "token": "",
+                "reply": final_reply,
+                "updated_profile": updated_prof,
+                "action_type": "GENERAL",
+                "plan_payload": None,
+                "routing_mode": "CAG",
+                "latency_ms": total_dt,
+                "ttft_ms": ttft_ms if ttft_ms > 0 else total_dt,
+            }
+            return
+
+        # Case C: ReAct Agent Engine (Physical tool execution & synthesized stream)
+        react_res = await asyncio.to_thread(
+            self.react_engine.generate_answer,
+            query=contextualized_q,
+            history=sliding_history,
+            student_profile=current_profile,
+            precomputed_decision=dec_res,
+        )
+
+        tools_executed = react_res.metadata.get("tools_executed", [])
+        tool_names = [t["tool"] for t in tools_executed]
+
+        if (
+            "get_courses_by_semester" in tool_names
+            or "search_courses" in tool_names
+        ) and "generate_degree_plan" not in tool_names:
+            routing_mode = "RAG"
+        elif (
+            dec_res.category == DecisionCategory.DEGREE_PLANNING
+            or "generate_degree_plan" in tool_names
+        ):
+            routing_mode = "HYBRID"
+        elif (
+            dec_res.category == DecisionCategory.REGULATION_SOP
+            or "calculate_sks_limit" in tool_names
+        ):
+            routing_mode = "CAG"
+        elif dec_res.category in (DecisionCategory.COURSE_DISCOVERY, DecisionCategory.PREREQUISITE):
+            routing_mode = "RAG"
+        elif not tools_executed:
+            routing_mode = "DIRECT"
+        else:
+            routing_mode = "REACT_AGENT"
+
+        self.memory.add_turn(
+            session_id,
+            q_raw,
+            react_res.answer,
+            query_vec=q_vec,
+            decider_category=dec_res.category.value,
+        )
+
+        _, updated_prof = self.memory.get_context_for_llm(session_id)
+
+        # Stream out synthesized text word-by-word
+        words = react_res.answer.split(" ")
+        for i, word in enumerate(words):
+            chunk = word + (" " if i < len(words) - 1 else "")
+            if first_token:
+                ttft_ms = (time.perf_counter() - t0) * 1000.0
+                first_token = False
+            yield {"type": "token", "token": chunk, "done": False}
+            await asyncio.sleep(0.01)
+
+        total_dt = (time.perf_counter() - t0) * 1000.0
+        action_type = react_res.metadata.get("action_type", "GENERAL")
+        plan_payload = react_res.metadata.get("plan_payload")
+
+        yield {
+            "type": "done",
+            "done": True,
+            "token": "",
+            "reply": react_res.answer,
+            "updated_profile": updated_prof,
+            "action_type": action_type,
+            "plan_payload": plan_payload,
+            "routing_mode": routing_mode,
+            "latency_ms": total_dt,
+            "ttft_ms": ttft_ms if ttft_ms > 0 else total_dt,
+        }

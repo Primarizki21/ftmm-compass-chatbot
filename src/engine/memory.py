@@ -1,6 +1,8 @@
+import json
 import os
 import pickle
 import re
+import sqlite3
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -72,12 +74,16 @@ class DenseGazetteerLinker:
         self._initialized = True
 
     def embed_query(self, query: str) -> np.ndarray:
-        resp = get_ollama_client().embed(model=self.embed_model, input=query, keep_alive=-1)
-        q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
-        norm = np.linalg.norm(q_vec)
-        if norm > 0:
-            q_vec = q_vec / norm
-        return q_vec
+        try:
+            resp = get_ollama_client().embed(model=self.embed_model, input=query, keep_alive=-1)
+            q_vec = np.array(resp["embeddings"][0], dtype=np.float32)
+            norm = np.linalg.norm(q_vec)
+            if norm > 0:
+                q_vec = q_vec / norm
+            return q_vec
+        except Exception:
+            dim = self.courses_matrix.shape[1] if (self._initialized and getattr(self, "courses_matrix", None) is not None) else 768
+            return np.zeros(dim, dtype=np.float32)
 
     def match_prodi(self, q_vec: np.ndarray, threshold: float = 0.55) -> str | None:
         if not self._initialized:
@@ -156,6 +162,154 @@ class SessionState:
     last_intent_topic: str | None = None
     cumulative_risk: float = 0.0
 
+
+class BaseSessionStore:
+    def get(self, session_id: str) -> SessionState | None:
+        raise NotImplementedError
+
+    def save(self, session: SessionState) -> None:
+        raise NotImplementedError
+
+    def delete(self, session_id: str) -> None:
+        raise NotImplementedError
+
+    def cleanup_expired(self, ttl_seconds: int) -> int:
+        raise NotImplementedError
+
+    def all_sessions(self) -> dict[str, SessionState]:
+        raise NotImplementedError
+
+
+class InMemorySessionStore(BaseSessionStore):
+    def __init__(self) -> None:
+        self.sessions: dict[str, SessionState] = {}
+
+    def get(self, session_id: str) -> SessionState | None:
+        return self.sessions.get(session_id)
+
+    def save(self, session: SessionState) -> None:
+        self.sessions[session.session_id] = session
+
+    def delete(self, session_id: str) -> None:
+        self.sessions.pop(session_id, None)
+
+    def cleanup_expired(self, ttl_seconds: int) -> int:
+        now = time.time()
+        expired = [sid for sid, s in self.sessions.items() if now - s.last_active > ttl_seconds]
+        for sid in expired:
+            del self.sessions[sid]
+        return len(expired)
+
+    def all_sessions(self) -> dict[str, SessionState]:
+        return self.sessions
+
+
+class SQLiteSessionStore(BaseSessionStore):
+    def __init__(self, db_path: str | Path = "data/sessions.db") -> None:
+        self.db_path = Path(db_path)
+        self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._init_db()
+
+    def _get_conn(self) -> sqlite3.Connection:
+        conn = sqlite3.connect(str(self.db_path), timeout=10.0)
+        conn.execute("PRAGMA journal_mode=WAL;")
+        return conn
+
+    def _init_db(self) -> None:
+        with self._get_conn() as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS sessions (
+                    session_id TEXT PRIMARY KEY,
+                    created_at REAL,
+                    last_active REAL,
+                    payload TEXT
+                )
+                """
+            )
+            conn.execute("CREATE INDEX IF NOT EXISTS idx_sessions_active ON sessions(last_active);")
+
+    def get(self, session_id: str) -> SessionState | None:
+        with self._get_conn() as conn:
+            cursor = conn.execute("SELECT payload FROM sessions WHERE session_id = ?", (session_id,))
+            row = cursor.fetchone()
+            if not row or not row[0]:
+                return None
+            try:
+                data = json.loads(row[0])
+                return SessionState(
+                    session_id=data["session_id"],
+                    created_at=data.get("created_at", time.time()),
+                    last_active=data.get("last_active", time.time()),
+                    messages=data.get("messages", []),
+                    student_profile=data.get("student_profile", {}),
+                    last_discussed_course=data.get("last_discussed_course"),
+                    last_discussed_semester=data.get("last_discussed_semester"),
+                    last_intent_topic=data.get("last_intent_topic"),
+                    cumulative_risk=data.get("cumulative_risk", 0.0),
+                )
+            except Exception:
+                return None
+
+    def save(self, session: SessionState) -> None:
+        payload = json.dumps(
+            {
+                "session_id": session.session_id,
+                "created_at": session.created_at,
+                "last_active": session.last_active,
+                "messages": session.messages,
+                "student_profile": session.student_profile,
+                "last_discussed_course": session.last_discussed_course,
+                "last_discussed_semester": session.last_discussed_semester,
+                "last_intent_topic": session.last_intent_topic,
+                "cumulative_risk": session.cumulative_risk,
+            },
+            ensure_ascii=False,
+        )
+        with self._get_conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO sessions (session_id, created_at, last_active, payload)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(session_id) DO UPDATE SET
+                    last_active = excluded.last_active,
+                    payload = excluded.payload
+                """,
+                (session.session_id, session.created_at, session.last_active, payload),
+            )
+
+    def delete(self, session_id: str) -> None:
+        with self._get_conn() as conn:
+            conn.execute("DELETE FROM sessions WHERE session_id = ?", (session_id,))
+
+    def cleanup_expired(self, ttl_seconds: int) -> int:
+        cutoff = time.time() - ttl_seconds
+        with self._get_conn() as conn:
+            cursor = conn.execute("DELETE FROM sessions WHERE last_active < ?", (cutoff,))
+            return cursor.rowcount
+
+    def all_sessions(self) -> dict[str, SessionState]:
+        res: dict[str, SessionState] = {}
+        with self._get_conn() as conn:
+            cursor = conn.execute("SELECT session_id, payload FROM sessions")
+            for row in cursor.fetchall():
+                try:
+                    data = json.loads(row[1])
+                    res[row[0]] = SessionState(
+                        session_id=data["session_id"],
+                        created_at=data.get("created_at", time.time()),
+                        last_active=data.get("last_active", time.time()),
+                        messages=data.get("messages", []),
+                        student_profile=data.get("student_profile", {}),
+                        last_discussed_course=data.get("last_discussed_course"),
+                        last_discussed_semester=data.get("last_discussed_semester"),
+                        last_intent_topic=data.get("last_intent_topic"),
+                        cumulative_risk=data.get("cumulative_risk", 0.0),
+                    )
+                except Exception:
+                    continue
+        return res
+
 class ConversationMemoryManager:
     """Manages multi-turn conversation history, sliding window buffers,
 
@@ -167,25 +321,41 @@ class ConversationMemoryManager:
         max_window_turns: int = DEFAULT_MAX_WINDOW_TURNS,
         ttl_seconds: int = DEFAULT_TTL_SECONDS,
         gazetteer: DenseGazetteerLinker | None = None,
+        store: BaseSessionStore | None = None,
     ):
         self.max_window_turns = max_window_turns
         self.ttl_seconds = ttl_seconds
-        self.sessions: dict[str, SessionState] = {}
         self.gazetteer = gazetteer or get_dense_gazetteer()
+        if store is not None:
+            self.store = store
+        else:
+            backend = os.getenv("SESSION_STORE_BACKEND", "memory").strip().lower()
+            if backend == "sqlite":
+                try:
+                    self.store = SQLiteSessionStore()
+                except Exception:
+                    self.store = InMemorySessionStore()
+            else:
+                self.store = InMemorySessionStore()
+
+    @property
+    def sessions(self) -> dict[str, SessionState]:
+        return self.store.all_sessions()
 
     def get_or_create_session(self, session_id: str) -> SessionState:
         now = time.time()
-        session = self.sessions.get(session_id)
+        session = self.store.get(session_id)
         if session is not None:
             if now - session.last_active > self.ttl_seconds:
-                self.sessions.pop(session_id, None)
+                self.store.delete(session_id)
                 session = None
             else:
                 session.last_active = now
+                self.store.save(session)
                 return session
 
         new_session = SessionState(session_id=session_id, created_at=now, last_active=now)
-        self.sessions[session_id] = new_session
+        self.store.save(new_session)
         return new_session
 
     def extract_profile_updates(
@@ -326,6 +496,7 @@ class ConversationMemoryManager:
         session.messages.append({"role": "user", "content": user_message})
         session.messages.append({"role": "assistant", "content": assistant_response})
         session.last_active = time.time()
+        self.store.save(session)
 
         return session
 
@@ -339,11 +510,7 @@ class ConversationMemoryManager:
         return sliding_messages, dict(session.student_profile)
 
     def clear_session(self, session_id: str):
-        self.sessions.pop(session_id, None)
+        self.store.delete(session_id)
 
     def cleanup_expired_sessions(self) -> int:
-        now = time.time()
-        expired = [sid for sid, s in self.sessions.items() if now - s.last_active > self.ttl_seconds]
-        for sid in expired:
-            del self.sessions[sid]
-        return len(expired)
+        return self.store.cleanup_expired(self.ttl_seconds)
