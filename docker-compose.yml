@@ -5,12 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: ftmm-compass-chatbot
     restart: unless-stopped
-    ports:
-      - "8000:8000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    networks:
-      - ftmm-network
+    network_mode: host
     env_file:
       - .env
     environment:
@@ -21,8 +16,8 @@ services:
       - OLLAMA_NUM_CTX=2048
       - LLM_BACKEND=bonsai
       - LLM_MODEL_NAME=bonsai-2-4b
-      - BONSAI_HOST=http://host.docker.internal:8080
-      - OLLAMA_HOST=http://host.docker.internal:11434
+      - BONSAI_HOST=http://127.0.0.1:8080
+      - OLLAMA_HOST=http://127.0.0.1:11434
       - SESSION_STORE_BACKEND=sqlite
       - SESSION_DB_PATH=/app/sessions/sessions.db
       - MAX_CONCURRENT_INFERENCE=1
@@ -49,9 +44,6 @@ services:
       retries: 3
       start_period: 15s
 
-networks:
-  ftmm-network:
-    external: true
 
 volumes:
   chatbot-sessions:

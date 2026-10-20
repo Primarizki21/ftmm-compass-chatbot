@@ -195,38 +195,36 @@ Pastikan respon menunjukkan status sehat:
    - Sistem akan secara otomatis mengarahkan seluruh inferensi ReAct generator ke Ollama tanpa membutuhkan `llama-server`.
 
 ---
-## Docker Deployment (Multi-Container & ftmm-network)
+## Docker Deployment
 
-Layanan ini dirancang untuk berjalan sebagai kontainer terisolasi yang terhubung ke jaringan bersama `ftmm-network` agar dapat diakses oleh API Gateway dari `ftmm-compass-ui`:
+### 1. Local Development di Linux / WSL2 (Default `network_mode: host`)
+Untuk pengembangan lokal di Linux WSL2, `docker-compose.yml` dikonfigurasi menggunakan **`network_mode: host`**:
+- **Keunggulan**: Container mengakses native GPU daemon di host (`llama-server:8080` dan `ollama:11434`) langsung via loopback `127.0.0.1` tanpa terhalang firewall UFW host, tanpa overhead NAT bridge, dan port `8000` langsung tersedia di host.
+- **Jalankan Container**:
+  ```bash
+  docker compose up --build -d
+  ```
+- **Healthcheck Verification**:
+  ```bash
+  curl -s http://127.0.0.1:8000/api/v1/health | jq .
+  ```
+  Pastikan kedua backend terverifikasi aktif: `"bonsai_online": true` dan `"ollama_online": true`.
 
-### 1. Inisialisasi Jaringan Host (Sekali Saja di Server Baru)
-```bash
-# Buat shared bridge network jika belum ada
-docker network create ftmm-network 2>/dev/null || true
-
-# Jika Ollama berjalan di host dengan firewall UFW aktif (misal Ubuntu/WSL2):
-sudo ufw allow 11434/tcp
-```
-
-### 2. Jalankan Kontainer
-```bash
-docker compose up --build -d
-```
-
-### 3. URL Layanan & Healthcheck
-- **Endpoint Internal (dalam `ftmm-network`):** `http://ftmm-compass-chatbot:8000`
-- **Endpoint Publik Host:** `http://localhost:8000`
-- **Healthcheck Probe:** `curl -s http://localhost:8000/api/v1/health | jq .` (memverifikasi status kesehatan ganda: `bonsai_online: true` dan `ollama_online: true`)
-- **Interactive Swagger Docs:** `http://localhost:8000/docs`
-- **Interactive ReDoc:** `http://localhost:8000/redoc`
-
-### 4. Skenario Server Baru (Alternative Full-Containerized Ollama)
-Di server VPS/Cloud tanpa instalasi Ollama lokal di host, daemon Ollama dapat dijalankan langsung di Docker dan digabungkan ke `ftmm-network`:
-```bash
-docker run -d --gpus=all -v ollama_data:/root/.ollama -p 11434:11434 --network ftmm-network --name ollama ollama/ollama
-```
-*(Cukup ubah `OLLAMA_HOST=http://ollama:11434` di `.env` tanpa perlu membuka port host UFW).*
-
+### 2. Multi-Container Production (`ftmm-network`)
+Untuk deployment server produksi di VPS/Cloud terisolasi (di mana seluruh service berjalan di dalam kontainer):
+1. Buat bridge network bersama:
+   ```bash
+   docker network create ftmm-network 2>/dev/null || true
+   ```
+2. Jika daemon GPU berjalan di host dengan firewall UFW aktif (Ubuntu/WSL2), buka kedua port:
+   ```bash
+   sudo ufw allow 11434/tcp
+   sudo ufw allow 8080/tcp
+   ```
+3. Atau jalankan Ollama langsung di dalam kontainer Docker:
+   ```bash
+   docker run -d --gpus=all -v ollama_data:/root/.ollama -p 11434:11434 --network ftmm-network --name ollama ollama/ollama
+   ```
 ---
 
 ## API Endpoints (Dual-Tier REST Architecture)
