@@ -48,11 +48,11 @@ ENV PATH="/app/.venv/bin:$PATH" \
     NUMEXPR_NUM_THREADS=2 \
     OLLAMA_NUM_CTX=2048 \
     OLLAMA_HOST="http://host.docker.internal:11434" \
-    SESSION_DB_PATH="/app/data/sessions/sessions.db" \
+    SESSION_DB_PATH="/app/sessions/sessions.db" \
     SESSION_STORE_BACKEND="sqlite"
 
-# Create writable data directory for centroids, runtime caches, and sessions
-RUN mkdir -p /app/data/faiss /app/data/sessions && chown -R appuser:appgroup /app/data
+# Create writable data directory for centroids, runtime caches, and isolated sessions volume
+RUN mkdir -p /app/data/faiss /app/sessions && chown -R appuser:appgroup /app/data /app/sessions
 
 # Copy application source code
 COPY --chown=appuser:appgroup src/ /app/src/

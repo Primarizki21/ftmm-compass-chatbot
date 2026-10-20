@@ -24,13 +24,13 @@ services:
       - BONSAI_HOST=http://host.docker.internal:8080
       - OLLAMA_HOST=http://host.docker.internal:11434
       - SESSION_STORE_BACKEND=sqlite
-      - SESSION_DB_PATH=/app/data/sessions/sessions.db
+      - SESSION_DB_PATH=/app/sessions/sessions.db
       - MAX_CONCURRENT_INFERENCE=1
       - MAX_QUEUE_WAIT_SECONDS=10.0
       - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8001,http://localhost:3000
     volumes:
       - ./data:/app/data:ro
-      - chatbot-sessions:/app/data/sessions:rw
+      - chatbot-sessions:/app/sessions:rw
       - ./src:/app/src:ro
     deploy:
       resources:
