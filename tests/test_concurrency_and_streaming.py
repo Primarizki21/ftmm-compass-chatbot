@@ -103,27 +103,24 @@ def test_concurrency_semaphore_queue_limiting():
             "routing_mode": "DIRECT",
         }
 
-    async def run_test():
-        with patch("src.api.server.engine.stream_generate_answer", side_effect=mock_stream_gen):
-            slots_acquired = []
-            for _ in range(MAX_CONCURRENT_INFERENCE):
-                await _inference_semaphore.acquire()
-                slots_acquired.append(True)
+    with patch("src.api.server.engine.stream_generate_answer", side_effect=mock_stream_gen):
+        slots_acquired = []
+        for _ in range(MAX_CONCURRENT_INFERENCE):
+            _inference_semaphore.acquire(blocking=True)
+            slots_acquired.append(True)
 
-            try:
-                with patch("src.api.server.MAX_QUEUE_WAIT_SECONDS", 0.05):
-                    resp = client.post(
-                        "/api/v1/chat/stream",
-                        json={"message": "tes antrean penuh", "history": [], "student_profile": {}},
-                    )
-                    assert resp.status_code == 200
-                    text = resp.text
-                    assert "inference_capacity_exceeded" in text
-            finally:
-                for _ in slots_acquired:
-                    _inference_semaphore.release()
-
-    asyncio.run(run_test())
+        try:
+            with patch("src.api.server.MAX_QUEUE_WAIT_SECONDS", 0.05):
+                resp = client.post(
+                    "/api/v1/chat/stream",
+                    json={"message": "tes antrean penuh", "history": [], "student_profile": {}},
+                )
+                assert resp.status_code == 200
+                text = resp.text
+                assert "rate_limit_exceeded" in text
+        finally:
+            for _ in slots_acquired:
+                _inference_semaphore.release()
 
 def test_sse_streaming_response_format():
     client = TestClient(app)

@@ -23,14 +23,21 @@ services:
       - LLM_MODEL_NAME=bonsai-2-4b
       - BONSAI_HOST=http://host.docker.internal:8080
       - OLLAMA_HOST=http://host.docker.internal:11434
+      - SESSION_STORE_BACKEND=sqlite
+      - SESSION_DB_PATH=/app/data/sessions/sessions.db
+      - MAX_CONCURRENT_INFERENCE=1
+      - MAX_QUEUE_WAIT_SECONDS=10.0
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8001,http://localhost:3000
     volumes:
       - ./data:/app/data:ro
+      - chatbot-sessions:/app/data/sessions:rw
       - ./src:/app/src:ro
     deploy:
       resources:
         limits:
           cpus: "2.0"
-          memory: 512M
+          memory: 768M
+          pids: 100
     security_opt:
       - no-new-privileges:true
     cap_drop:
@@ -45,3 +52,6 @@ services:
 networks:
   ftmm-network:
     external: true
+
+volumes:
+  chatbot-sessions:

@@ -7,9 +7,9 @@
 
 | Virtual Users (VU) | Total Requests | Success Rate | Rate Limited (429) | Throughput (RPS) | P50 TTFT (ms) | P95 TTFT (ms) | P50 Total Lat (ms) | RSS RAM (MB) |
 |---|---|---|---|---|---|---|---|---|
-| **5 VU** | 10 | 100.0% | 0 | 2.05 | 2740.39 | 4664.63 | 2740.47 | 85.12 |
-| **10 VU** | 20 | 100.0% | 0 | 2.1 | 5104.31 | 8996.72 | 5104.36 | 85.62 |
-| **20 VU** | 40 | 52.5% | 19 | 3.98 | 5334.89 | 9509.1 | 5334.96 | 86.25 |
+| **5 VU** | 10 | 100.0% | 0 | 2.01 | 2799.67 | 4753.37 | 2799.74 | 85.19 |
+| **10 VU** | 20 | 100.0% | 0 | 2.06 | 5210.32 | 9181.18 | 5210.36 | 86.19 |
+| **20 VU** | 40 | 100.0% | 0 | 2.07 | 9997.01 | 18407.44 | 9997.08 | 87.56 |
 
 ## 2. Temuan Arsitektur & Stabilitas Gateway
 1. **Perlindungan Zero-Crash via Concurrency Semaphore**:

@@ -7,7 +7,11 @@ Menerapkan arsitektur RESTful modern (v1 canonical + legacy alias) dan error han
 import os
 import time
 import json
+import uuid
+import logging
 import asyncio
+import threading
+from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 import httpx
 from fastapi import FastAPI, APIRouter, HTTPException, Query, Request, status
@@ -15,6 +19,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 
+logger = logging.getLogger("ftmm_compass_api")
 from src.api.schemas import (
     ChatRequest,
     ChatResponse,
@@ -46,27 +51,46 @@ from src.engine.tools.academic_tools import (
     search_courses,
 )
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("Inisialisasi FTMM COMPASS Chatbot Backend...")
+    yield
+    logger.info("Shutdown FTMM COMPASS Chatbot Backend gracefully...")
+
+
 app = FastAPI(
     title="FTMM COMPASS Chatbot Backend",
     description="Backend API untuk Chatbot Akademik FTMM COMPASS dengan arsitektur Hybrid RAG-CAG.",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
-# CORS Middleware agar bisa dipanggil langsung dari Vite dev server (port 5173 dsb.)
+
+@app.middleware("http")
+async def correlation_id_middleware(request: Request, call_next):
+    req_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+    request.state.request_id = req_id
+    response = await call_next(request)
+    response.headers["X-Request-ID"] = req_id
+    return response
+
+
+allowed_origins_raw = os.getenv("ALLOWED_ORIGINS", "*")
+allowed_origins = [o.strip() for o in allowed_origins_raw.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins if allowed_origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Request-ID", "Retry-After", "X-RateLimit-Limit", "X-RateLimit-Remaining"],
 )
-
 engine = UnifiedChatEngine()
 
 MAX_CONCURRENT_INFERENCE = int(os.getenv("MAX_CONCURRENT_INFERENCE", "1"))
 MAX_QUEUE_WAIT_SECONDS = float(os.getenv("MAX_QUEUE_WAIT_SECONDS", "10.0"))
-_inference_semaphore = asyncio.Semaphore(MAX_CONCURRENT_INFERENCE)
-
+_inference_semaphore = threading.BoundedSemaphore(MAX_CONCURRENT_INFERENCE)
 
 def _get_ollama_base_url() -> str:
     host = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").strip()
@@ -344,7 +368,7 @@ async def handle_list_courses(
     )
 
 
-async def handle_chat(request: ChatRequest) -> ChatResponse:
+async def handle_chat(request: ChatRequest, req: Request | None = None) -> ChatResponse:
     """Dialog chat utama yang melayani pesan dari frontend ftmm-compass-ui."""
     t0 = time.perf_counter()
     msg = request.message.strip()
@@ -354,22 +378,26 @@ async def handle_chat(request: ChatRequest) -> ChatResponse:
     if not request.history:
         engine.memory.clear_session(session_id)
 
-    acquired = False
-    try:
-        await asyncio.wait_for(_inference_semaphore.acquire(), timeout=MAX_QUEUE_WAIT_SECONDS)
-        acquired = True
-    except asyncio.TimeoutError:
+    acquired = await asyncio.to_thread(_inference_semaphore.acquire, True, MAX_QUEUE_WAIT_SECONDS)
+    if not acquired:
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            headers={"Retry-After": "3"},
+            headers={
+                "Retry-After": "3",
+                "X-RateLimit-Limit": str(MAX_CONCURRENT_INFERENCE),
+                "X-RateLimit-Remaining": "0",
+            },
             content={
                 "error": {
-                    "code": "inference_capacity_exceeded",
+                    "code": "rate_limit_exceeded",
                     "message": "Server sedang melayani antrean mahasiswa lain. Silakan coba sesaat lagi.",
-                    "details": {
-                        "active_slots": MAX_CONCURRENT_INFERENCE,
-                        "retry_after_seconds": 3,
-                    },
+                    "details": [
+                        {
+                            "field": None,
+                            "message": f"Kapasitas inferensi penuh ({MAX_CONCURRENT_INFERENCE} slot terpakai). Coba kembali dalam 3 detik.",
+                            "code": "concurrency_limit",
+                        }
+                    ],
                 }
             },
         )
@@ -574,7 +602,7 @@ async def handle_generate_plan(profile: StudentProfile) -> DegreePlanPayload:
     )
 
 
-async def handle_chat_stream(request: ChatRequest) -> StreamingResponse:
+async def handle_chat_stream(request: ChatRequest, req: Request | None = None) -> StreamingResponse:
     """Endpoint Server-Sent Events (SSE) streaming untuk live typing UI."""
     async def event_generator() -> AsyncGenerator[str, None]:
         t0 = time.perf_counter()
@@ -585,19 +613,19 @@ async def handle_chat_stream(request: ChatRequest) -> StreamingResponse:
         if not request.history:
             engine.memory.clear_session(session_id)
 
-        acquired = False
-        try:
-            await asyncio.wait_for(_inference_semaphore.acquire(), timeout=MAX_QUEUE_WAIT_SECONDS)
-            acquired = True
-        except asyncio.TimeoutError:
+        acquired = await asyncio.to_thread(_inference_semaphore.acquire, True, MAX_QUEUE_WAIT_SECONDS)
+        if not acquired:
             err_payload = {
                 "error": {
-                    "code": "inference_capacity_exceeded",
+                    "code": "rate_limit_exceeded",
                     "message": "Server sedang melayani antrean mahasiswa lain. Silakan coba sesaat lagi.",
-                    "details": {
-                        "active_slots": MAX_CONCURRENT_INFERENCE,
-                        "retry_after_seconds": 3,
-                    },
+                    "details": [
+                        {
+                            "field": None,
+                            "message": f"Kapasitas inferensi penuh ({MAX_CONCURRENT_INFERENCE} slot terpakai). Coba kembali dalam 3 detik.",
+                            "code": "concurrency_limit",
+                        }
+                    ],
                 }
             }
             yield f"data: {json.dumps(err_payload, ensure_ascii=False)}\n\n"
@@ -610,6 +638,9 @@ async def handle_chat_stream(request: ChatRequest) -> StreamingResponse:
                 student_profile=profile.model_dump(),
                 session_id=session_id,
             ):
+                if req is not None and await req.is_disconnected():
+                    logger.info("Client disconnected (session=%s); aborting stream early.", session_id)
+                    break
                 if chunk.get("type") == "token":
                     data_payload = json.dumps({"token": chunk["token"], "done": False}, ensure_ascii=False)
                     yield f"data: {data_payload}\n\n"
@@ -716,13 +747,13 @@ async def v1_list_courses(
 
 
 @v1_router.post("/chat", response_model=ChatResponse)
-async def v1_chat(request: ChatRequest):
-    return await handle_chat(request)
+async def v1_chat(request: ChatRequest, req: Request):
+    return await handle_chat(request, req=req)
 
 
 @v1_router.post("/chat/stream")
-async def v1_chat_stream(request: ChatRequest):
-    return await handle_chat_stream(request)
+async def v1_chat_stream(request: ChatRequest, req: Request):
+    return await handle_chat_stream(request, req=req)
 
 
 @v1_router.post("/plans/validations", response_model=PlanValidationResponse)
@@ -814,13 +845,13 @@ async def legacy_search_courses(
 
 
 @legacy_router.post("/chat", response_model=ChatResponse)
-async def legacy_chat(request: ChatRequest):
-    return await handle_chat(request)
+async def legacy_chat(request: ChatRequest, req: Request):
+    return await handle_chat(request, req=req)
 
 
 @legacy_router.post("/chat/stream")
-async def legacy_chat_stream(request: ChatRequest):
-    return await handle_chat_stream(request)
+async def legacy_chat_stream(request: ChatRequest, req: Request):
+    return await handle_chat_stream(request, req=req)
 
 
 @legacy_router.post("/plan/validate", response_model=PlanValidationResponse)

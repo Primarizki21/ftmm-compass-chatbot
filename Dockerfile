@@ -47,10 +47,12 @@ ENV PATH="/app/.venv/bin:$PATH" \
     VECLIB_MAXIMUM_THREADS=2 \
     NUMEXPR_NUM_THREADS=2 \
     OLLAMA_NUM_CTX=2048 \
-    OLLAMA_HOST="http://host.docker.internal:11434"
+    OLLAMA_HOST="http://host.docker.internal:11434" \
+    SESSION_DB_PATH="/app/data/sessions/sessions.db" \
+    SESSION_STORE_BACKEND="sqlite"
 
-# Create writable data directory for centroids & runtime caches
-RUN mkdir -p /app/data/faiss && chown -R appuser:appgroup /app/data
+# Create writable data directory for centroids, runtime caches, and sessions
+RUN mkdir -p /app/data/faiss /app/data/sessions && chown -R appuser:appgroup /app/data
 
 # Copy application source code
 COPY --chown=appuser:appgroup src/ /app/src/
@@ -60,7 +62,7 @@ USER appuser
 EXPOSE 8000
 
 # Native Python healthcheck without extra curl dependency
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)" || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/health', timeout=3)" || exit 1
 
 CMD ["uvicorn", "src.api.server:app", "--host", "0.0.0.0", "--port", "8000", "--loop", "uvloop", "--http", "httptools", "--no-access-log"]

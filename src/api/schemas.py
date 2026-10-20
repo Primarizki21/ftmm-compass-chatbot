@@ -65,15 +65,27 @@ class DegreePlanPayload(BaseModel):
 
 class ChatMessageItem(BaseModel):
     role: Literal["user", "assistant", "system"]
-    content: str
+    content: str = Field(..., min_length=1, max_length=8000, description="Isi teks pesan riwayat.")
 
 
 class ChatRequest(BaseModel):
-    message: str
-    history: list[ChatMessageItem] = Field(default_factory=list)
+    message: str = Field(
+        ...,
+        min_length=1,
+        max_length=4000,
+        description="Pesan input mahasiswa (minimal 1 karakter, maksimal 4.000 karakter).",
+    )
+    history: list[ChatMessageItem] = Field(
+        default_factory=list,
+        max_length=50,
+        description="Riwayat percakapan sebelumnya (maksimal 50 pesan).",
+    )
     student_profile: StudentProfile = Field(default_factory=StudentProfile)
-    session_id: str | None = None
-
+    session_id: str | None = Field(
+        default=None,
+        max_length=128,
+        description="Identitas unik sesi percakapan (opsional, maksimal 128 karakter).",
+    )
 class ChatResponse(BaseModel):
     reply: str
     updated_profile: StudentProfile

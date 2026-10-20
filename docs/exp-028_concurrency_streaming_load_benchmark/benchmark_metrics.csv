@@ -1,4 +1,4 @@
 concurrency_tier,endpoint,total_requests,successful_requests,rate_limited_requests,failed_requests,error_rate_pct,throughput_rps,ttft_mean_ms,ttft_p50_ms,ttft_p95_ms,total_lat_mean_ms,total_lat_p50_ms,total_lat_p95_ms,rss_ram_mb,vram_peak_mib
-5,/api/v1/chat/stream,10,10,0,0,0.0,2.05,2696.37,2740.39,4664.63,2696.45,2740.47,4664.72,85.12,0.0
-10,/api/v1/chat/stream,20,20,0,0,0.0,2.1,5024.13,5104.31,8996.72,5024.21,5104.36,8996.81,85.62,0.0
-20,/api/v1/chat/stream,40,21,19,0,0.0,3.98,5267.7,5334.89,9509.1,5267.78,5334.96,9509.19,86.25,0.0
+5,/api/v1/chat/stream,10,10,0,0,0.0,2.01,2751.79,2799.67,4753.37,2751.85,2799.74,4753.42,85.19,0.0
+10,/api/v1/chat/stream,20,20,0,0,0.0,2.06,5127.88,5210.32,9181.18,5127.94,5210.36,9181.25,86.19,0.0
+20,/api/v1/chat/stream,40,40,0,0,0.0,2.07,9959.07,9997.01,18407.44,9959.14,9997.08,18407.54,87.56,0.0

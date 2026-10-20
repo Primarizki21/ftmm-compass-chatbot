@@ -205,8 +205,9 @@ class InMemorySessionStore(BaseSessionStore):
 
 
 class SQLiteSessionStore(BaseSessionStore):
-    def __init__(self, db_path: str | Path = "data/sessions.db") -> None:
-        self.db_path = Path(db_path)
+    def __init__(self, db_path: str | Path | None = None) -> None:
+        effective_path = db_path or os.getenv("SESSION_DB_PATH", "data/sessions/sessions.db")
+        self.db_path = Path(effective_path)
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
         self._init_db()
 
