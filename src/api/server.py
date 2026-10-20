@@ -86,6 +86,16 @@ app.add_middleware(
     allow_headers=["*"],
     expose_headers=["X-Request-ID", "Retry-After", "X-RateLimit-Limit", "X-RateLimit-Remaining"],
 )
+
+@app.get("/", tags=["root"])
+async def root():
+    return {
+        "service": "FTMM COMPASS AI Microservice",
+        "version": "1.0.0",
+        "status": "online",
+        "docs_url": "/docs",
+        "v1_health": "/api/v1/health",
+    }
 engine = UnifiedChatEngine()
 
 MAX_CONCURRENT_INFERENCE = int(os.getenv("MAX_CONCURRENT_INFERENCE", "1"))
@@ -365,6 +375,53 @@ async def handle_list_courses(
         total_courses=len(courses),
         programs=programs_set,
         courses=courses,
+    )
+
+
+async def handle_search_courses(
+    q: str,
+    program_studi: str | None = None,
+    prodi: str | None = None,
+    top_k: int = 5,
+) -> CourseSearchResponse:
+    """Pencarian semantik mata kuliah lintas katalog FTMM."""
+    target_prodi = prodi or program_studi
+    canonical_prodi = normalize_program_studi(target_prodi) if target_prodi else None
+
+    search_hits = search_courses(query=q, prodi=canonical_prodi or "", top_k=top_k)
+    raw_catalog = _get_catalog()
+    catalog_map = {c["kode_mk"].strip().upper(): c for c in raw_catalog if c.get("kode_mk")}
+
+    results: list[CourseSearchItem] = []
+    for hit in search_hits:
+        c_code = str(hit.get("kode_mk") or "").strip()
+        ref = catalog_map.get(c_code.upper()) or hit
+        c_sem = int(ref.get("semester", 1) or 1)
+        c_type = _normalize_course_type(ref.get("jenis"))
+        parity = "odd" if c_sem % 2 == 1 else "even"
+        c_id = str(ref.get("id") or c_code)
+
+        results.append(
+            CourseSearchItem(
+                id=c_id,
+                code=c_code or None,
+                name=str(ref.get("nama_mk") or hit.get("nama_mk") or ""),
+                credits=int(ref.get("sks", 3) or 3),
+                semester=c_sem,
+                type=c_type,  # type: ignore[arg-type]
+                parity=parity,  # type: ignore[arg-type]
+                desc=str(ref.get("deskripsi") or ""),
+                program=str(ref.get("program_studi") or ""),
+                prerequisites=[str(p) for p in ref.get("prasyarat", []) if p],
+                score=float(hit.get("score", 0.0)),
+            )
+        )
+
+    return CourseSearchResponse(
+        query=q,
+        program_studi=canonical_prodi,
+        total_hits=len(results),
+        results=results,
     )
 
 
@@ -745,6 +802,15 @@ async def v1_list_courses(
         per_page=per_page,
     )
 
+@v1_router.get("/courses/search", response_model=CourseSearchResponse)
+async def v1_search_courses(
+    q: str = Query(..., min_length=1, description="Kata kunci, silabus, atau nama mata kuliah."),
+    program_studi: str | None = Query(None, description="Filter program studi opsional."),
+    prodi: str | None = Query(None, description="Alias prodi opsional."),
+    top_k: int = Query(5, ge=1, le=20, description="Jumlah hasil pencarian."),
+):
+    return await handle_search_courses(q=q, program_studi=program_studi, prodi=prodi, top_k=top_k)
+
 
 @v1_router.post("/chat", response_model=ChatResponse)
 async def v1_chat(request: ChatRequest, req: Request):
@@ -804,44 +870,7 @@ async def legacy_search_courses(
     prodi: str | None = Query(None, description="Alias prodi opsional."),
     top_k: int = Query(5, ge=1, le=20, description="Jumlah hasil pencarian."),
 ):
-    target_prodi = prodi or program_studi
-    canonical_prodi = normalize_program_studi(target_prodi) if target_prodi else None
-
-    search_hits = search_courses(query=q, prodi=canonical_prodi or "", top_k=top_k)
-    raw_catalog = _get_catalog()
-    catalog_map = {c["kode_mk"].strip().upper(): c for c in raw_catalog if c.get("kode_mk")}
-
-    results: list[CourseSearchItem] = []
-    for hit in search_hits:
-        c_code = str(hit.get("kode_mk") or "").strip()
-        ref = catalog_map.get(c_code.upper()) or hit
-        c_sem = int(ref.get("semester", 1) or 1)
-        c_type = _normalize_course_type(ref.get("jenis"))
-        parity = "odd" if c_sem % 2 == 1 else "even"
-        c_id = str(ref.get("id") or c_code)
-
-        results.append(
-            CourseSearchItem(
-                id=c_id,
-                code=c_code or None,
-                name=str(ref.get("nama_mk") or hit.get("nama_mk") or ""),
-                credits=int(ref.get("sks", 3) or 3),
-                semester=c_sem,
-                type=c_type,  # type: ignore[arg-type]
-                parity=parity,  # type: ignore[arg-type]
-                desc=str(ref.get("deskripsi") or ""),
-                program=str(ref.get("program_studi") or ""),
-                prerequisites=[str(p) for p in ref.get("prasyarat", []) if p],
-                score=float(hit.get("score", 0.0)),
-            )
-        )
-
-    return CourseSearchResponse(
-        query=q,
-        program_studi=canonical_prodi,
-        total_hits=len(results),
-        results=results,
-    )
+    return await handle_search_courses(q=q, program_studi=program_studi, prodi=prodi, top_k=top_k)
 
 
 @legacy_router.post("/chat", response_model=ChatResponse)

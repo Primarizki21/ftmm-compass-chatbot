@@ -129,3 +129,29 @@ def test_rate_limit_exceeded_standard_headers():
     finally:
         for _ in slots:
             _inference_semaphore.release()
+
+
+def test_root_endpoint(client):
+    resp = client.get("/")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["service"] == "FTMM COMPASS AI Microservice"
+    assert data["status"] == "online"
+    assert data["v1_health"] == "/api/v1/health"
+
+
+def test_v1_courses_search_route_parity(client):
+    mock_hits = [{"kode_mk": "TSD101", "nama_mk": "Kalkulus 1", "score": 0.95}]
+    with patch("src.api.server.search_courses", return_value=mock_hits):
+        # Test canonical v1 search
+        resp_v1 = client.get("/api/v1/courses/search?q=kalkulus&top_k=3")
+        assert resp_v1.status_code == 200
+        data_v1 = resp_v1.json()
+        assert "results" in data_v1
+        assert len(data_v1["results"]) == 1
+
+        # Test legacy search parity
+        resp_legacy = client.get("/api/courses/search?q=kalkulus&top_k=3")
+        assert resp_legacy.status_code == 200
+        data_legacy = resp_legacy.json()
+        assert len(data_v1["results"]) == len(data_legacy["results"])
