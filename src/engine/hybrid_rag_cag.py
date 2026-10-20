@@ -22,7 +22,7 @@ from src.engine.tools.academic_tools import (
     extract_semester_from_text,
 )
 from src.engine.decider import System1Decider, DecisionCategory
-DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
 
 GUARDRAIL_REFUSAL_MESSAGE = (
     "Maaf, saya adalah **Compass AI**, asisten penasihat akademik khusus Fakultas Teknologi Maju dan "

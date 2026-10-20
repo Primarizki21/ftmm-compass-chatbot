@@ -26,38 +26,66 @@ Batas maksimal SKS yang dapat diambil mahasiswa ditentukan oleh Indeks Prestasi 
 
 ---
 
-## 2. SYARAT PRAKTIK KERJA LAPANGAN (PKL)
-- Telah menempuh minimal 80 SKS kumulatif.
-- Duduk minimal di Semester 5.
-- Durasi kerja lapangan: Minimal 18 hari kerja efektif di instansi mitra.
-- Komposisi penilaian: 50% Pembimbing Internal FTMM + 50% Pembimbing Eksternal Instansi.
+## 2. PANDUAN PRAKTIK KERJA LAPANGAN (PKL)
+- **Prasyarat Peserta:**
+  - Telah menempuh minimal 80 SKS kumulatif.
+  - Duduk minimal di Semester 5.
+  - Telah mengikuti kegiatan sosialisasi PKL fakultas.
+  - Dapat ditempuh secara individu atau kelompok (1-2 mahasiswa).
+- **Waktu & Tempat Pelaksanaan:**
+  - Dilaksanakan pada semester Gasal/Genap atau saat periode libur antar-semester.
+  - Durasi kerja lapangan: Minimal 18 hari kerja efektif di instansi mitra.
+  - Tempat: Instansi pemerintah, BUMN, industri/swasta, lembaga penelitian, atau laboratorium yang relevan dengan bidang ilmu prodi.
+- **Dokumen Persyaratan Pengajuan:**
+  - Form P-A (pendaftaran PKL).
+  - Fotokopi KTM dan KRS semester berjalan.
+  - Bukti pembicaraan/persetujuan awal dari instansi mitra.
+  - Proposal PKL yang telah diverifikasi dan disetujui dosen pembimbing internal.
+- **Pembimbing & Penilaian:**
+  - Dibimbing oleh Pembimbing Internal (dosen prodi FTMM) dan Pembimbing Eksternal (lapangan di instansi).
+  - Komposisi penilaian: 50% Pembimbing Internal + 50% Pembimbing Eksternal Instansi.
 
 ---
 
-## 3. SYARAT PROPOSAL SKRIPSI & TUGAS AKHIR
-- **Proposal Skripsi:**
-  - Minimal 108 - 110 SKS kumulatif dengan IPK > 2.00.
-  - Telah lulus atau sedang menempuh mata kuliah Metode Penelitian.
-  - Tercantum di KRS semester berjalan.
-- **Sidang Skripsi / Tugas Akhir:**
-  - Telah lulus ujian Proposal Skripsi dan menempuh minimal 120 SKS.
+## 3. PANDUAN PROPOSAL SKRIPSI & TUGAS AKHIR
+- **Tahap 1 — Proposal Skripsi:**
+  - Syarat Akademik: Minimal 108 - 110 SKS kumulatif dengan IPK > 2.00.
+  - Prasyarat Kelulusan: Telah lulus atau sedang menempuh mata kuliah Metode Penelitian.
+  - Tercantum dalam KRS semester berjalan (proposal berlaku selama 1 tahun).
+  - Melewati ujian seminar proposal yang disetujui dosen pembimbing dan diketahui KPS.
+- **Tahap 2 — Sidang Akhir Skripsi:**
+  - Telah lulus seminar proposal dan menempuh minimal 120 SKS.
   - Total nilai D maksimal 20% dari total SKS kumulatif.
-  - Wajib memiliki nilai E sebanyak 0 SKS (tidak boleh ada nilai E).
+  - Wajib memiliki nilai E sebanyak 0 SKS (TIDAK BOLEH ADA NILAI E).
+  - Nilai kelulusan skripsi minimal berkategori BC.
+- **Alur Prosedur & Portal:**
+  - Cybercampus V1: Memprogram mata kuliah skripsi pada KRS.
+  - Cybercampus V2: Pengajuan judul skripsi, verifikasi naskah, pengajuan uji plagiarisme Turnitin, hingga pendaftaran sidang akhir.
+  - Pembimbingan: Mahasiswa dibimbing oleh 2 dosen (Pembimbing Utama dan Pembimbing Serta).
 
 ---
 
-## 4. SYARAT KELULUSAN & YUDISIUM SARJANA
-- Total beban studi kelulusan: Minimal 144 SKS (maksimal 160 SKS).
-- Indeks Prestasi Kumulatif (IPK):
-  - Masa studi <= 4 tahun (8 semester): IPK minimal 2.50.
-  - Masa studi > 4 tahun (> 8 semester): IPK minimal 2.60.
-- Batas nilai D: Maksimal 20% dari total SKS.
-- Batas nilai E: 0 SKS (TIDAK BOLEH ADA NILAI E).
-- Syarat kelulusan tambahan:
-  - Sertifikat tes bahasa Inggris ELPT UNAIR memenuhi standar fakultas.
-  - Memenuhi batas minimal Satuan Kredit Prestasi (SKP/SKPI).
-  - Surat bebas pinjam alat laboratorium & perpustakaan.
-
+## 4. SYARAT KELULUSAN & PANDUAN YUDISIUM SARJANA
+- **Syarat Beban Studi & Nilai Mutu:**
+  - Total beban studi kelulusan: Minimal 144 SKS (maksimal 160 SKS).
+  - Indeks Prestasi Kumulatif (IPK):
+    * Masa studi <= 4 tahun (8 semester): IPK minimal 2.50.
+    * Masa studi > 4 tahun (> 8 semester): IPK minimal 2.60.
+  - Batas nilai D: Maksimal 20% dari total SKS kumulatif.
+  - Batas nilai E: 0 SKS (TIDAK BOLEH ADA NILAI E).
+  - Telah dinyatakan lulus Ujian Skripsi / Sidang Tugas Akhir.
+- **Standar Kompetensi Tambahan:**
+  - Sertifikat tes bahasa Inggris ELPT UNAIR: Skor minimal 450 dari Pusat Bahasa UNAIR.
+  - Satuan Kredit Prestasi (SKP/SKPI): Memenuhi minimal 160 SKP (atau transkrip TKM minimal 140 SKP).
+- **Checklist Dokumen & Berkas Yudisium FTMM:**
+  1. Form Surat Keterangan Yudisium (ditandatangani mahasiswa & dosen wali).
+  2. Rekap Nilai resmi (ditandatangani Wakil Dekan I).
+  3. Surat Bebas Pinjam Alat & Laboratorium FTMM.
+  4. Surat Bebas Pinjam Buku dari Ruang Baca FTMM & Perpustakaan Pusat UNAIR.
+  5. Tanda Terima Penyerahan Naskah Skripsi ke Perpustakaan UNAIR & Ruang Baca FTMM.
+  6. Bukti Bebas Tanggungan Keuangan / Lunas SOP-UKT hingga semester akhir.
+  7. Formulir Data Lulusan yang telah diisi lengkap.
+  8. Kelengkapan Berkas Identitas: Fotokopi KTM, KTP, Akta Kelahiran, dan Ijazah SMA/sederajat.
 ---
 
 ## 5. PROSEDUR 8 SOP ADMINISTRASI AKADEMIK

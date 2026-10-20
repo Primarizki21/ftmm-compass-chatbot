@@ -11,7 +11,7 @@ from typing import Any
 from src.knowledge.cag_store import get_cag_system_prompt
 from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_llm_client, LLMClientAdapter, clean_thinking_content
 
-DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
 
 class PureCAGEngine:
     def __init__(self, model: str = DEFAULT_MODEL, llm_client: LLMClientAdapter | None = None):

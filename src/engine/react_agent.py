@@ -20,7 +20,7 @@ from src.engine.tools.academic_tools import (
     format_degree_plan_response,
     compress_degree_plan_for_llm,
 )
-DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
 
 
 def detect_query_language(query: str, history: list[dict[str, str]] | None = None) -> str:

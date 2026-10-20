@@ -9,7 +9,7 @@ from typing import Any
 from src.knowledge.retriever import get_course_retriever
 from src.engine.base import EngineResult, DEFAULT_NUM_CTX, get_llm_client, LLMClientAdapter, clean_thinking_content
 
-DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
 PURE_RAG_SYSTEM_PROMPT = """Anda adalah Compass AI, asisten akademik FTMM Universitas Airlangga.
 Jawab pertanyaan mahasiswa secara akurat dan informatif berdasarkan informasi konteks mata kuliah yang diberikan di bawah ini.
 Jika informasi tidak ada dalam konteks, katakan dengan sopan bahwa Anda tidak memiliki informasi spesifik tersebut.

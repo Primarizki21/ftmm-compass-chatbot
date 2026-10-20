@@ -110,6 +110,10 @@ PROTOTYPES: dict[DecisionCategory, list[str]] = {
         "matkul prak terintegrasi itu pembahasannya seputar apa aja sih sizenya berapa sks",
     ],
     DecisionCategory.REGULATION_SOP: [
+        "panduan pkl praktik kerja lapangan mekanisme pengajuan dan syarat pkl",
+        "bagaimana panduan dan syarat pkl kerja praktek mahasiswa",
+        "panduan skripsi alur seminar proposal dan sidang tugas akhir",
+        "panduan yudisium syarat berkas kelulusan dan alur pendaftaran wisuda",
         "apa saja syarat pkl magang kerja praktek ftmm unair minimal berapa sks",
         "prosedur dan syarat pengajuan skripsi tugas akhir seminar proposal sempro",
         "ketentuan yudisium kelulusan wisuda dan bebas tanggungan fakultas",

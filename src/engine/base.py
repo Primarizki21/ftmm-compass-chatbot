@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 DEFAULT_NUM_CTX = int(os.getenv("OLLAMA_NUM_CTX", "2048"))
-LLM_BACKEND = os.getenv("LLM_BACKEND", "bonsai").strip().lower()
+LLM_BACKEND = os.getenv("LLM_BACKEND", "ollama").strip().lower()
 BONSAI_HOST = os.getenv("BONSAI_HOST", "http://127.0.0.1:8080").rstrip("/")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
 
@@ -131,7 +131,7 @@ class LLMClientAdapter:
         timeout: float = 60.0,
         enable_fallback: bool | None = None,
     ):
-        self.backend = (backend or os.getenv("LLM_BACKEND", "bonsai")).strip().lower()
+        self.backend = (backend or os.getenv("LLM_BACKEND", "ollama")).strip().lower()
         b_host = bonsai_host or os.getenv("BONSAI_HOST", "http://127.0.0.1:8080")
         if not b_host.startswith(("http://", "https://")):
             b_host = f"http://{b_host}"
@@ -718,7 +718,7 @@ _LLM_CLIENT_INSTANCE: LLMClientAdapter | None = None
 
 def get_llm_client(backend: str | None = None, force_new: bool = False) -> LLMClientAdapter:
     global _LLM_CLIENT_INSTANCE
-    effective_backend = (backend or os.getenv("LLM_BACKEND", "bonsai")).strip().lower()
+    effective_backend = (backend or os.getenv("LLM_BACKEND", "ollama")).strip().lower()
     if _LLM_CLIENT_INSTANCE is None or force_new or (_LLM_CLIENT_INSTANCE.backend != effective_backend):
         _LLM_CLIENT_INSTANCE = LLMClientAdapter(backend=effective_backend)
     return _LLM_CLIENT_INSTANCE

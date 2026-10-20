@@ -21,7 +21,7 @@ from src.engine.react_agent import ReActAgentEngine
 from src.knowledge.cag_store import get_cag_system_prompt
 from src.engine.normalizer import get_academic_normalizer
 
-DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
 
 TIER1_REFUSAL_MESSAGE = (
     "Permintaan tidak dapat diproses karena melanggar kebijakan keamanan sistem akademik FTMM UNAIR."
@@ -236,7 +236,10 @@ class UnifiedChatEngine:
                 "## PERAN SAAT INI (CAG/RAG REGULATION FAQ):\n"
                 "Jawab pertanyaan mahasiswa mengenai regulasi akademik atau SOP administrasi FTMM secara tepat, "
                 "padat, dan lugas sesuai basis pengetahuan resmi di atas. Jangan berhalusinasi. "
-                "Sebutkan angka SKS atau ketentuan SOP secara eksplisit (contoh: PKL minimal 80 SKS kumulatif)."
+                "Sebutkan angka SKS atau ketentuan SOP secara eksplisit (contoh: PKL minimal 80 SKS kumulatif).\n"
+                "- PENTING: Jawab HANYA topik yang ditanyakan mahasiswa secara terfokus. "
+                "DILARANG menyertakan SOP atau regulasi lain yang tidak relevan dengan pertanyaan (contoh: jika mahasiswa bertanya tentang Yudisium, JANGAN menjelaskan SOP Cuti Akademik, Undur Diri, atau KTM Hilang).\n"
+                "- Berikan jawaban terstruktur dengan format Markdown yang rapi (syarat akademik, standar kompetensi, dan checklist dokumen)."
             )
             messages = [{"role": "system", "content": cag_prompt}]
             if sliding_history:
@@ -501,7 +504,10 @@ class UnifiedChatEngine:
                 "## PERAN SAAT INI (CAG REGULATION FAQ):\n"
                 "Jawab pertanyaan mahasiswa mengenai regulasi akademik atau SOP administrasi FTMM secara tepat, "
                 "padat, dan lugas sesuai basis pengetahuan resmi di atas. Jangan berhalusinasi. "
-                "Sebutkan angka SKS atau ketentuan SOP secara eksplisit (contoh: PKL minimal 80 SKS kumulatif)."
+                "Sebutkan angka SKS atau ketentuan SOP secara eksplisit (contoh: PKL minimal 80 SKS kumulatif).\n"
+                "- PENTING: Jawab HANYA topik yang ditanyakan mahasiswa secara terfokus. "
+                "DILARANG menyertakan SOP atau regulasi lain yang tidak relevan dengan pertanyaan (contoh: jika mahasiswa bertanya tentang Yudisium, JANGAN menjelaskan SOP Cuti Akademik, Undur Diri, atau KTM Hilang).\n"
+                "- Berikan jawaban terstruktur dengan format Markdown yang rapi (syarat akademik, standar kompetensi, dan checklist dokumen)."
             )
             messages = [{"role": "system", "content": cag_prompt}]
             if sliding_history:
