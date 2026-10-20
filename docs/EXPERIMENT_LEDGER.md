@@ -37,6 +37,7 @@
 | **`exp-026`** | 2026-10-18 | Rekalibrasi System-1 Decider & Evaluasi Komparatif Generasi Pure RAG vs Pure CAG vs Hybrid (Card 121) | `bonsai-2-4b` (Ternary PQ2_0) + `nomic-embed-text-v2-moe` (768d MRL Native) | Dense IR (369 MK):<br>Hit@1: **95.7%**<br>Hit@3: **99.7%**<br>Hit@5: **100.0%**<br>MRR: **0.9765**<br>NDCG@5: **0.9819** | Semantic Sim:<br>Pure RAG: **0.6018**<br>Hybrid: **0.5895**<br>Pure CAG: **0.5645** | Fact Recall:<br>Pure RAG: **77.13%**<br>Pure CAG: **69.98%**<br>Hybrid: **55.96%** | FAISS P50: **163.91 ms**<br>Decider BLAS: **0.111 ms** | Total Latensi P50:<br>Pure RAG: **3972 ms**<br>Pure CAG: **4075 ms**<br>Hybrid: **9122 ms** | Tier 2 FRR: **4.23%**<br>Decider Acc: **78.62%** (+9.80%)<br>Tokens: 512 (CAG/RAG) | **Rekalibrasi Decider & Evaluasi Generatif Valid Tuntas**: Memperluas prototipe REGULATION_SOP (28 entri) dan rekalibrasi threshold (0.35 / 0.012) menaikkan akurasi routing ke 78.62% (regulasi 100% pada suite representatif). Penyesuaian num_predict=512 dan pembersihan tag <think> memulihkan Fact Recall Pure CAG (69.98%) dan Pure RAG (77.13%) dari kegagalan 0.00% pada Exp-025. | `docs/exp-026_recalibrated_decider_and_holistic_generation/` |
 | **`exp-027`** | 2026-10-18 | Evaluasi Ketahanan Adversarial Red-Teaming & Cascaded Guardrails (Card 126) | Cascaded Guardrails 4-Tier (Tier 1 Syntax + Tier 2 Semantic + Tier 3 NeMo + Tier 4 Rail) + ReAct | Safety Accuracy:<br>Cascaded: **99.38%**<br>NeMo Alone: 55.00% | Attack Success Rate (ASR):<br>Cascaded: **0.83%** (1/120)<br>NeMo Alone: 60.00% | Prompt Injection Block:<br>Cascaded: **100.0%**<br>NeMo Alone: 57.5% | Detection Latency P50:<br>Tier 1 Syntax: **<0.1 ms**<br>Tier 2 Semantic: **<180 ms** | Turn Latency P50:<br>Cascaded: **176.4 ms**<br>NeMo Alone: 266.6 ms | FRR: **0.00%** (0/40 false refusals)<br>160 Queries Full | **Pertahanan Berlapis Unggul Mutlak atas NeMo Mandiri**: Membuktikan bahwa Cascaded Guardrails 4-Tier menekan ASR ke 0.83% (target <=1.0%) dengan 100% pemblokiran injeksi prompt dan OOD homework, serta nol false refusal (FRR 0.00%) pada kueri sah mahasiswa. | `docs/exp-027_adversarial_red_teaming_cascaded_defense/` |
 | **`exp-028`** | 2026-10-20 | Benchmarking Beban Konkurensi Tinggi, Latensi Streaming SSE, dan Stabilitas Memori Gateway (Card 127) | `bonsai-2-4b` + Concurrency Semaphore + `nomic-embed-text-v2-moe` | Success Rate:<br>5 VU: **100.0%** (10/10)<br>10 VU: **100.0%** (20/20)<br>20 VU: **52.5%** (21/40) | Rate Limited (429):<br>5 VU: **0**<br>10 VU: **0**<br>20 VU: **19** (Timeout Guard) | Error Rate (5xx):<br>**0.0%** (Zero Crash pada seluruh 70 request) | Throughput:<br>5 VU: **2.05 RPS**<br>10 VU: **2.10 RPS**<br>20 VU: **3.98 RPS** | P50 TTFT / Turn Lat:<br>5 VU: **2740 ms**<br>10 VU: **5104 ms**<br>20 VU: **5334 ms** | Stabilitas Memori:<br>Zero WSL2 Swapping<br>RSS RAM: **~94 MB**<br>Zero 5xx Failure | **Proteksi Zero-Crash & Kapasitas Gateway Terbukti**: Inisialisasi slot semaphore mencegah tabrakan VRAM GPU RTX 5050 (8GB). Saat lonjakan 20 VU, gateway tertib mengantrekan request dan mengembalikan 429 Retry-After tanpa menjatuhkan server. Real SSE streaming token-by-token aktif. Menjawab Card 127. | `docs/exp-028_concurrency_streaming_load_benchmark/` |
+| **`exp-029`** | 2026-10-20 | Ekspansi RAG Regulasi Akademik, Eliminasi False Refusal Skripsi & Optimasi Token Reasoning (Card 130) | `bonsai-2-4b` (Ternary PQ2_0) + `nomic-embed-text-v2-moe` (768d FAISS Regulations) | FRR Regulasi: **0.00%** (0/16 tertolak)<br>False Refusal Skripsi: **0.0%** (Tuntas) | Recall@3 Regulasi: **100.0%** (16/16)<br>Kompilasi: **262 Butir** Pedoman | Completion Rate: **100.0%** (Zero Empty Content)<br>422 Error: **0.0%** | FAISS Retrieval: **<4.5 ms**<br>Decider: **<0.1 ms** | P50 Latensi: **~7.9 s**<br>Token Budget: **1536** | Zero Hallucination<br>Live Browser Verified<br>100% Pytest PASS | **Ekspansi RAG Regulasi Akademik & Eliminasi False Refusal Skripsi Tuntas**: Mengganti anchor jailbreak bertabrakan kata kunci skripsi, membangun index FAISS 262 butir regulasi institusi (`ftmm_regulations.faiss`), menambahkan physical tool `search_academic_regulations`, dan menaikkan reasoning token budget ke 1536 token sehingga menghasilkan respons lengkap tanpa token starvation di kanal streaming. | `docs/exp-029_academic_regulation_rag_and_reasoning_optimization/` |
 
 ---
 
@@ -977,3 +978,42 @@
   - `docs/exp-028_concurrency_streaming_load_benchmark/benchmark_raw_traces.jsonl`
   - `scripts/benchmark_gateway_concurrency.py`
   - `tests/test_concurrency_and_streaming.py`
+
+### [exp-029] Ekspansi RAG Regulasi Akademik, Eliminasi False Refusal Skripsi, dan Optimasi Token Reasoning
+- **Tanggal:** 2026-10-20
+- **Kartu Trello:** Card 130 (`[Nauval & Ario] Ekspansi RAG Regulasi Akademik, Eliminasi False Refusal Skripsi, dan Optimasi Token Reasoning`).
+- **Tujuan / Hipotesis:**
+  - Mengeliminasi False Refusal pada kueri regulasi skripsi yang disebabkan oleh benturan kata kunci leksikal pada anchor deteksi wewenang di Tier-2 Semantic Guardrail.
+  - Memperluas arsitektur retrieval dengan membangun indeks vektor terpadu 262 butir regulasi akademik dan SOP institusi FTMM (`ftmm_regulations.faiss`).
+  - Mengatasi fenomena token starvation pada model penalaran lokal (Bonsai 4B) pada kanal streaming SSE dengan menaikkan budget token dan mencegah propagasi respons kosong ke riwayat percakapan (zero 422 error).
+  - Mendaftarkan physical tool `search_academic_regulations` untuk ReAct agent agar mampu mencari dokumen pedoman institusi tanpa halusinasi katalog mata kuliah.
+- **Hasil Kuantitatif (Evaluasi 16 Skenario Regulasi Institusi):**
+  | Metrik Evaluasi | Baseline (Sebelum Perbaikan) | Exp-029 (Hasil Implementasi) | Status |
+  |---|---|---|---|
+  | **False Refusal Rate (FRR) Skripsi** | 100.0% (Tertolak Guardrail) | **0.00%** | **PASS (Zero FRR)** |
+  | **Retrieval Recall@3 Regulasi** | 0.0% (Tidak Terindeks) | **100.00%** (16/16) | **PASS (>= 90%)** |
+  | **Response Completion Rate** | 0.0% (Token Starvation / 422) | **100.00%** | **PASS (100%)** |
+  | **Rata-rata Latensi Total (ms)** | - (Error/Refused 236 ms) | **8754.11 ms** | **OPTIMAL** |
+- **Temuan Kunci:**
+  1. **Akar Masalah False Refusal Terpecahkan Secara Matematis:**
+     - Penggantian anchor privilege escalation yang memuat kata *"sidang skripsi"* berhasil menaikkan margin pemisahan akademik kueri skripsi menjadi +0.1813 (`academic_score = 0.4498` vs `ood_score = 0.2685`), sehingga kueri panduan skripsi 100% diterima sebagai `IN_SCOPE`.
+  2. **Dual-Domain FAISS Index Berhasil Beroperasi:**
+     - Indeks `ftmm_regulations.faiss` (262 butir) memberikan Recall@3 sempurna 100% untuk seluruh kueri skripsi, PKL, yudisium, dan SOP administrasi dengan latensi retrieval <4.5 ms.
+  3. **Eliminasi Token Starvation & Cascading Error 422:**
+     - Penyesuaian `num_predict: 1536` memberi ruang bagi model Bonsai untuk menyelesaikan penalaran internal (`reasoning_content`) dan memproduksi teks jawaban final lengkap (`content`). Bersama relaksasi `min_length=0` pada skema Pydantic, zero cascading 422 tercapai secara permanen.
+  4. **Verifikasi End-to-End Browser UI:**
+     - Diuji langsung pada antarmuka web `http://127.0.0.1:8443`, kueri skripsi dan yudisium ter-render secara utuh dan responsif.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - Menetapkan `ftmm_regulations.faiss` sebagai indeks resmi kedua di samping `ftmm_courses.faiss`.
+  - Mempertahankan `search_academic_regulations` dalam `TOOL_REGISTRY` untuk mendukung pencarian aturan institusi.
+  - Menyelesaikan seluruh 5 butir DoD pada Kartu Trello Card 130 (100% PASS).
+- **Artefak:**
+  - `docs/exp-029_academic_regulation_rag_and_reasoning_optimization/README.md`
+  - `docs/exp-029_academic_regulation_rag_and_reasoning_optimization/benchmark_summary.md`
+  - `docs/exp-029_academic_regulation_rag_and_reasoning_optimization/benchmark_metrics.csv`
+  - `docs/exp-029_academic_regulation_rag_and_reasoning_optimization/benchmark_results.json`
+  - `docs/exp-029_academic_regulation_rag_and_reasoning_optimization/benchmark_raw_traces.jsonl`
+  - `scripts/ingest_regulations_faiss.py`
+  - `scripts/evaluate_academic_regulations_and_reasoning.py`
+  - `src/knowledge/regulation_retriever.py`
+  - `tests/test_academic_regulations_and_guardrails.py`

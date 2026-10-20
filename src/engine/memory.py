@@ -385,10 +385,13 @@ class ConversationMemoryManager:
         if focus:
             updates.setdefault("minat_fokus", []).append(focus)
 
-        passed = self.gazetteer.find_all_courses_in_text(text)
-        if passed:
-            updates["riwayat_matkul_lulus"] = passed
-
+        text_lower = text.lower()
+        passed_markers = ["sudah lulus", "telah lulus", "lulus matkul", "riwayat", "mengambil matkul", "pernah ambil", "lulus"]
+        has_passed_context = any(m in text_lower for m in passed_markers) and not any(neg in text_lower for neg in ["belum lulus", "belum ambil", "syarat", "panduan"])
+        if has_passed_context:
+            passed = self.gazetteer.find_all_courses_in_text(text)
+            if passed:
+                updates["riwayat_matkul_lulus"] = [p for p in passed if p.lower() not in ["skripsi", "praktik kerja lapangan", "pkl", "tugas akhir"]]
         return updates
 
     def extract_course_entity(
@@ -400,11 +403,15 @@ class ConversationMemoryManager:
 
         courses = self.gazetteer.find_all_courses_in_text(text)
         if courses:
-            return courses[0]
+            filtered = [c for c in courses if c.lower() not in ["skripsi", "praktik kerja lapangan", "tugas akhir", "pkl"]]
+            if filtered:
+                return filtered[0]
 
         q_vec = query_vec if query_vec is not None else self.gazetteer.embed_query(text)
-        return self.gazetteer.match_course(q_vec)
-
+        match = self.gazetteer.match_course(q_vec)
+        if match and match.lower() in ["skripsi", "praktik kerja lapangan", "tugas akhir", "pkl"]:
+            return None
+        return match
     def resolve_anaphora(
         self, session_id: str, query: str, query_vec: np.ndarray | None = None
     ) -> str:

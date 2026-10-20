@@ -5,6 +5,7 @@ from src.engine.tools.academic_tools import (
     calculate_sks_limit,
     generate_degree_plan,
     get_courses_by_semester,
+    search_academic_regulations,
     format_course_catalog_response,
     format_degree_plan_response,
     compress_degree_plan_for_llm,
@@ -139,6 +140,31 @@ ACADEMIC_TOOL_DEFINITIONS = [
                 "required": ["program_studi", "semester"]
             }
         }
+    },
+    {
+        "type": "function",
+        "function": {
+            "name": "search_academic_regulations",
+            "description": "Mencari pedoman resmi, ketentuan, syarat, dan SOP administrasi akademik FTMM UNAIR (Skripsi, Tugas Akhir, PKL, Yudisium, Kelulusan, Cuti Akademik, dan Batas SKS).",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Kata kunci topik regulasi, pertanyaan mahasiswa, atau nama pedoman/SOP (misal: 'syarat skripsi', 'ketentuan pkl', 'prosedur cuti', 'yudisium')."
+                    },
+                    "topik": {
+                        "type": "string",
+                        "description": "Kategori filter opsional: 'skripsi', 'pkl', 'yudisium', 'sop', atau 'akademik'."
+                    },
+                    "top_k": {
+                        "type": "integer",
+                        "description": "Jumlah butir pedoman yang diinginkan (default 3)."
+                    }
+                },
+                "required": ["query"]
+            }
+        }
     }
 ]
 
@@ -148,4 +174,5 @@ TOOL_REGISTRY: dict[str, Any] = {
     "calculate_sks_limit": calculate_sks_limit,
     "generate_degree_plan": generate_degree_plan,
     "get_courses_by_semester": get_courses_by_semester,
+    "search_academic_regulations": search_academic_regulations,
 }

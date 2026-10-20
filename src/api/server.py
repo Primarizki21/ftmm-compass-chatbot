@@ -430,7 +430,7 @@ async def handle_chat(request: ChatRequest, req: Request | None = None) -> ChatR
     t0 = time.perf_counter()
     msg = request.message.strip()
     profile = request.student_profile
-    history = [{"role": m.role, "content": m.content} for m in request.history]
+    history = [{"role": m.role, "content": m.content} for m in request.history if m.content and m.content.strip()]
     session_id = request.session_id or "client_session"
     if not request.history:
         engine.memory.clear_session(session_id)
@@ -665,7 +665,7 @@ async def handle_chat_stream(request: ChatRequest, req: Request | None = None) -
         t0 = time.perf_counter()
         msg = request.message.strip()
         profile = request.student_profile
-        history = [{"role": m.role, "content": m.content} for m in request.history]
+        history = [{"role": m.role, "content": m.content} for m in request.history if m.content and m.content.strip()]
         session_id = request.session_id or "client_session"
         if not request.history:
             engine.memory.clear_session(session_id)

@@ -213,9 +213,27 @@ class UnifiedChatEngine:
         # Step 7: Regulation & SOP FAQ (CAG Route - 0ms retrieval)
         if dec_res.category == DecisionCategory.REGULATION_SOP:
             t_gen_start = time.perf_counter()
+            t_ret_start = time.perf_counter()
+            retrieved_chunks: list[str] = []
+            try:
+                from src.knowledge.regulation_retriever import get_regulation_retriever
+                reg_hits = get_regulation_retriever().retrieve(q_clean, top_k=3, query_vec=q_vec)
+                retrieved_chunks = [h["chunk"] for h in reg_hits if h["score"] >= 0.45]
+            except Exception:
+                pass
+            ret_dt = (time.perf_counter() - t_ret_start) * 1000.0
+
+            extra_context = ""
+            if retrieved_chunks:
+                extra_context = (
+                    "## KETENTUAN TAMBAHAN DOKUMEN RESMI (RAG):\n"
+                    + "\n\n---\n\n".join(retrieved_chunks)
+                    + "\n\n"
+                )
             cag_prompt = (
                 f"{get_cag_system_prompt()}\n\n"
-                "## PERAN SAAT INI (CAG REGULATION FAQ):\n"
+                f"{extra_context}"
+                "## PERAN SAAT INI (CAG/RAG REGULATION FAQ):\n"
                 "Jawab pertanyaan mahasiswa mengenai regulasi akademik atau SOP administrasi FTMM secara tepat, "
                 "padat, dan lugas sesuai basis pengetahuan resmi di atas. Jangan berhalusinasi. "
                 "Sebutkan angka SKS atau ketentuan SOP secara eksplisit (contoh: PKL minimal 80 SKS kumulatif)."
@@ -228,21 +246,26 @@ class UnifiedChatEngine:
             resp = self.llm_adapter.chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.0, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX},
+                options={"temperature": 0.1, "num_predict": 1536, "num_ctx": DEFAULT_NUM_CTX},
                 keep_alive=-1,
             )
             gen_dt = (time.perf_counter() - t_gen_start) * 1000.0
             total_dt = (time.perf_counter() - t0) * 1000.0
             final_reply = clean_thinking_content(resp.message.content.strip())
+            if not final_reply or len(final_reply) < 5:
+                final_reply = (
+                    "Mohon maaf, sistem tidak dapat memproses jawaban regulasi akademik saat ini. "
+                    "Silakan ulangi pertanyaan Anda secara spesifik."
+                )
 
             self.memory.add_turn(session_id, q_raw, final_reply)
             _, updated_prof = self.memory.get_context_for_llm(session_id)
 
             return EngineResult(
                 answer=final_reply,
-                architecture="UnifiedChatEngine (CAG Route)",
-                retrieved_chunks=[],
-                retrieval_latency_ms=0.0,
+                architecture="UnifiedChatEngine (Hybrid Regulation Route)",
+                retrieved_chunks=retrieved_chunks,
+                retrieval_latency_ms=ret_dt,
                 generation_latency_ms=gen_dt,
                 total_latency_ms=total_dt,
                 tokens_generated=resp.get("eval_count", 0),
@@ -264,6 +287,7 @@ class UnifiedChatEngine:
         if (
             "get_courses_by_semester" in tool_names
             or "search_courses" in tool_names
+            or "search_academic_regulations" in tool_names
         ) and "generate_degree_plan" not in tool_names:
             routing_mode = "RAG"
         elif (
@@ -456,8 +480,24 @@ class UnifiedChatEngine:
 
         # Case B: Regulation & SOP FAQ (CAG Route - Live Streaming)
         if dec_res.category == DecisionCategory.REGULATION_SOP:
+            retrieved_chunks = []
+            try:
+                from src.knowledge.regulation_retriever import get_regulation_retriever
+                reg_hits = get_regulation_retriever().retrieve(q_clean, top_k=3, query_vec=q_vec)
+                retrieved_chunks = [h["chunk"] for h in reg_hits if h["score"] >= 0.45]
+            except Exception:
+                pass
+
+            extra_context = ""
+            if retrieved_chunks:
+                extra_context = (
+                    "## KETENTUAN TAMBAHAN DOKUMEN RESMI (RAG):\n"
+                    + "\n\n---\n\n".join(retrieved_chunks)
+                    + "\n\n"
+                )
             cag_prompt = (
                 f"{get_cag_system_prompt()}\n\n"
+                f"{extra_context}"
                 "## PERAN SAAT INI (CAG REGULATION FAQ):\n"
                 "Jawab pertanyaan mahasiswa mengenai regulasi akademik atau SOP administrasi FTMM secara tepat, "
                 "padat, dan lugas sesuai basis pengetahuan resmi di atas. Jangan berhalusinasi. "
@@ -472,7 +512,7 @@ class UnifiedChatEngine:
             async for tok in self.llm_adapter.stream_chat(
                 messages=messages,
                 model=self.model,
-                options={"temperature": 0.0, "num_predict": 300, "num_ctx": DEFAULT_NUM_CTX},
+                options={"temperature": 0.1, "num_predict": 1536, "num_ctx": DEFAULT_NUM_CTX},
             ):
                 if first_token:
                     ttft_ms = (time.perf_counter() - t0) * 1000.0
@@ -481,6 +521,13 @@ class UnifiedChatEngine:
                 yield {"type": "token", "token": tok, "done": False}
 
             final_reply = clean_thinking_content("".join(tokens).strip())
+            if not final_reply or len(final_reply) < 5:
+                final_reply = (
+                    "Mohon maaf, sistem tidak dapat memproses jawaban regulasi akademik saat ini. "
+                    "Silakan ulangi pertanyaan Anda secara spesifik."
+                )
+                yield {"type": "token", "token": final_reply, "done": False}
+
             self.memory.add_turn(session_id, q_raw, final_reply)
             _, updated_prof = self.memory.get_context_for_llm(session_id)
             total_dt = (time.perf_counter() - t0) * 1000.0

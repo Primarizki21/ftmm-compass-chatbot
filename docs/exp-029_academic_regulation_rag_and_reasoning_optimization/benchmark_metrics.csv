@@ -1,0 +1,17 @@
+query_id,topic,query,guardrail_is_ood,guardrail_academic_score,guardrail_ood_score,guardrail_latency_ms,retrieval_recall_at_3,retrieval_top1_score,retrieval_latency_ms,routing_mode,generation_latency_ms,total_latency_ms,tokens_generated,is_completed
+REG-01,skripsi,berikan aku panduan singkat mengenai skripsi,False,0.4498,0.2685,200.16,1.0,0.5809,175.78,CAG,10286.19,10844.28,1353,True
+REG-02,skripsi,apa saja syarat proposal skripsi dan batas minimal sks,False,0.5334,0.2587,176.48,1.0,0.6175,170.29,CAG,6993.49,7570.56,906,True
+REG-03,skripsi,bagaimana ketentuan ujian skripsi dan nilai kelulusan minimal,False,0.5095,0.4125,175.2,1.0,0.4903,173.06,CAG,11462.78,11984.51,1536,True
+REG-04,skripsi,prosedur pengajuan judul skripsi dan turnitin cybercampus,False,0.7098,0.2869,172.81,1.0,0.5295,160.89,CAG,11455.33,11962.99,1536,True
+REG-05,pkl,apa syarat pkl di ftmm?,False,0.6142,0.2315,165.9,1.0,0.5547,177.85,REACT_AGENT,4618.59,5133.36,457,True
+REG-06,pkl,berapa hari kerja minimal pelaksanaan pkl magang industri,False,0.59,0.2577,159.14,1.0,0.5159,176.22,CAG,4413.77,4762.09,562,True
+REG-07,pkl,bagaimana komposisi penilaian praktik kerja lapangan pkl,False,0.635,0.2749,149.33,1.0,0.5372,167.75,CAG,4409.54,4898.41,548,True
+REG-08,yudisium,bagaimana syarat yudisium kelulusan sarjana ftmm,False,0.6754,0.3947,157.45,1.0,0.6471,173.98,CAG,9703.38,10377.88,1301,True
+REG-09,yudisium,berapa batas maksimal nilai D dan nilai E untuk lulus,False,0.4053,0.3188,191.51,1.0,0.4715,186.91,RAG,7454.79,8111.05,832,True
+REG-10,yudisium,apakah ada syarat skor tes bahasa inggris elpt untuk yudisium,False,0.4014,0.3051,158.49,1.0,0.5463,155.48,CAG,6333.79,6852.83,824,True
+REG-11,sop,bagaimana prosedur pengajuan surat cuti akademik,False,0.6041,0.3201,185.75,1.0,0.6328,176.44,CAG,11546.01,12048.19,1536,True
+REG-12,sop,cara meminta surat rekomendasi magang dan beasiswa,False,0.7194,0.3307,148.72,1.0,0.4674,152.49,CAG,8602.62,9073.39,1185,True
+REG-13,sop,prosedur legalisir transkrip nilai dan khs di gkb c,False,0.3305,0.2941,147.52,1.0,0.5627,182.19,CAG,9954.94,10445.54,1337,True
+REG-14,sop,langkah jika terlambat membayar ukt daftar ulang semester,False,0.4017,0.2758,191.6,1.0,0.5566,155.05,CAG,11140.9,11626.33,1536,True
+REG-15,akademik,berapa batas sks jika ips semester lalu di atas 3.00,False,0.545,0.2531,152.17,1.0,0.5247,168.05,CAG,9070.09,9550.74,1164,True
+REG-16,akademik,aturan jatah sks kalau ips dapat 2.20 berapa,False,0.5909,0.2693,150.87,1.0,0.4339,160.8,CAG,4346.61,4823.54,490,True

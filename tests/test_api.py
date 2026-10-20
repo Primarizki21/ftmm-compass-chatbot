@@ -304,8 +304,24 @@ def test_chat_stream_endpoint_success():
         "student_profile": {},
     }
 
+    async def mock_stream(*args, **kwargs):
+        yield {"type": "token", "token": "Halo! ", "done": False}
+        yield {"type": "token", "token": "Ini adalah respons streaming dari Compass AI.", "done": False}
+        yield {
+            "type": "done",
+            "done": True,
+            "token": "",
+            "reply": "Halo! Ini adalah respons streaming dari Compass AI.",
+            "updated_profile": {},
+            "action_type": "GENERAL",
+            "plan_payload": None,
+            "routing_mode": "DIRECT",
+            "latency_ms": 65.0,
+            "ttft_ms": 5.0,
+        }
+
     for path in ["/api/v1/chat/stream", "/api/chat/stream"]:
-        with patch("src.api.server.engine.generate_answer", return_value=mock_result):
+        with patch("src.api.server.engine.stream_generate_answer", side_effect=mock_stream):
             resp = client.post(path, json=payload)
             assert resp.status_code == 200
             assert "text/event-stream" in resp.headers.get("content-type", "")
@@ -338,7 +354,11 @@ def test_chat_stream_endpoint_upstream_connection_error():
         "student_profile": {},
     }
 
-    with patch("src.api.server.engine.generate_answer", side_effect=ConnectionError("Daemon offline")):
+    async def mock_stream_err(*args, **kwargs):
+        raise ConnectionError("Daemon offline")
+        yield {}
+
+    with patch("src.api.server.engine.stream_generate_answer", side_effect=mock_stream_err):
         resp = client.post("/api/v1/chat/stream", json=payload)
         assert resp.status_code == 200
         assert "text/event-stream" in resp.headers.get("content-type", "")

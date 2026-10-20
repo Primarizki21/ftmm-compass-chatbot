@@ -269,6 +269,7 @@ class LLMClientAdapter:
             "calculate_sks_limit",
             "generate_degree_plan",
             "get_courses_by_semester",
+            "search_academic_regulations",
         }
 
         for text in search_texts:
@@ -310,6 +311,29 @@ class LLMClientAdapter:
                             return [NormalizedToolCall(name=str(name).strip(), arguments=args)]
                 except Exception:
                     continue
+
+            # Qwen / Bonsai function calling pseudo-tags: <function=name>...<parameter=key>value</parameter>...</function>
+            fn_matches = re.findall(
+                r"<function=([a-zA-Z0-9_]+)>\s*([\s\S]*?)\s*</function>",
+                text,
+                re.IGNORECASE,
+            )
+            for fn_name, params_raw in fn_matches:
+                fn_name = fn_name.strip()
+                if fn_name in registered_tools:
+                    param_pairs = re.findall(
+                        r"<parameter=([a-zA-Z0-9_]+)>\s*([\s\S]*?)\s*</parameter>",
+                        params_raw,
+                        re.IGNORECASE,
+                    )
+                    args_dict: dict[str, Any] = {}
+                    for p_key, p_val in param_pairs:
+                        p_val_clean = p_val.strip()
+                        if p_val_clean.isdigit():
+                            args_dict[p_key] = int(p_val_clean)
+                        else:
+                            args_dict[p_key] = p_val_clean
+                    return [NormalizedToolCall(name=fn_name, arguments=args_dict)]
 
             # ReAct pattern: Action: <name>\nAction Input: <json>
             react_match = re.search(
@@ -700,11 +724,23 @@ def get_llm_client(backend: str | None = None, force_new: bool = False) -> LLMCl
     return _LLM_CLIENT_INSTANCE
 
 def clean_thinking_content(text: str) -> str:
-    """Ekstraksi dan pembersihan tag <think>...</think> serta unclosed <think>.* jika token terpotong."""
+    """Ekstraksi dan pembersihan tag <think>...</think>, unclosed <think>, serta blok Thinking Process."""
     if not text:
         return ""
     cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
     cleaned = re.sub(r"<think>.*$", "", cleaned, flags=re.DOTALL).strip()
+    if not cleaned and "<think>" in text:
+        cleaned = re.sub(r"</?think>", "", text, flags=re.IGNORECASE).strip()
+    if cleaned.startswith("Thinking Process:") or cleaned.startswith("**Thinking Process:**"):
+        ans_match = re.search(
+            r"(?:Berikut|Berdasarkan|Panduan|Syarat|Kesimpulan|Jawaban|Final Answer)[\s\S]+$",
+            cleaned,
+            re.IGNORECASE,
+        )
+        if ans_match:
+            cleaned = ans_match.group(0).strip()
+        else:
+            cleaned = ""
     return cleaned
 
 @dataclass

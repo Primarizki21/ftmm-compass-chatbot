@@ -36,6 +36,7 @@ CATEGORY_TOOL_NAMES: dict[DecisionCategory, list[str]] = {
         "calculate_sks_limit",
         "generate_degree_plan",
         "get_courses_by_semester",
+        "search_academic_regulations",
     ],
 }
 

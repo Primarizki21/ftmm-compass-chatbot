@@ -817,3 +817,32 @@ def format_degree_plan_response(plan_data: dict[str, Any], language: str = "id")
         )
 
     return "\n".join(lines)
+
+
+def search_academic_regulations(
+    query: str,
+    topik: str | None = None,
+    top_k: int = 3,
+) -> list[dict[str, Any]]:
+    """
+    Mencari ketentuan, syarat, pedoman, atau SOP akademik FTMM UNAIR
+    (Skripsi, PKL, Yudisium, Batas SKS, Cuti, dan Administrasi Akademik).
+    """
+    from src.knowledge.regulation_retriever import get_regulation_retriever
+
+    retriever = get_regulation_retriever()
+    results = retriever.retrieve(query=query, top_k=top_k, topic_filter=topik)
+
+    output = []
+    for r in results:
+        reg = r["regulation"]
+        output.append({
+            "kategori": reg.get("topic", "akademik"),
+            "sumber": reg.get("source_name", "Pedoman FTMM"),
+            "bab": reg.get("chapter", ""),
+            "pasal_subbab": reg.get("subchapter", ""),
+            "judul": reg.get("title", ""),
+            "isi_ketentuan": reg.get("description", "") or reg.get("step_by_step", ""),
+            "skor_relevansi": round(float(r["score"]), 4),
+        })
+    return output

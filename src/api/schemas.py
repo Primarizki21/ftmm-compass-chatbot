@@ -65,7 +65,7 @@ class DegreePlanPayload(BaseModel):
 
 class ChatMessageItem(BaseModel):
     role: Literal["user", "assistant", "system"]
-    content: str = Field(..., min_length=1, max_length=8000, description="Isi teks pesan riwayat.")
+    content: str = Field(default="", min_length=0, max_length=8000, description="Isi teks pesan riwayat.")
 
 
 class ChatRequest(BaseModel):
