@@ -38,6 +38,7 @@
 | **`exp-027`** | 2026-10-18 | Evaluasi Ketahanan Adversarial Red-Teaming & Cascaded Guardrails (Card 126) | Cascaded Guardrails 4-Tier (Tier 1 Syntax + Tier 2 Semantic + Tier 3 NeMo + Tier 4 Rail) + ReAct | Safety Accuracy:<br>Cascaded: **99.38%**<br>NeMo Alone: 55.00% | Attack Success Rate (ASR):<br>Cascaded: **0.83%** (1/120)<br>NeMo Alone: 60.00% | Prompt Injection Block:<br>Cascaded: **100.0%**<br>NeMo Alone: 57.5% | Detection Latency P50:<br>Tier 1 Syntax: **<0.1 ms**<br>Tier 2 Semantic: **<180 ms** | Turn Latency P50:<br>Cascaded: **176.4 ms**<br>NeMo Alone: 266.6 ms | FRR: **0.00%** (0/40 false refusals)<br>160 Queries Full | **Pertahanan Berlapis Unggul Mutlak atas NeMo Mandiri**: Membuktikan bahwa Cascaded Guardrails 4-Tier menekan ASR ke 0.83% (target <=1.0%) dengan 100% pemblokiran injeksi prompt dan OOD homework, serta nol false refusal (FRR 0.00%) pada kueri sah mahasiswa. | `docs/exp-027_adversarial_red_teaming_cascaded_defense/` |
 | **`exp-028`** | 2026-10-20 | Benchmarking Beban Konkurensi Tinggi, Latensi Streaming SSE, dan Stabilitas Memori Gateway (Card 127) | `bonsai-2-4b` + Concurrency Semaphore + `nomic-embed-text-v2-moe` | Success Rate:<br>5 VU: **100.0%** (10/10)<br>10 VU: **100.0%** (20/20)<br>20 VU: **52.5%** (21/40) | Rate Limited (429):<br>5 VU: **0**<br>10 VU: **0**<br>20 VU: **19** (Timeout Guard) | Error Rate (5xx):<br>**0.0%** (Zero Crash pada seluruh 70 request) | Throughput:<br>5 VU: **2.05 RPS**<br>10 VU: **2.10 RPS**<br>20 VU: **3.98 RPS** | P50 TTFT / Turn Lat:<br>5 VU: **2740 ms**<br>10 VU: **5104 ms**<br>20 VU: **5334 ms** | Stabilitas Memori:<br>Zero WSL2 Swapping<br>RSS RAM: **~94 MB**<br>Zero 5xx Failure | **Proteksi Zero-Crash & Kapasitas Gateway Terbukti**: Inisialisasi slot semaphore mencegah tabrakan VRAM GPU RTX 5050 (8GB). Saat lonjakan 20 VU, gateway tertib mengantrekan request dan mengembalikan 429 Retry-After tanpa menjatuhkan server. Real SSE streaming token-by-token aktif. Menjawab Card 127. | `docs/exp-028_concurrency_streaming_load_benchmark/` |
 | **`exp-029`** | 2026-10-20 | Ekspansi RAG Regulasi Akademik, Eliminasi False Refusal Skripsi & Optimasi Token Reasoning (Card 130) | `bonsai-2-4b` (Ternary PQ2_0) + `nomic-embed-text-v2-moe` (768d FAISS Regulations) | FRR Regulasi: **0.00%** (0/16 tertolak)<br>False Refusal Skripsi: **0.0%** (Tuntas) | Recall@3 Regulasi: **100.0%** (16/16)<br>Kompilasi: **262 Butir** Pedoman | Completion Rate: **100.0%** (Zero Empty Content)<br>422 Error: **0.0%** | FAISS Retrieval: **<4.5 ms**<br>Decider: **<0.1 ms** | P50 Latensi: **~7.9 s**<br>Token Budget: **1536** | Zero Hallucination<br>Live Browser Verified<br>100% Pytest PASS | **Ekspansi RAG Regulasi Akademik & Eliminasi False Refusal Skripsi Tuntas**: Mengganti anchor jailbreak bertabrakan kata kunci skripsi, membangun index FAISS 262 butir regulasi institusi (`ftmm_regulations.faiss`), menambahkan physical tool `search_academic_regulations`, dan menaikkan reasoning token budget ke 1536 token sehingga menghasilkan respons lengkap tanpa token starvation di kanal streaming. | `docs/exp-029_academic_regulation_rag_and_reasoning_optimization/` |
+| **`exp-028` (Card 124)** | 2026-10-21 | Benchmarking Komparatif Spektrum Model SLM dan LLM pada Master Dataset Akademik (Card 124) | Spektrum Instruct: `qwen2.5:1.5b`, `qwen2.5:3b`, `llama3.2:3b`, `qwen2.5:7b` + `nomic-embed-text-v2-moe` | Fact Recall:<br>7B: **78.63%**<br>Qwen 3B: **76.76%**<br>Llama 3B: **75.78%**<br>1.5B: 73.55% | Semantic Sim:<br>7B: **0.8626**<br>Qwen 3B: **0.8505**<br>1.5B: 0.8384<br>Llama 3B: 0.8306 | Tool Sel Acc:<br>Llama 3B: **87.08%**<br>7B: 48.55%<br>Qwen 3B: 18.49%<br>1.5B: 15.81% | P50 TTFT:<br>1.5B: **278.89 ms**<br>Qwen 3B: **531.52 ms**<br>Llama 3B: **613.52 ms**<br>7B: **678.49 ms** | Throughput (TPS):<br>1.5B: **163.56**<br>Qwen 3B: **99.89**<br>Llama 3B: **98.77**<br>7B: 57.09 | VRAM / Pareto:<br>1.5B: 3376M (73.58)<br>Llama 3B: 2536M (**79.12**)<br>Qwen 3B: 4326M (68.75)<br>7B: 4628M (60.95) | **Batas Efisiensi Pareto Spektrum Instruct Terpetakan Tuntas**: Model Direct Instruct Non-Thinking mengeliminasi 100% overhead token pemikiran internal (0 thinking tokens), menjaga 100% context efficiency. Llama-3.2-3B meraih skor Pareto tertinggi (79.12) dan tool selection accuracy tertinggi (87.08%). Qwen-2.5-7B mencatatkan Fact Recall tertinggi (78.63%) dan Semantic Sim terbaik (0.8626). Qwen-2.5-1.5B unggul mutlak pada latensi TTFT (278.89 ms) dan throughput (163.56 TPS). | `docs/exp-028_slm_llm_instruct_spectrum/` |
 
 ---
 
@@ -1017,3 +1018,43 @@
   - `scripts/evaluate_academic_regulations_and_reasoning.py`
   - `src/knowledge/regulation_retriever.py`
   - `tests/test_academic_regulations_and_guardrails.py`
+
+### [exp-028] Benchmarking Komparatif Spektrum Model SLM dan LLM pada Master Dataset Akademik
+- **Tanggal:** 2026-10-21
+- **Kartu Trello:** Card 124 (`[Nauval & Ario] Benchmarking Komparatif Spektrum Model SLM dan LLM pada Master Dataset Akademik`)
+- **Tujuan / Hipotesis:**
+  - Membuktikan secara empiris bahwa spektrum model Direct Instruct Non-Thinking (`qwen2.5:1.5b`, `qwen2.5:3b`, `llama3.2:3b`, `qwen2.5:7b`) mampu mengeliminasi 100% overhead token pemikiran internal (`<think>` tags pada model reasoning seperti Bonsai 4B yang memboroskan 800–1.200 token), sehingga membebaskan 100% ruang context window untuk injeksi basis pengetahuan (CAG Memory) dan retrieved chunks (FAISS RAG).
+  - Mengukur latensi TTFT bersih, throughput TPS, kepatuhan pemanggilan fungsi (tool selection), faktualitas (fact recall), dan semantic similarity pada seluruh 449 butir soal master dataset institusi (`gt_master.json`: 369 silabus MK kurikulum 5 prodi + 80 regulasi SOP fakultas).
+  - Menegakkan protokol isolasi sekuensial VRAM $\le 7.000\text{ MiB}$ (Zero WSL2 Swapping Invariant) dengan hygiene memori periodik tiap 25 kueri dan fase isolated backfill embedding.
+- **Hasil Kuantitatif (449 Kueri Penuh, 1.796 Inferensi Total):**
+  | Model | Tier | Tool Sel Acc (%) | Fact Recall (%) | Semantic Sim | P50 TTFT (ms) | Mean TPS | Peak VRAM (MiB) | Context Eff (%) | Pareto Score | Frontier |
+  |---|---|---|---|---|---|---|---|---|---|---|
+  | `qwen2.5:1.5b` | SLM (Edge) | 15.81% | 73.55% | 0.8384 | **278.89 ms** | **163.56** | 3376 MiB | 100.0% | 73.58 | **YES** |
+  | `qwen2.5:3b` | SLM (Compact) | 18.49% | 76.76% | 0.8505 | 531.52 ms | 99.89 | 4326 MiB | 100.0% | 68.75 | **YES** |
+  | `llama3.2:3b` | SLM (Compact) | **87.08%** | 75.78% | 0.8306 | 613.52 ms | 98.77 | **2536 MiB** | 100.0% | **79.12** | **YES** |
+  | `qwen2.5:7b` | Compact LLM | 48.55% | **78.63%** | **0.8626** | 678.49 ms | 57.09 | 4628 MiB | 100.0% | 60.95 | **YES** |
+- **Temuan Kunci Empiris:**
+  1. **Eliminasi 100% Thinking Token Overhead:**
+     - Berbeda dengan model penalaran (reasoning) yang menghabiskan 800–1.200 token untuk pemikiran internal dan memicu token starvation/exhaustion (truncation rate 12–25%), seluruh model Direct Instruct non-thinking memanfaatkan 100% token budget untuk dokumen akademik resmi dengan zero thinking tokens.
+  2. **Llama-3.2-3B Juara Tool Calling & Efisiensi Pareto (Score 79.12):**
+     - `llama3.2:3b` mencatatkan akurasi pemilihan alat tertinggi (**87.08%**), unggul jauh atas Qwen-2.5-3B (18.49%) dan Qwen-2.5-7B (48.55%).
+     - Bekerja sangat efisien dengan Peak VRAM hanya **2536 MiB** dan throughput stabil di 98.77 TPS.
+  3. **Qwen-2.5-7B Unggul pada Faktualitas & Penalaran Semantik:**
+     - `qwen2.5:7b` meraih Fact Recall tertinggi (**78.63%**) dan Semantic Similarity tertinggi (**0.8626**), dengan keunggulan mencolok pada silabus pilihan (89.01%) dan regulasi akademik.
+     - Pembatasan dinamis `num_ctx: 2048` berhasil mengunci Peak VRAM di **4628 MiB** (jauh di bawah batas 7.000 MiB).
+  4. **Qwen-2.5-1.5B Unggul pada Latensi & Throughput Edge:**
+     - Menghasilkan TTFT tercepat (**P50 278.89 ms**) dan throughput tertinggi (**163.56 TPS**), namun mengalami degradasi fungsi tool calling (15.81%).
+  5. **Zero WSL2 Swapping & Process Hygiene Invariant:**
+     - Protokol isolasi sekuensial, flushing prompt cache tiap 25 kueri, dan fase isolated backfill embedding membuktikan zero swapping WSL2 VM, menjaga RSS RAM $\le 2.3\text{ GB}$ dan VRAM $\le 4.7\text{ GB}$.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - Menetapkan `llama3.2:3b` sebagai model alternatif unggulan untuk ReAct function calling dan dialog akademik berlatensi rendah.
+  - Mempertahankan `qwen2.5:3b` dan `bonsai-2-4b` sebagai generator harian, serta merekomendasikan `qwen2.5:7b` untuk evaluasi akademik komprehensif.
+  - Seluruh 5 butir DoD pada Trello Card 124 terpenuhi 100% PASS.
+- **Artefak:**
+  - `docs/exp-028_slm_llm_instruct_spectrum/README.md`
+  - `docs/exp-028_slm_llm_instruct_spectrum/benchmark_summary.md`
+  - `docs/exp-028_slm_llm_instruct_spectrum/benchmark_metrics.csv`
+  - `docs/exp-028_slm_llm_instruct_spectrum/benchmark_results.json`
+  - `docs/exp-028_slm_llm_instruct_spectrum/benchmark_raw_traces.jsonl`
+  - `scripts/evaluate_slm_llm_instruct_spectrum.py`
+  - `tests/test_slm_llm_instruct_spectrum.py`

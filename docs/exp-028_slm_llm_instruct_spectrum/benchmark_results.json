@@ -1,0 +1,114 @@
+{
+  "metadata": {
+    "experiment_id": "exp-028",
+    "topic": "Benchmarking Komparatif Spektrum Model SLM dan LLM pada Master Dataset Akademik",
+    "date": "2026-10-20",
+    "dataset_count": 449,
+    "embed_model": "nomic-embed-text-v2-moe:latest",
+    "hardware": "NVIDIA GeForce RTX 5050 Laptop GPU (8GB VRAM) / Linux WSL2"
+  },
+  "models": [
+    {
+      "model": "qwen2.5:1.5b",
+      "tier": "SLM (Edge)",
+      "eval_count": 449,
+      "tool_selection_accuracy_pct": 15.81,
+      "fact_recall_pct": 73.55,
+      "semantic_similarity": 0.8384,
+      "p50_ttft_ms": 278.89,
+      "mean_ttft_ms": 2815.76,
+      "mean_tps": 163.56,
+      "peak_vram_mib": 3376,
+      "truncation_rate_pct": 62.14,
+      "context_efficiency_pct": 100.0,
+      "quality_composite": 62.72,
+      "speed_composite": 100.0,
+      "memory_composite": 51.77,
+      "pareto_score": 73.58,
+      "is_pareto_frontier": true
+    },
+    {
+      "model": "qwen2.5:3b",
+      "tier": "SLM (Compact)",
+      "eval_count": 449,
+      "tool_selection_accuracy_pct": 18.49,
+      "fact_recall_pct": 76.76,
+      "semantic_similarity": 0.8505,
+      "p50_ttft_ms": 531.52,
+      "mean_ttft_ms": 1999.79,
+      "mean_tps": 99.89,
+      "peak_vram_mib": 4326,
+      "truncation_rate_pct": 56.79,
+      "context_efficiency_pct": 100.0,
+      "quality_composite": 65.09,
+      "speed_composite": 90.9,
+      "memory_composite": 38.2,
+      "pareto_score": 68.75,
+      "is_pareto_frontier": true
+    },
+    {
+      "model": "llama3.2:3b",
+      "tier": "SLM (Compact)",
+      "eval_count": 449,
+      "tool_selection_accuracy_pct": 87.08,
+      "fact_recall_pct": 75.78,
+      "semantic_similarity": 0.8306,
+      "p50_ttft_ms": 613.52,
+      "mean_ttft_ms": 616.04,
+      "mean_tps": 98.77,
+      "peak_vram_mib": 4702,
+      "truncation_rate_pct": 40.98,
+      "context_efficiency_pct": 100.0,
+      "quality_composite": 81.15,
+      "speed_composite": 85.28,
+      "memory_composite": 32.83,
+      "pareto_score": 72.93,
+      "is_pareto_frontier": true
+    },
+    {
+      "model": "qwen2.5:7b",
+      "tier": "Compact LLM",
+      "eval_count": 449,
+      "tool_selection_accuracy_pct": 48.55,
+      "fact_recall_pct": 78.63,
+      "semantic_similarity": 0.8626,
+      "p50_ttft_ms": 678.49,
+      "mean_ttft_ms": 701.01,
+      "mean_tps": 57.09,
+      "peak_vram_mib": 4628,
+      "truncation_rate_pct": 76.39,
+      "context_efficiency_pct": 100.0,
+      "quality_composite": 73.78,
+      "speed_composite": 59.93,
+      "memory_composite": 33.89,
+      "pareto_score": 60.95,
+      "is_pareto_frontier": true
+    }
+  ],
+  "subcategories": {
+    "Silabus Wajib": {
+      "count": 297,
+      "best_model": "qwen2.5:7b",
+      "best_fact_recall": 88.2,
+      "best_tool_acc": 58.59
+    },
+    "Silabus Pilihan": {
+      "count": 72,
+      "best_model": "qwen2.5:7b",
+      "best_fact_recall": 89.01,
+      "best_tool_acc": 52.78
+    },
+    "Regulasi Akademik": {
+      "count": 62,
+      "best_model": "qwen2.5:7b",
+      "best_fact_recall": 35.87,
+      "best_tool_acc": 9.68
+    },
+    "SOP Layanan": {
+      "count": 18,
+      "best_model": "qwen2.5:3b",
+      "best_fact_recall": 31.23,
+      "best_tool_acc": 11.11
+    }
+  }
+}

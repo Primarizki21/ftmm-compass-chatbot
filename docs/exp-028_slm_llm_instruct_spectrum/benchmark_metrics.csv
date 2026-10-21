@@ -1,0 +1,5 @@
+model,tier,eval_count,tool_selection_accuracy_pct,fact_recall_pct,semantic_similarity,p50_ttft_ms,mean_ttft_ms,mean_tps,peak_vram_mib,truncation_rate_pct,context_efficiency_pct,quality_composite,speed_composite,memory_composite,pareto_score,is_pareto_frontier
+qwen2.5:1.5b,SLM (Edge),449,15.81,73.55,0.8384,278.89,2815.76,163.56,3376,62.14,100.0,62.72,100.0,51.77,73.58,True
+qwen2.5:3b,SLM (Compact),449,18.49,76.76,0.8505,531.52,1999.79,99.89,4326,56.79,100.0,65.09,90.9,38.2,68.75,True
+llama3.2:3b,SLM (Compact),449,87.08,75.78,0.8306,613.52,616.04,98.77,4702,40.98,100.0,81.15,85.28,32.83,72.93,True
+qwen2.5:7b,Compact LLM,449,48.55,78.63,0.8626,678.49,701.01,57.09,4628,76.39,100.0,73.78,59.93,33.89,60.95,True
