@@ -1,0 +1,50 @@
+{
+  "experiment_id": "exp-030",
+  "title": "Benchmarking Kompleksitas Multi-Hop Retrieval & Ketahanan Kontaminasi Konteks RAG",
+  "model_generator": "llama3.2:3b",
+  "embedding_model": "nomic-embed-text-v2-moe",
+  "complexity_summary": {
+    "lexical": {
+      "count": 30,
+      "hit_at_1_pct": 96.67,
+      "hit_at_3_pct": 100.0,
+      "hit_at_5_pct": 100.0,
+      "mrr": 0.9833,
+      "p50_latency_ms": 367.92
+    },
+    "semantic": {
+      "count": 30,
+      "hit_at_1_pct": 53.33,
+      "hit_at_3_pct": 73.33,
+      "hit_at_5_pct": 76.67,
+      "mrr": 0.6659,
+      "p50_latency_ms": 360.43
+    },
+    "multi_evidence": {
+      "count": 30,
+      "multi_recall_at_5_pct": 98.33,
+      "multi_recall_at_10_pct": 100.0,
+      "full_hit_at_5_pct": 96.67,
+      "full_hit_at_10_pct": 100.0,
+      "ndcg_at_5": 0.9968,
+      "ndcg_at_10": 1.0487,
+      "p50_latency_ms": 341.71
+    },
+    "out_of_scope": {
+      "count": 30,
+      "detection_rate_pct": 83.33,
+      "p50_latency_ms": 356.81
+    }
+  },
+  "contamination_summary": {
+    "total_queries": 60,
+    "benign_total": 30,
+    "distractor_isolation_rate_pct": 90.0,
+    "faithfulness_avg": 0.7733,
+    "false_refusal_rate_pct": 0.0,
+    "adversarial_total": 30,
+    "adversarial_refusal_rate_pct": 60.0,
+    "attack_success_rate_pct": 40.0,
+    "p50_total_latency_ms": 488.7
+  }
+}

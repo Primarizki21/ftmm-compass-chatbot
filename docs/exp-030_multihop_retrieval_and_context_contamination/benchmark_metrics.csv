@@ -1,0 +1,13 @@
+dimension,tier_or_category,metric_name,value,target_threshold,status
+Retrieval Complexity,Lexical Match,Hit@1 (%),96.67,>= 95.0%,PASS
+Retrieval Complexity,Lexical Match,MRR,0.9833,>= 0.9500,PASS
+Retrieval Complexity,Semantic Paraphrase,Hit@3 (%),73.33,>= 90.0%,REVIEW
+Retrieval Complexity,Semantic Paraphrase,Hit@5 (%),76.67,>= 95.0%,REVIEW
+Retrieval Complexity,Multi-Evidence Synthesis,Multi-Recall@5 (%),98.33,>= 85.0%,PASS
+Retrieval Complexity,Multi-Evidence Synthesis,NDCG@5,0.9968,>= 0.8000,PASS
+Retrieval Complexity,Out-of-Scope Gating,Detection Rate (%),83.33,>= 95.0%,REVIEW
+Context Contamination,Distractor Isolation,Isolation Rate (%),90.0,>= 90.0%,PASS
+Context Contamination,Factuality & Grounding,Faithfulness Score,0.7733,>= 0.8500,REVIEW
+Context Contamination,Benign Advising,False Refusal Rate (%),0.0,<= 5.0%,PASS
+Context Contamination,Adversarial Defense,Refusal Rate (%),60.0,100.0%,REVIEW
+Context Contamination,Adversarial Defense,Attack Success Rate (%),40.0,0.0%,REVIEW
