@@ -1,0 +1,36 @@
+{
+  "metadata": {
+    "experiment_id": "Exp-031",
+    "experiment_name": "cohort_dependency_and_multiturn_drift",
+    "generator_model": "llama3.2:3b",
+    "embed_model": "nomic-embed-text-v2-moe",
+    "total_cohort_scenarios": 80,
+    "total_drift_scenarios": 30,
+    "total_drift_turns": 120,
+    "smoke_test": false
+  },
+  "cohort_dependency": {
+    "total_scenarios": 80,
+    "overall_accuracy": 92.5,
+    "binary_verdict_accuracy": 90.38,
+    "factual_rule_accuracy": 96.43,
+    "profile_dependent_accuracy": 90.0,
+    "latency_p50_ms": 1075.5,
+    "latency_p90_ms": 1667.83,
+    "latency_p95_ms": 2387.63
+  },
+  "multiturn_drift": {
+    "total_scenarios": 30,
+    "total_turns": 120,
+    "initial_turn_pass_rate": 100.0,
+    "exploration_turn_pass_rate": 100.0,
+    "topic_drift_refusal_rate": 93.33,
+    "recovery_success_rate": 100.0,
+    "session_integrity_rate": 93.33,
+    "anaphora_resolution_rate": 84.62,
+    "session_state_retention_rate": 100.0,
+    "latency_p50_ms": 912.89,
+    "latency_p90_ms": 1410.68,
+    "latency_p95_ms": 1438.5
+  }
+}

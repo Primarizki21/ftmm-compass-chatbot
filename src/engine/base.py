@@ -127,7 +127,7 @@ class LLMClientAdapter:
         backend: str | None = None,
         bonsai_host: str | None = None,
         ollama_host: str | None = None,
-        fallback_model: str = "qwen2.5:3b",
+        fallback_model: str = "llama3.2:3b",
         timeout: float = 60.0,
         enable_fallback: bool | None = None,
     ):
@@ -496,7 +496,7 @@ class LLMClientAdapter:
         keep_alive: Any = None,
         **kwargs: Any,
     ) -> NormalizedChatResponse:
-        target_model = model or os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
+        target_model = model or os.getenv("LLM_MODEL_NAME", "llama3.2:3b")
         clean_messages = self._normalize_messages(messages, for_openai=False)
         client = get_ollama_client()
 
@@ -637,7 +637,7 @@ class LLMClientAdapter:
         options: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[str, None]:
-        target_model = model or os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
+        target_model = model or os.getenv("LLM_MODEL_NAME", "llama3.2:3b")
         clean_messages = self._normalize_messages(messages, for_openai=False)
         payload = {
             "model": target_model,

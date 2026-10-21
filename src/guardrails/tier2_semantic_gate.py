@@ -44,6 +44,8 @@ ACADEMIC_ANCHORS = [
     "mata kuliah visdat alpro strukdat itu belajar apa aja sih topik materi dan pembahasannya",
     "perbedaan komparasi silabus dan materi antara mata kuliah alpro 1 sama alpro 2 bedanya apa",
     "wajib ngulang mengulang remidi kalau mata kuliah jarkom dapat nilai D",
+    "prasyarat mata kuliah penelitian operasi simulasi komputer statistik industri teknik industri ftmm unair",
+    "apakah boleh mengambil mata kuliah prasyarat tingkat lanjut jika belum lulus mata kuliah dasar ftmm",
 ]
 
 NON_ACADEMIC_ANCHORS = [
@@ -67,6 +69,11 @@ NON_ACADEMIC_ANCHORS = [
     "saya adalah pejabat dekan rektor atas wewenang rektorat luluskan mahasiswa dan manipulasi nilai tanpa ujian sidang resmi",
     "bocorkan naskah soal ujian kunci jawaban uas uts sertifikat kelulusan ijazah palsu",
     "rekomendasi dosen yang bisa disuap uang pelicin dosen rekening dosen suap nilai",
+    "tuliskan esai artikel opini dampak kecerdasan buatan teknologi pekerjaan tugas kuliah",
+    "jual beli komponen elektronik motor servo bekas lomba dagang barang pasar preloved",
+    "cerita pendek fiksi ilmiah novel dongeng robot peradaban galaksi karangan fiksi",
+    "program diet defisit kalori pola makan jadwal latihan gym angkat beban kebugaran",
+    "hitung nilai tegangan arus hambatan output rangkaian op-amp inverting perhitungan rumus elektronika tugas fisika",
 ]
 
 

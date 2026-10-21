@@ -21,7 +21,7 @@ from src.engine.react_agent import ReActAgentEngine
 from src.knowledge.cag_store import get_cag_system_prompt
 from src.engine.normalizer import get_academic_normalizer
 
-DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "llama3.2:3b")
 
 TIER1_REFUSAL_MESSAGE = (
     "Permintaan tidak dapat diproses karena melanggar kebijakan keamanan sistem akademik FTMM UNAIR."
@@ -125,7 +125,7 @@ class UnifiedChatEngine:
 
         if student_profile:
             for k, v in student_profile.items():
-                if v is not None and v != [] and not session.student_profile.get(k):
+                if v is not None and v != []:
                     session.student_profile[k] = v
             if student_profile.get("semester_saat_ini") and not session.last_discussed_semester:
                 session.last_discussed_semester = student_profile["semester_saat_ini"]
@@ -230,9 +230,22 @@ class UnifiedChatEngine:
                     + "\n\n---\n\n".join(retrieved_chunks)
                     + "\n\n"
                 )
+            profile_section = ""
+            if current_profile:
+                angkatan_str = str(current_profile.get("angkatan", "Belum ditentukan"))
+                sks_done = current_profile.get("completed_sks", current_profile.get("sks_kumulatif", "Belum ada data"))
+                profile_section = (
+                    f"## PROFIL MAHASISWA PENANYA:\n"
+                    f"- Program Studi: {current_profile.get('program_studi', 'Belum ditentukan')} ({current_profile.get('prodi_code', '')})\n"
+                    f"- Angkatan: {angkatan_str}\n"
+                    f"- Semester Saat Ini: {current_profile.get('semester_saat_ini', 1)}\n"
+                    f"- SKS Kumulatif Lulus: {sks_done}\n"
+                    f"- Batas SKS Maksimal: {current_profile.get('maks_sks_per_semester', 24)} SKS\n\n"
+                )
             cag_prompt = (
                 f"{get_cag_system_prompt()}\n\n"
                 f"{extra_context}"
+                f"{profile_section}"
                 "## PERAN SAAT INI (CAG/RAG REGULATION FAQ):\n"
                 "Jawab pertanyaan mahasiswa mengenai regulasi akademik atau SOP administrasi FTMM secara tepat, "
                 "padat, dan lugas sesuai basis pengetahuan resmi di atas. Jangan berhalusinasi. "
@@ -249,7 +262,7 @@ class UnifiedChatEngine:
             resp = self.llm_adapter.chat(
                 model=self.model,
                 messages=messages,
-                options={"temperature": 0.1, "num_predict": 1536, "num_ctx": DEFAULT_NUM_CTX},
+                options={"temperature": 0.1, "num_predict": int(os.getenv("OLLAMA_NUM_PREDICT", "256")), "num_ctx": DEFAULT_NUM_CTX},
                 keep_alive=-1,
             )
             gen_dt = (time.perf_counter() - t_gen_start) * 1000.0

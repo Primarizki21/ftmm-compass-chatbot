@@ -20,7 +20,7 @@ from src.engine.tools.academic_tools import (
     format_degree_plan_response,
     compress_degree_plan_for_llm,
 )
-DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
+DEFAULT_MODEL = os.getenv("LLM_MODEL_NAME", "llama3.2:3b")
 
 
 def detect_query_language(query: str, history: list[dict[str, str]] | None = None) -> str:
@@ -94,6 +94,13 @@ Prinsip Kerja Agen:
    - Jika pengguna meminta penulisan kode umum (seperti implementasi algoritma pemrograman lepas, pembuatan script/aplikasi di luar kurikulum FTMM), pengerjaan PR umum, atau topik non-akademik umum lainnya, Anda WAJIB MENOLAK secara sopan dan lugas:
      * Bahasa Indonesia: 'Maaf, sebagai asisten akademik FTMM UNAIR, saya hanya melayani konsultasi kurikulum, prasyarat mata kuliah, beban SKS, dan perencanaan studi FTMM. Saya tidak dapat membuatkan kode program atau mengerjakan tugas di luar kurikulum resmi.'
      * English: 'Sorry, as the official FTMM UNAIR academic assistant, I only handle inquiries related to the curriculum, course prerequisites, credit limits, and degree planning. I cannot write arbitrary code or complete general homework assignments outside our curriculum.'
+10. PENALARAN KOHOR & PROFIL MAHASISWA:
+   - Perhatikan [PROFIL MAHASISWA] (Angkatan, Semester Saat Ini, SKS Kumulatif Lulus, IPS):
+   - Mahasiswa Angkatan 2021–2022: Sistem paket hanya semester 1; semester 2 dapat memilih KRS mandiri bersyarat setelah evaluasi semester 1.
+   - Mahasiswa Angkatan 2023–2024+: Semester 1 dan semester 2 adalah SISTEM PAKET PENUH (tidak dapat memilih KRS mandiri di semester 2).
+   - Prasyarat PKL: Minimal 80 SKS kumulatif dan duduk di semester 5. Mahasiswa semester 4 atau SKS < 80 belum boleh mendaftar PKL.
+   - Prasyarat Skripsi: Minimal 120 SKS kumulatif untuk sidang, telah lulus Metodologi Penelitian, maksimal 20% nilai D, dan 0 SKS nilai E.
+   - Beban SKS Semester dari IPS semester lalu: IPS > 3.00 (maks 24), IPS 2.51–3.00 (maks 20), IPS 2.00–2.50 (maks 18), IPS < 2.00 (maks 15).
 """
 
 
@@ -150,8 +157,10 @@ class ReActAgentEngine:
         if student_profile:
             profile_context = (
                 f"[PROFIL MAHASISWA]:\n"
-                f"- Program Studi: {student_profile.get('program_studi', 'Belum ditentukan')}\n"
+                f"- Program Studi: {student_profile.get('program_studi', 'Belum ditentukan')} ({student_profile.get('prodi_code', '')})\n"
+                f"- Angkatan: {student_profile.get('angkatan', 'Belum ditentukan')}\n"
                 f"- Semester Saat Ini: {student_profile.get('semester_saat_ini', 1)}\n"
+                f"- SKS Kumulatif Lulus: {student_profile.get('completed_sks', student_profile.get('sks_kumulatif', 'Belum ada data'))} SKS\n"
                 f"- Mata Kuliah Lulus: {', '.join(student_profile.get('riwayat_matkul_lulus', [])) or 'Belum ada data'}\n"
                 f"- Minat/Fokus: {', '.join(student_profile.get('minat_fokus', [])) or 'Umum'}\n"
                 f"- Target Kelulusan: Semester {student_profile.get('target_kelulusan_semester', 8)}\n"
@@ -188,7 +197,7 @@ class ReActAgentEngine:
                     chat_kwargs: dict[str, Any] = {
                         "model": self.model,
                         "messages": messages,
-                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": 1024, "num_ctx": DEFAULT_NUM_CTX},
+                        "options": {"temperature": 0.1, "top_p": 0.9, "num_predict": int(os.getenv("OLLAMA_NUM_PREDICT", "256")), "num_ctx": DEFAULT_NUM_CTX},
                     }
                     if active_tools and step_count == 1:
                         chat_kwargs["tools"] = active_tools

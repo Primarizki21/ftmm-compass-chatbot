@@ -199,8 +199,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 async def handle_health_check(strict: bool = False) -> HealthResponse:
     """Status kesehatan backend dan pengecekan kesehatan ganda (Bonsai llama-server & Ollama daemon)."""
-    active_backend = os.getenv("LLM_BACKEND", "bonsai").strip().lower()
-    generator_model = os.getenv("LLM_MODEL_NAME", "bonsai-2-4b")
+    active_backend = os.getenv("LLM_BACKEND", "ollama").strip().lower()
+    generator_model = os.getenv("LLM_MODEL_NAME", "llama3.2:3b")
     embedding_model = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
 
     bonsai_base_url = _get_bonsai_base_url()

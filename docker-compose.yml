@@ -15,7 +15,7 @@ services:
       - TOKENIZERS_PARALLELISM=false
       - OLLAMA_NUM_CTX=2048
       - LLM_BACKEND=ollama
-      - LLM_MODEL_NAME=qwen2.5:3b
+      - LLM_MODEL_NAME=llama3.2:3b
       - BONSAI_HOST=http://127.0.0.1:8080
       - OLLAMA_HOST=http://127.0.0.1:11434
       - SESSION_STORE_BACKEND=sqlite

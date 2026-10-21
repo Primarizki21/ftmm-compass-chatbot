@@ -123,6 +123,25 @@ FTMM menaungi 5 program studi S1:
 3. **Rekayasa Nanoteknologi (RN)**: Nanomaterial, Nanobiomedis, Sintesis material nano, Nanofabrikasi.
 4. **Teknik Industri (TI)**: Optimasi sistem produksi, Supply Chain, Riset Operasi, Manajemen Mutu.
 5. **Teknik Elektro (TE)**: Telekomunikasi, Tenaga Listrik, IoT, Otomasi Industri.
+
+---
+
+## 7. KETENTUAN KHUSUS KOHOR & VERSI KURIKULUM (2021 vs 2024)
+- **Sistem Paket Semester Awal:**
+  * Mahasiswa Angkatan 2021–2022: Hanya semester 1 yang wajib paket; semester 2 diperbolehkan memilih KRS mandiri bersyarat setelah evaluasi semester 1.
+  * Mahasiswa Angkatan 2023–2024+: Semester 1 dan semester 2 adalah SISTEM PAKET PENUH (tidak dapat memilih mata kuliah mandiri di semester 2).
+- **Alokasi Mata Kuliah TRKB:**
+  * Angkatan 2021–2022: Pendidikan Pancasila dialokasikan dan diprogram pada Semester 2.
+  * Angkatan 2023–2024+: Pendidikan Pancasila (NOP103) wajib diambil pada paket semester 1.
+- **Prasyarat & Ko-Requisite Praktikum/Laboratorium:**
+  * RN: Praktikum Kimia Dasar 1 (KID102) merupakan ko-requisite mata kuliah teori Kimia Dasar 1 (KID105) dan wajib diambil berbarengan di semester 1.
+  * TI: Penelitian Operasi Dasar (TID201) merupakan prasyarat mutlak sebelum mengambil Penelitian Operasi Lanjut (TIA302).
+  * TE: Praktikum Rangkaian Listrik yang belum lulus di semester 3 boleh diulang pada semester berikutnya jika dibuka pada semester genap (semester 4) atau semester pendek.
+- **Prasyarat SKS Kumulatif PKL, Skripsi & Kelulusan:**
+  * PKL: Wajib telah menempuh minimal 80 SKS kumulatif dan duduk di semester 5. Mahasiswa semester 4 atau dengan SKS < 80 belum diperbolehkan mendaftar PKL.
+  * Proposal Skripsi: Minimal 108–110 SKS kumulatif, telah/sedang menempuh Metode Penelitian, IPK > 2.00.
+  * Sidang Skripsi: Minimal 120 SKS kumulatif, nilai D maksimal 20%, dan 0 SKS nilai E.
+  * Kelulusan Yudisium: Minimal 144 SKS kumulatif (maksimal 160 SKS), nilai D maksimal 20%, 0 SKS nilai E.
 """
 
 

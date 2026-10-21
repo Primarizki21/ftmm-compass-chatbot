@@ -1,0 +1,201 @@
+type,id,scenario_id,prodi,prodi_code,domain,style,angkatan,turn,turn_type,expected_action,actual_action,action_match,expected_verdict,is_profile_dependent,verdict_match,anaphora_resolved,routing_mode,latency_ms,response_snippet
+COHORT_PROFILE,CPB-001,,TSD,,SKS_PACKAGE_POLICY,verification_binary,2021,,,,,,True,True,1.0,,,11740.89,"Tidak, Anda tidak boleh memilih mata kuliah sendiri dan tidak mengambil sistem paket di semester 2.  Menurut ketentuan y"
+COHORT_PROFILE,CPB-002,,TSD,,SKS_PACKAGE_POLICY,verification_binary,2022,,,,,,True,True,1.0,,,1251.99,"Tidak, Anda tidak boleh memilih mata kuliah sendiri dan tidak mengambil sistem paket di semester 2.  Menurut ketentuan y"
+COHORT_PROFILE,CPB-003,,TSD,,SKS_PACKAGE_POLICY,verification_binary,2023,,,,,,False,True,1.0,,,1181.61,"Tidak, karena Anda adalah mahasiswa Angkatan 2023–2024+, yang berarti semester 1 dan semester 2 adalah sistem paket penu"
+COHORT_PROFILE,CPB-004,,TSD,,SKS_PACKAGE_POLICY,verification_binary,2024,,,,,,False,True,1.0,,,970.44,"Tidak, karena berdasarkan ketentuan resmi yang telah disebutkan sebelumnya, mahasiswa Angkatan 2023–2024+ harus mengikut"
+COHORT_PROFILE,CPB-005,,TSD,,SKS_PACKAGE_POLICY,first_person,2021,,,,,,Maksimal 20 SKS sesuai aturan rentang IPS 2.50-2.99 pada Panduan Akademik 2021.,True,1.0,,,1074.45,"Dengan IPS 2,85, Anda dapat mengambil beban SKS maksimal 20 SKS."
+COHORT_PROFILE,CPB-006,,TSD,,SKS_PACKAGE_POLICY,first_person,2022,,,,,,Maksimal 20 SKS sesuai aturan rentang IPS 2.50-2.99 pada Panduan Akademik 2021.,True,1.0,,,934.52,"Dengan IPS 2,85, Anda dapat mengambil beban SKS maksimal 20 SKS sesuai aturan rentang IPS 2,50-2,99 pada Panduan Akademi"
+COHORT_PROFILE,CPB-007,,TSD,,SKS_PACKAGE_POLICY,first_person,2023,,,,,,Maksimal 20 SKS sesuai Pasal 5.4 Panduan Akademik FTMM.,True,1.0,,,1606.58,"Berdasarkan ketentuan resmi, rentang beban SKS IPS adalah 2,50-2,99.   Jadi, berdasarkan angka IPS Anda sebesar 2,85, ma"
+COHORT_PROFILE,CPB-008,,TSD,,SKS_PACKAGE_POLICY,first_person,2024,,,,,,Maksimal 20 SKS sesuai Pasal 5.4 Panduan Akademik FTMM.,True,1.0,,,1665.21,"Dari informasi yang diberikan, rentang beban SKS IPS adalah 2,50-2,99. Dengan demikian, Anda dapat menghitung beban SKS "
+COHORT_PROFILE,CPB-009,,TSD,,SKS_PACKAGE_POLICY,verification_binary,2021,,,,,,True,True,0.0,,,1157.44,"Tidak, karena Anda hanya menempuh minimal 108 SKS kumulatif dan belum duduk di semester 5."
+COHORT_PROFILE,CPB-010,,TSD,,SKS_PACKAGE_POLICY,verification_binary,2022,,,,,,True,True,1.0,,,688.49,"Ya, karena Anda sudah menempuh minimal 108 SKS kumulatif dan duduk di semester 5."
+COHORT_PROFILE,CPB-011,,TSD,,SKS_PACKAGE_POLICY,verification_binary,2023,,,,,,False,True,1.0,,,1131.12,"Tidak, karena Anda belum menempuh minimal 120 SKS kumulatif dan nilai IPK > 2.00."
+COHORT_PROFILE,CPB-012,,TSD,,SKS_PACKAGE_POLICY,verification_binary,2024,,,,,,False,True,1.0,,,685.43,"Tidak, karena Anda belum menempuh minimal 120 SKS kumulatif dan nilai IPK > 2.00."
+COHORT_PROFILE,CPB-013,,TSD,,SKS_PACKAGE_POLICY,formal,2021,,,,,,Minimal 80 SKS kumulatif dan duduk di semester 5.,True,1.0,,,981.68,Syarat PKL FTMM adalah sebagai berikut:  - Minimal 80 SKS kumulatif dan duduk di semester 5.
+COHORT_PROFILE,CPB-014,,TSD,,SKS_PACKAGE_POLICY,formal,2022,,,,,,Minimal 80 SKS kumulatif dan duduk di semester 5.,True,1.0,,,701.44,Syarat PKL FTMM adalah:  - Minimal 80 SKS kumulatif dan duduk di semester 5.
+COHORT_PROFILE,CPB-015,,TSD,,SKS_PACKAGE_POLICY,formal,2023,,,,,,"Minimal 80 SKS kumulatif, duduk di semester 5, dan durasi kerja lapangan minimal 18 hari kerja efektif.",True,1.0,,,1239.25,Syarat kelulusan PKL adalah sebagai berikut:  - Minimal 80 SKS kumulatif - Duduk di semester 5 - Durasi kerja lapangan m
+COHORT_PROFILE,CPB-016,,TSD,,SKS_PACKAGE_POLICY,formal,2024,,,,,,"Minimal 80 SKS kumulatif, duduk di semester 5, dan durasi kerja lapangan minimal 18 hari kerja efektif.",True,1.0,,,842.74,Syarat kelulusan PKL adalah:  - Minimal 80 SKS kumulatif - Duduk di semester 5 - Durasi kerja lapangan minimal 18 hari k
+COHORT_PROFILE,CPB-017,,TRKB,,CURRICULUM_REVISION_MANDATORY,verification_binary,2021,,,,,,False,True,1.0,,,1103.42,"Tidak, Pendidikan Pancasila (NOP103) tidak wajib diambil pada paket semester 1."
+COHORT_PROFILE,CPB-018,,TRKB,,CURRICULUM_REVISION_MANDATORY,verification_binary,2022,,,,,,False,True,1.0,,,686.67,"Tidak, Pendidikan Pancasila (NOP103) tidak wajib diambil pada paket semester 1."
+COHORT_PROFILE,CPB-019,,TRKB,,CURRICULUM_REVISION_MANDATORY,verification_binary,2023,,,,,,True,True,0.0,,,1465.22,"Tidak, Pendidikan Pancasila (NOP103) tidak wajib diambil pada paket semester 1. Sesuai ketentuan resmi yang saya temukan"
+COHORT_PROFILE,CPB-020,,TRKB,,CURRICULUM_REVISION_MANDATORY,verification_binary,2024,,,,,,True,True,0.0,,,1184.9,"Tidak, Pendidikan Pancasila (NOP103) tidak wajib diambil pada paket semester 1.  Pada kurikulum TRKB 2024, Pendidikan Pa"
+COHORT_PROFILE,CPB-021,,TRKB,,CURRICULUM_REVISION_MANDATORY,verification_binary,2021,,,,,,False,False,1.0,,,1076.56,"Tidak, karena minimal kerja lapangan adalah 18 hari kerja efektif."
+COHORT_PROFILE,CPB-022,,TRKB,,CURRICULUM_REVISION_MANDATORY,verification_binary,2022,,,,,,False,False,1.0,,,794.73,"Tidak, karena minimal kerja lapangan adalah 18 hari kerja efektif dan Anda hanya memiliki 12 hari kerja di logbook."
+COHORT_PROFILE,CPB-023,,TRKB,,CURRICULUM_REVISION_MANDATORY,verification_binary,2023,,,,,,False,False,1.0,,,1211.46,"Tidak, karena minimal kerja lapangan adalah 18 hari kerja efektif dan Anda hanya memiliki logbook yang baru terisi 12 ha"
+COHORT_PROFILE,CPB-024,,TRKB,,CURRICULUM_REVISION_MANDATORY,verification_binary,2024,,,,,,False,False,1.0,,,803.99,"Tidak, karena minimal kerja lapangan adalah 18 hari kerja efektif dan Anda hanya memiliki logbook yang terisi 12 hari ke"
+COHORT_PROFILE,CPB-025,,TRKB,,CURRICULUM_REVISION_MANDATORY,first_person,2021,,,,,,False,False,1.0,,,1223.79,"Tidak, karena nilai D maksimal 20% dari total SKS kumulatif dan nilai E wajib 0 SKS."
+COHORT_PROFILE,CPB-026,,TRKB,,CURRICULUM_REVISION_MANDATORY,first_person,2022,,,,,,False,False,1.0,,,776.86,"Tidak, karena nilai D maksimal 20% dari total SKS kumulatif dan nilai E wajib 0 SKS."
+COHORT_PROFILE,CPB-027,,TRKB,,CURRICULUM_REVISION_MANDATORY,first_person,2023,,,,,,False,False,1.0,,,1197.32,"Tidak, karena nilai D Anda adalah 25% dan total kelulusan sarjana wajib minimal 144 SKS."
+COHORT_PROFILE,CPB-028,,TRKB,,CURRICULUM_REVISION_MANDATORY,first_person,2024,,,,,,False,False,1.0,,,740.47,"Tidak, karena nilai D maksimal adalah 20% dan Anda memiliki nilai D sebesar 25%."
+COHORT_PROFILE,CPB-029,,TRKB,,CURRICULUM_REVISION_MANDATORY,formal,2021,,,,,,Prasyarat Eksperimen Robotika I adalah Rangkaian Listrik dan Dasar Elektronika.,True,1.0,,,1010.03,Tidak ada informasi yang disediakan tentang prasyarat mata kuliah Eksperimen Robotika I.
+COHORT_PROFILE,CPB-030,,TRKB,,CURRICULUM_REVISION_MANDATORY,formal,2022,,,,,,Prasyarat Eksperimen Robotika I adalah Rangkaian Listrik dan Dasar Elektronika.,True,1.0,,,710.45,Tidak ada informasi yang disediakan tentang prasyarat mata kuliah Eksperimen Robotika I.
+COHORT_PROFILE,CPB-031,,TRKB,,CURRICULUM_REVISION_MANDATORY,formal,2023,,,,,,Prasyarat Eksperimen Robotika I adalah Rangkaian Elektronika dan Pemrograman.,True,1.0,,,728.2,Tidak ada informasi yang disediakan tentang prasyarat mata kuliah Eksperimen Robotika I.
+COHORT_PROFILE,CPB-032,,TRKB,,CURRICULUM_REVISION_MANDATORY,formal,2024,,,,,,Prasyarat Eksperimen Robotika I adalah Rangkaian Elektronika dan Pemrograman.,True,1.0,,,899.34,Mata kuliah Eksperimen Robotika I memiliki prasyarat kelulusan mata kuliah Rangkaian Elektronika dan Pemrograman.
+COHORT_PROFILE,CPB-033,,RN,,SCIENCE_LAB_PREREQUISITE,verification_binary,2021,,,,,,True,False,1.0,,,1258.72,"Tidak, Praktikum Kimia Dasar 1 (KID102) tidak wajib diambil berbarengan dengan teori Kimia Dasar 1 (KID105). KID102 hany"
+COHORT_PROFILE,CPB-034,,RN,,SCIENCE_LAB_PREREQUISITE,verification_binary,2022,,,,,,True,False,1.0,,,1259.77,"Tidak, Praktikum Kimia Dasar 1 (KID102) tidak wajib diambil berbarengan dengan teori Kimia Dasar 1 (KID105). KID102 hany"
+COHORT_PROFILE,CPB-035,,RN,,SCIENCE_LAB_PREREQUISITE,verification_binary,2023,,,,,,True,False,1.0,,,2497.78,"Tidak, Praktikum Kimia Dasar 1 (KID102) tidak wajib diambil berbarengan dengan teori Kimia Dasar 1 (KID105). KID102 dan "
+COHORT_PROFILE,CPB-036,,RN,,SCIENCE_LAB_PREREQUISITE,verification_binary,2024,,,,,,True,False,1.0,,,1397.83,"Tidak, Praktikum Kimia Dasar 1 (KID102) tidak wajib diambil berbarengan dengan teori Kimia Dasar 1 (KID105). Menurut ket"
+COHORT_PROFILE,CPB-037,,RN,,SCIENCE_LAB_PREREQUISITE,verification_binary,2021,,,,,,False,False,1.0,,,1198.62,"Tidak, karena Anda baru menempuh 115 SKS dan belum mencapai minimal 120 SKS kumulatif yang diperlukan untuk mengambil ma"
+COHORT_PROFILE,CPB-038,,RN,,SCIENCE_LAB_PREREQUISITE,verification_binary,2022,,,,,,False,False,1.0,,,836.25,"Tidak, karena Anda baru menempuh 115 SKS dan belum mencapai minimal 120 SKS kumulatif yang diperlukan untuk mengambil Sk"
+COHORT_PROFILE,CPB-039,,RN,,SCIENCE_LAB_PREREQUISITE,verification_binary,2023,,,,,,False,False,1.0,,,993.11,"Tidak, karena minimal 120 SKS kumulatif dan nilai D maksimal 20%, 0 SKS nilai E."
+COHORT_PROFILE,CPB-040,,RN,,SCIENCE_LAB_PREREQUISITE,verification_binary,2024,,,,,,False,False,1.0,,,791.66,"Tidak, karena Anda baru menempuh 115 SKS dan minimal 120 SKS kumulatif diperlukan untuk mengambil skripsi."
+COHORT_PROFILE,CPB-041,,RN,,SCIENCE_LAB_PREREQUISITE,first_person,2021,,,,,,Minimal 144 SKS kumulatif (maksimal 160 SKS).,True,1.0,,,1329.38,"Menurut profil mahasiswa yang Anda berikan, minimal 144 SKS kumulatif (maksimal 160 SKS) adalah kriteria resmi untuk lul"
+COHORT_PROFILE,CPB-042,,RN,,SCIENCE_LAB_PREREQUISITE,first_person,2022,,,,,,Minimal 144 SKS kumulatif (maksimal 160 SKS).,True,1.0,,,985.81,"Menurut profil mahasiswa yang Anda berikan, minimal 144 SKS kumulatif (maksimal 160 SKS) adalah kriteria resmi untuk kel"
+COHORT_PROFILE,CPB-043,,RN,,SCIENCE_LAB_PREREQUISITE,first_person,2023,,,,,,Minimal 144 SKS kumulatif dengan 0 SKS nilai E.,True,1.0,,,1397.16,"Menurut profil mahasiswa yang Anda berikan, minimal 144 SKS kumulatif diperlukan untuk lulus sarjana di Rekayasa Nanotek"
+COHORT_PROFILE,CPB-044,,RN,,SCIENCE_LAB_PREREQUISITE,first_person,2024,,,,,,Minimal 144 SKS kumulatif dengan 0 SKS nilai E.,True,1.0,,,997.98,"Menurut profil mahasiswa yang Anda berikan, minimal 144 SKS kumulatif diperlukan untuk lulus sarjana di Rekayasa Nanotek"
+COHORT_PROFILE,CPB-045,,RN,,SCIENCE_LAB_PREREQUISITE,formal,2021,,,,,,Konversi magang MBKM maksimal hingga 20 SKS melalui persetujuan KPS.,True,1.0,,,2698.17,Konversi Magang MBKM ke dalam mata kuliah pilihan di Rekayasa Nanoteknologi (RN) berdasarkan persetujuan KPS dan diterap
+COHORT_PROFILE,CPB-046,,RN,,SCIENCE_LAB_PREREQUISITE,formal,2022,,,,,,Konversi magang MBKM maksimal hingga 20 SKS melalui persetujuan KPS.,True,0.0,,,2381.83,Ketentuan konversi nilai magang MBKM ke dalam mata kuliah pilihan di Rekayasa Nanoteknologi (RN) adalah sebagai berikut:
+COHORT_PROFILE,CPB-047,,RN,,SCIENCE_LAB_PREREQUISITE,formal,2023,,,,,,Konversi magang wajib melalui verifikasi form konversi di awal semester dan disahkan tim kurikulum.,True,1.0,,,2737.03,Ketentuan konversi nilai magang MBKM ke dalam mata kuliah pilihan di Rekayasa Nanoteknologi (RN) adalah sebagai berikut:
+COHORT_PROFILE,CPB-048,,RN,,SCIENCE_LAB_PREREQUISITE,formal,2024,,,,,,Konversi magang wajib melalui verifikasi form konversi di awal semester dan disahkan tim kurikulum.,True,1.0,,,2332.74,Ketentuan konversi nilai magang MBKM ke dalam mata kuliah pilihan di Rekayasa Nanoteknologi (RN) adalah sebagai berikut:
+COHORT_PROFILE,CPB-049,,TI,,OPERATIONS_AND_PREREQUISITE,verification_binary,2021,,,,,,False,False,1.0,,,870.49,TIDAK
+COHORT_PROFILE,CPB-050,,TI,,OPERATIONS_AND_PREREQUISITE,verification_binary,2022,,,,,,False,False,1.0,,,1082.23,TIDAK.  Penelitian Operasi Lanjut (TIA302) merupakan ko-requisite mata kuliah teori Penelitian Operasi Dasar (TID201). A
+COHORT_PROFILE,CPB-051,,TI,,OPERATIONS_AND_PREREQUISITE,verification_binary,2023,,,,,,False,False,1.0,,,1433.83,TIDAK.  Penelitian Operasi Lanjut (TIA302) merupakan ko-requisite mata kuliah teori Penelitian Operasi Dasar (TID201). A
+COHORT_PROFILE,CPB-052,,TI,,OPERATIONS_AND_PREREQUISITE,verification_binary,2024,,,,,,False,False,1.0,,,437.06,TIDAK
+COHORT_PROFILE,CPB-053,,TI,,OPERATIONS_AND_PREREQUISITE,verification_binary,2021,,,,,,True,False,1.0,,,1177.15,"Ya, karena IPS >= 3.00 berhak mengambil batas maksimal 24 SKS dan IPS 3.40 > 3.00."
+COHORT_PROFILE,CPB-054,,TI,,OPERATIONS_AND_PREREQUISITE,verification_binary,2022,,,,,,True,False,1.0,,,636.1,"Ya, karena IPS >= 3.00 berhak mengambil batas maksimal 24 SKS."
+COHORT_PROFILE,CPB-055,,TI,,OPERATIONS_AND_PREREQUISITE,verification_binary,2023,,,,,,True,False,1.0,,,934.51,"Ya, karena nilai IPS 3.40 >= 3.00."
+COHORT_PROFILE,CPB-056,,TI,,OPERATIONS_AND_PREREQUISITE,verification_binary,2024,,,,,,True,False,1.0,,,629.3,"Ya, karena nilai IPS 3.40 >= 3.00."
+COHORT_PROFILE,CPB-057,,TI,,OPERATIONS_AND_PREREQUISITE,first_person,2021,,,,,,False,False,1.0,,,870.95,TIDAK.  Putusan: SALAH / BELUM MEMENUHI.
+COHORT_PROFILE,CPB-058,,TI,,OPERATIONS_AND_PREREQUISITE,first_person,2022,,,,,,False,False,1.0,,,674.07,TIDAK.  Putusan: SALAH / BELUM MEMENUHI.
+COHORT_PROFILE,CPB-059,,TI,,OPERATIONS_AND_PREREQUISITE,first_person,2023,,,,,,False,False,1.0,,,913.66,"Tidak, karena kamu belum lulus mata kuliah Statistik Industri."
+COHORT_PROFILE,CPB-060,,TI,,OPERATIONS_AND_PREREQUISITE,first_person,2024,,,,,,False,False,1.0,,,954.27,"Tidak, karena Anda belum lulus mata kuliah Statistik Industri dan harus mengikuti ketentuan resmi yang menyatakan bahwa "
+COHORT_PROFILE,CPB-061,,TI,,OPERATIONS_AND_PREREQUISITE,formal,2021,,,,,,Mulai semester 5 dengan syarat perolehan minimal 80 SKS kumulatif.,True,1.0,,,1426.67,"Mahasiswa Teknik Industri diperkenankan mulai mengajukan mata kuliah PKL pada semester 5, dengan syarat perolehan minima"
+COHORT_PROFILE,CPB-062,,TI,,OPERATIONS_AND_PREREQUISITE,formal,2022,,,,,,Mulai semester 5 dengan syarat perolehan minimal 80 SKS kumulatif.,True,1.0,,,760.68,Mahasiswa Teknik Industri (TI) diperkenankan mengajukan mata kuliah Praktikum Laboratorium (PKL) di semester 5.
+COHORT_PROFILE,CPB-063,,TI,,OPERATIONS_AND_PREREQUISITE,formal,2023,,,,,,Mulai semester 5 dengan syarat perolehan minimal 80 SKS kumulatif dan persetujuan dosen wali.,True,1.0,,,1250.97,Mahasiswa Teknik Industri (TI) diperkenankan mengajukan mata kuliah Praktikum Lanjut (PKL) pada semester 5.
+COHORT_PROFILE,CPB-064,,TI,,OPERATIONS_AND_PREREQUISITE,formal,2024,,,,,,Mulai semester 5 dengan syarat perolehan minimal 80 SKS kumulatif dan persetujuan dosen wali.,True,1.0,,,811.51,Mahasiswa Teknik Industri (TI) di FTMM Unair diperkenankan mengajukan mata kuliah Praktikum Lanjut (PKL) pada semester 5
+COHORT_PROFILE,CPB-065,,TE,,ELECTRICAL_CURRICULUM_DAG,verification_binary,2021,,,,,,True,True,1.0,,,1363.17,"Menurut ketentuan yang disebutkan, Praktikum Rangkaian Listrik yang belum lulus di semester 3 boleh diulang pada semeste"
+COHORT_PROFILE,CPB-066,,TE,,ELECTRICAL_CURRICULUM_DAG,verification_binary,2022,,,,,,True,True,1.0,,,1083.23,"Menurut ketentuan yang disebutkan, Praktikum Rangkaian Listrik yang belum lulus di semester 3 boleh diulang pada semeste"
+COHORT_PROFILE,CPB-067,,TE,,ELECTRICAL_CURRICULUM_DAG,verification_binary,2023,,,,,,False,True,1.0,,,1887.91,"Tidak, Praktikum Rangkaian Listrik tidak boleh diambil di semester 4 jika di semester 3 belum lulus. Menurut ketentuan y"
+COHORT_PROFILE,CPB-068,,TE,,ELECTRICAL_CURRICULUM_DAG,verification_binary,2024,,,,,,False,True,1.0,,,1455.52,"Tidak, Praktikum Rangkaian Listrik tidak boleh diambil di semester 4 jika di semester 3 belum lulus. Menurut ketentuan y"
+COHORT_PROFILE,CPB-069,,TE,,ELECTRICAL_CURRICULUM_DAG,verification_binary,2021,,,,,,False,False,1.0,,,1375.31,"Tidak, karena nilai IPS Anda saat ini adalah 2.45 dan diatur bahwa IPS 2.00-2.49 dibatasi maksimal 18 SKS.  Jawaban: TID"
+COHORT_PROFILE,CPB-070,,TE,,ELECTRICAL_CURRICULUM_DAG,verification_binary,2022,,,,,,False,False,1.0,,,884.13,"Tidak, karena nilai IPS Anda saat ini adalah 2.45 dan diatur bahwa IPS 2.00-2.49 dibatasi maksimal 18 SKS."
+COHORT_PROFILE,CPB-071,,TE,,ELECTRICAL_CURRICULUM_DAG,verification_binary,2023,,,,,,False,False,0.0,,,1691.38,"Berdasarkan ketentuan yang ada, Anda memiliki IPS 2.45 di semester sebelumnya. Berdasarkan Pasal 5.4 Panduan Akademik, I"
+COHORT_PROFILE,CPB-072,,TE,,ELECTRICAL_CURRICULUM_DAG,verification_binary,2024,,,,,,False,False,0.0,,,1026.84,"Berdasarkan ketentuan di atas, Anda memiliki IPS 2.45 yang terletak dalam kategori 2.00-2.49 dan dibatasi maksimal 18 SK"
+COHORT_PROFILE,CPB-073,,TE,,ELECTRICAL_CURRICULUM_DAG,first_person,2021,,,,,,True,False,1.0,,,1256.08,"Ya, untuk mengambil TEE202 (Sistem Tenaga Listrik) di semester 4, Anda harus telah menyelesaikan dan lulus dari TBE201 ("
+COHORT_PROFILE,CPB-074,,TE,,ELECTRICAL_CURRICULUM_DAG,first_person,2022,,,,,,True,False,1.0,,,1019.62,"Ya, untuk mengambil TEE202 (Sistem Tenaga Listrik) di semester 4, Anda harus telah **mengambil dan lulus** dari TBE201 ("
+COHORT_PROFILE,CPB-075,,TE,,ELECTRICAL_CURRICULUM_DAG,first_person,2023,,,,,,True,False,1.0,,,1458.13,"Ya, untuk mengambil Sistem Tenaga Listrik (TE) pada semester 4, Anda **wajib** telah menyelesaikan prasyarat Rangkaian L"
+COHORT_PROFILE,CPB-076,,TE,,ELECTRICAL_CURRICULUM_DAG,first_person,2024,,,,,,True,False,1.0,,,915.92,"Ya, untuk mengambil Sistem Tenaga Listrik (TE) pada semester 4, Anda harus telah **mengabdi Rangkaian Listrik** sebelumn"
+COHORT_PROFILE,CPB-077,,TE,,ELECTRICAL_CURRICULUM_DAG,formal,2021,,,,,,"Maksimal 20% dari total SKS kelulusan, dan wajib 0 SKS nilai E.",False,1.0,,,952.98,"Maksimal 20% dari total SKS kelulusan, dan wajib 0 SKS nilai E."
+COHORT_PROFILE,CPB-078,,TE,,ELECTRICAL_CURRICULUM_DAG,formal,2022,,,,,,"Maksimal 20% dari total SKS kelulusan, dan wajib 0 SKS nilai E.",False,1.0,,,879.6,Batas maksimal persentase nilai D untuk syarat kelulusan yudisium sarjana Teknik Elektro adalah 20% dari total SKS kelul
+COHORT_PROFILE,CPB-079,,TE,,ELECTRICAL_CURRICULUM_DAG,formal,2023,,,,,,"Maksimal 20% dari total SKS kelulusan, dan wajib 0 SKS nilai E.",False,1.0,,,1120.97,Batas maksimal persentase nilai D untuk syarat kelulusan yudisium sarjana Teknik Elektro adalah 20%.
+COHORT_PROFILE,CPB-080,,TE,,ELECTRICAL_CURRICULUM_DAG,formal,2024,,,,,,"Maksimal 20% dari total SKS kelulusan, dan wajib 0 SKS nilai E.",False,1.0,,,746.9,Batas maksimal persentase nilai D untuk syarat kelulusan yudisium sarjana Teknik Elektro adalah 20%.
+MULTITURN_DRIFT,,MTD-001,,TSD,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1752.18,Silabus Data Mining I di FTMM Universitas Airlangga terdiri dari 8 (delapan) modul pembelajaran yang
+MULTITURN_DRIFT,,MTD-001,,TSD,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,981.94,"Ya, di Data Mining I kita mempelajari Clustering dengan K-Means dan Decision Tree. Kita juga mempela"
+MULTITURN_DRIFT,,MTD-001,,TSD,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_HOMEWORK)
+MULTITURN_DRIFT,,MTD-001,,TSD,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,824.06,"Untuk program studi Teknologi Sains Data di Universitas Airlangga, SKS untuk Data Mining I adalah 3 "
+MULTITURN_DRIFT,,MTD-002,,TSD,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,951.83,"Selamat pagi! Saya adalah Compass AI, asisten akademik resmi Fakultas Teknologi Maju dan Multidisipl"
+MULTITURN_DRIFT,,MTD-002,,TSD,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1314.66,"Untuk mengambil mata kuliah Metode Statistika di FTMM Universitas Airlangga, Anda harus memenuhi pra"
+MULTITURN_DRIFT,,MTD-002,,TSD,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-002,,TSD,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1465.09,"Untuk mengambil mata kuliah Metode Statistika di FTMM Universitas Airlangga, Anda harus memenuhi pra"
+MULTITURN_DRIFT,,MTD-003,,TSD,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1430.33,"Untuk merencanakan rencana studi semester 5 di peminatan Big Data TSD, saya sarankan Anda untuk memp"
+MULTITURN_DRIFT,,MTD-003,,TSD,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1277.02,"Untuk topik Natural Language Processing (NLP), beberapa mata kuliah pilihan di FTMM yang relevan ada"
+MULTITURN_DRIFT,,MTD-003,,TSD,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-003,,TSD,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1412.11,"Untuk mata kuliah Kecerdasan Buatan di FTMM, pengambilan mata kuliah Big Data tidak memerlukan lulus"
+MULTITURN_DRIFT,,MTD-004,,TSD,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,768.9,"Selamat pagi! Saya adalah Compass AI, asisten akademik resmi FTMM. Bagaimana pertanyaan Anda hari in"
+MULTITURN_DRIFT,,MTD-004,,TSD,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,670.13,"Untuk semester 2, beban SKS paket yang sudah otomatis terprogram adalah 12 SKS."
+MULTITURN_DRIFT,,MTD-004,,TSD,,,,3,TOPIC_DRIFT,REFUSE,ALLOW,0.0,,,,0.0,CAG_RAG,1065.18,"Maaf, saya tidak bisa membantu menjawab pertanyaan tentang kuis online kalkulus. Pertanyaan tersebut"
+MULTITURN_DRIFT,,MTD-004,,TSD,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,834.41,"Untuk semester 2 di FTMM Universitas Airlangga, Mata Kuliah Matematika Diskrit adalah mata kuliah ya"
+MULTITURN_DRIFT,,MTD-005,,TSD,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1362.51,Selamat atas kesempatan untuk mempersiapkan diri untuk tugas akhir! Untuk informasi terkait kurikulu
+MULTITURN_DRIFT,,MTD-005,,TSD,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,970.96,Untuk mempersiapkan diri untuk mengajukan proposal skripsi di Fakultas Teknologi Maju dan Multidisip
+MULTITURN_DRIFT,,MTD-005,,TSD,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-005,,TSD,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,882.15,"Untuk mahasiswa semester 6 Teknologi Sains Data di FTMM Universitas Airlangga, mata kuliah Proposal "
+MULTITURN_DRIFT,,MTD-006,,TSD,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1438.98,"Untuk mengajukan surat rekomendasi magang di FTMM, silakan mengisi formulir pengajuan surat rekomend"
+MULTITURN_DRIFT,,MTD-006,,TSD,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,836.12,Proses pengajuan surat rekomendasi magang di Kemahasiswaan FTMM biasanya memakan waktu 2 (dua) hari 
+MULTITURN_DRIFT,,MTD-006,,TSD,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-006,,TSD,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,769.51,"Ya, untuk melakukan Pekerjaan Kuliah Lapangan (PKL), mahasiswa FTMM harus telah menempuh minimal 80 "
+MULTITURN_DRIFT,,MTD-007,,TRKB,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1158.4,"Selamat pagi! Saya adalah Compass AI, asisten akademik resmi FTMM. Bagaimana kabar Anda hari ini? Ap"
+MULTITURN_DRIFT,,MTD-007,,TRKB,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1351.45,"Pada semester 5 Teknik Robotika dan Kecerdasan Buatan, mata kuliah Robot Manipulator RKS302 mempelaj"
+MULTITURN_DRIFT,,MTD-007,,TRKB,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_HOMEWORK)
+MULTITURN_DRIFT,,MTD-007,,TRKB,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1055.52,"Ya, mata kuliah Sensor dan Aktuator (RKS201) adalah salah satu prasyarat untuk mata kuliah Robot Man"
+MULTITURN_DRIFT,,MTD-008,,TRKB,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1396.09,Selamat siang! Praktikum Eksperimen Robotika I adalah bagian dari kurikulum Teknik Robotika dan Kece
+MULTITURN_DRIFT,,MTD-008,,TRKB,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,762.01,SKS beban praktikum Eksperimen Robotika I di semester 4 Teknik Robotika dan Kecerdasan Buatan adalah
+MULTITURN_DRIFT,,MTD-008,,TRKB,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-008,,TRKB,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1106.94,"Untuk mengambil Eksperimen Robotika II di semester 4 Teknik Robotika dan Kecerdasan Buatan, mahasisw"
+MULTITURN_DRIFT,,MTD-009,,TRKB,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,648.17,Mobile Robot RKS301 berada di semester 4 (S4) atau semester akhir.
+MULTITURN_DRIFT,,MTD-009,,TRKB,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,926.05,"Di Mobile Robot RKS301, mahasiswa tidak memprogram robot beroda secara langsung. Namun, mereka belaj"
+MULTITURN_DRIFT,,MTD-009,,TRKB,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-009,,TRKB,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,850.96,"Di RKS301, batas maksimal SKS yang boleh diambil adalah 18 SKS untuk mahasiswa teknik robotika dan k"
+MULTITURN_DRIFT,,MTD-010,,TRKB,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1059.84,Selamat atas keputusan Anda untuk mengambil peminatan AI! Peminatan ini dapat membantu memperluas pe
+MULTITURN_DRIFT,,MTD-010,,TRKB,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,793.99,Mata kuliah Kecerdasan Buatan (MAT302) adalah mata kuliah wajib untuk program studi Teknik Robotika 
+MULTITURN_DRIFT,,MTD-010,,TRKB,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_HOMEWORK)
+MULTITURN_DRIFT,,MTD-010,,TRKB,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1390.32,"Untuk mata kuliah Kecerdasan Buatan (MAT302) di Teknik Robotika dan Kecerdian Buatan, prasyaratnya a"
+MULTITURN_DRIFT,,MTD-011,,TRKB,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1319.47,"Untuk menentukan jumlah SKS yang dapat dipilih, Anda perlu memperhatikan ketentuan dari Fakultas Tek"
+MULTITURN_DRIFT,,MTD-011,,TRKB,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,944.28,"Untuk mendapatkan persetujuan dosen wali, Anda perlu mengajukan permohonan penambahan SKS kepada dos"
+MULTITURN_DRIFT,,MTD-011,,TRKB,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-011,,TRKB,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,917.62,"Ya, mahasiswa Teknik Robotika dan Kecerdasan Buatan Universitas Airlangga harus mengambil sistem pak"
+MULTITURN_DRIFT,,MTD-012,,TRKB,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1438.48,Untuk kelulusan Sarjana Teknik Robotika dan Kecerdasan Buatan (TRKB) Fakultas Teknologi Maju dan Mul
+MULTITURN_DRIFT,,MTD-012,,TRKB,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1157.91,Pada prodi Teknik Robotika dan Kecerdasan Buatan (TRKB) Fakultas Teknologi Maju dan Multidisiplin (F
+MULTITURN_DRIFT,,MTD-012,,TRKB,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-012,,TRKB,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1029.47,Pada prodi Teknik Robotika dan Kecerdasan Buatan (TRKB) Fakultas Teknologi Maju dan Multidisiplin (F
+MULTITURN_DRIFT,,MTD-013,,RN,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1080.76,"Selamat datang! Saya adalah Compass AI, asisten akademik resmi Fakultas Teknologi Maju dan Multidisi"
+MULTITURN_DRIFT,,MTD-013,,RN,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,766.58,Mata kuliah Kimia Dasar (KID105) di S1 Rekayasa Nanoteknologi Universitas Airlangga memiliki SKS 4.
+MULTITURN_DRIFT,,MTD-013,,RN,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_HOMEWORK)
+MULTITURN_DRIFT,,MTD-013,,RN,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,908.67,"Ya, Praktikum Kimia Dasar 1 (KID105) wajib diambil di semester yang sama dengan mata kuliah Kimia Da"
+MULTITURN_DRIFT,,MTD-014,,RN,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1387.22,Silabus Fisika Dasar 1 FID101 dapat saya sampaikan kepada kamu. Berikut adalah ringkasan kurikulum: 
+MULTITURN_DRIFT,,MTD-014,,RN,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1372.65,"Untuk S1 Rekayasa Nanoteknologi di prodi FID101 Fisika Dasar 1, topik ujian tengah semester biasanya"
+MULTITURN_DRIFT,,MTD-014,,RN,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-014,,RN,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,673.48,Fisika Dasar 2 biasanya ditawarkan pada semester genap.
+MULTITURN_DRIFT,,MTD-015,,RN,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1365.88,"Mata kuliah ""Karakterisasi Material"" adalah salah satu mata kuliah wajib di program studi S1 Rekayas"
+MULTITURN_DRIFT,,MTD-015,,RN,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1301.55,"Di program studi S1 Rekayasa Nanoteknologi FTMM Universitas Airlangga, mata kuliah yang mempelajari "
+MULTITURN_DRIFT,,MTD-015,,RN,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-015,,RN,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1602.99,"Untuk mata kuliah ""Karakterisasi Nanomaterial"" di program studi S1 Rekayasa Nanoteknologi FTMM Unive"
+MULTITURN_DRIFT,,MTD-016,,RN,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1049.43,"Untuk menentukan batas SKS, perlu melihat nilai rata-rata SKS yang diperoleh di semester sebelumnya."
+MULTITURN_DRIFT,,MTD-016,,RN,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1004.0,Jumlah jatah SKS yang tersedia untuk semester atas biasanya ditentukan oleh Fakultas dan Universitas
+MULTITURN_DRIFT,,MTD-016,,RN,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-016,,RN,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1005.1,Biasanya tidak diperbolehkan mengambil mata kuliah semester ganjil ketika paritas semester genap. Pa
+MULTITURN_DRIFT,,MTD-017,,RN,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1414.63,"Untuk Praktik Kerja Lapangan di Nanoteknologi, syarat pendaftaran adalah:  1. Menguji kecocokan deng"
+MULTITURN_DRIFT,,MTD-017,,RN,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,791.06,"Untuk S1 Rekayasa Nanoteknologi FTMM, minimal hari kerja efektif untuk magang PKL di industri adalah"
+MULTITURN_DRIFT,,MTD-017,,RN,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-017,,RN,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,757.47,Laporan magang PKL tidak perlu disahkan oleh KPS sebelum seminar.
+MULTITURN_DRIFT,,MTD-018,,RN,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1087.11,Untuk mendaftar ujian sidang Skripsi di RN (Ruang Nasional) Fakultas Teknologi Maju dan Multidisipli
+MULTITURN_DRIFT,,MTD-018,,RN,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,905.93,Mahasiswa S1 Rekayasa Nanoteknologi di FTMM tidak wajib mempublikasikan artikel ilmiah atau prosidin
+MULTITURN_DRIFT,,MTD-018,,RN,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-018,,RN,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,836.0,"Untuk S1 Rekayasa Nanoteknologi di FTMM, nilai D maksimal yang ditoleransi adalah 2 SKS."
+MULTITURN_DRIFT,,MTD-019,,TI,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1086.1,"Selamat pagi! Saya adalah Compass AI, asisten akademik resmi Fakultas Teknologi Maju dan Multidisipl"
+MULTITURN_DRIFT,,MTD-019,,TI,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1335.39,Penelitian Operasi Dasar (TID201) di Teknik Industri adalah mata kuliah yang membahas dasar-dasar pe
+MULTITURN_DRIFT,,MTD-019,,TI,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_HOMEWORK)
+MULTITURN_DRIFT,,MTD-019,,TI,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1059.35,"Ya, TID201 (Penelitian Operasi Dasar) adalah mata kuliah prasyarat untuk TID202 (Penelitian Operasi "
+MULTITURN_DRIFT,,MTD-020,,TI,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1413.37,"Dalam silabus Mata Kuliah Ergonomi (TIA201) di Fakultas Teknologi Maju dan Multidisiplin (FTMM), Uni"
+MULTITURN_DRIFT,,MTD-020,,TI,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1036.65,"Dalam Mata Kuliah Ergonomi (TIA201) di Fakultas Teknologi Maju dan Multidisiplin (FTMM), Universitas"
+MULTITURN_DRIFT,,MTD-020,,TI,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-020,,TI,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,681.71,Mata Kuliah Otomasi Industri biasanya terletak pada semester 3.
+MULTITURN_DRIFT,,MTD-021,,TI,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,951.76,"Simulasi Komputer (TIK301) di Teknik Industri mempelajari tentang prinsip dasar simulasi komputer, m"
+MULTITURN_DRIFT,,MTD-021,,TI,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,757.88,Prasyarat untuk kuliah TIK301 adalah mata kuliah komputasi dasar seperti Pemrograman Berbasis Konsep
+MULTITURN_DRIFT,,MTD-021,,TI,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-021,,TI,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,917.11,"Untuk pertanyaan tersebut, saya tidak dapat memberikan informasi yang akurat karena pertanyaan Anda "
+MULTITURN_DRIFT,,MTD-022,,TI,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1287.35,"Untuk menentukan jumlah SKS yang dapat dipilih, Anda perlu melihat nilai SKS yang diberikan oleh Fak"
+MULTITURN_DRIFT,,MTD-022,,TI,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1183.13,"Ya, jika Anda mendapatkan persetujuan dari dosen wali, maka Anda dapat mengambil jumlah SKS yang dii"
+MULTITURN_DRIFT,,MTD-022,,TI,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-022,,TI,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,979.54,"Ya, di Fakultas Teknologi Maju dan Multidisiplin (FTMM) Universitas Airlangga, semester 1 dan 2 Tekn"
+MULTITURN_DRIFT,,MTD-023,,TI,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1284.98,"Untuk mendapatkan nilai program magang MSIB di FTMM, Anda dapat menghubungi dosen pembimbing magang "
+MULTITURN_DRIFT,,MTD-023,,TI,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,640.54,Maksimal 6 SKS dapat dikonversi dari kegiatan magang industri di Teknik Industri.
+MULTITURN_DRIFT,,MTD-023,,TI,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_HOMEWORK)
+MULTITURN_DRIFT,,MTD-023,,TI,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1429.6,"Untuk melakukan konversi SKS dari kegiatan magang industri di Teknik Industri, diperlukan tanda tang"
+MULTITURN_DRIFT,,MTD-024,,TI,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,713.39,"Untuk seminar proposal skripsi di Teknik Industri, mahasiswa diperlukan untuk mengambil minimal 3 SK"
+MULTITURN_DRIFT,,MTD-024,,TI,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,702.44,"Ya, untuk mahasiswa Teknik Industri, mata kuliah Metodologi Penelitian adalah wajib dan harus lulus "
+MULTITURN_DRIFT,,MTD-024,,TI,,,,3,TOPIC_DRIFT,REFUSE,ALLOW,0.0,,,,0.0,CAG_RAG,643.47,Tolak. Pertanyaan tersebut tidak terkait dengan kurikulum Teknik Industri dan Metodologi Penelitian.
+MULTITURN_DRIFT,,MTD-024,,TI,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,784.44,"Ya, untuk mahasiswa Teknik Industri, minimal IPK 2.5 dan nilai Metodologi Penelitian minimal B untuk"
+MULTITURN_DRIFT,,MTD-025,,TE,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,807.53,"Selamat pagi! Bagaimana kabar Anda hari ini? Apakah ada pertanyaan tentang kurikulum, silabus, atau "
+MULTITURN_DRIFT,,MTD-025,,TE,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,700.63,Mata kuliah Rangkaian Listrik (TBE201) untuk mahasiswa Teknik Elektro semester 3 memiliki bobot SKS 
+MULTITURN_DRIFT,,MTD-025,,TE,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-025,,TE,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,906.0,"Ya, untuk mahasiswa Teknik Elektro semester 3, Praktikum Rangkaian Listrik (TBE201) harus diambil be"
+MULTITURN_DRIFT,,MTD-026,,TE,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1381.12,"Dalam mata kuliah Sistem Tenaga Listrik (TEE202) di FTMM Universitas Airlangga, mahasiswa belajar te"
+MULTITURN_DRIFT,,MTD-026,,TE,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,803.43,"Dalam kurikulum Teknik Elektro Universitas Airlangga, mata kuliah Sistem Tenaga Listrik (TEE202) bia"
+MULTITURN_DRIFT,,MTD-026,,TE,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-026,,TE,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,796.97,"Ya, Rangkaian Listrik (TEE101) biasanya menjadi prasyarat untuk mata kuliah Sistem Tenaga Listrik (T"
+MULTITURN_DRIFT,,MTD-027,,TE,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1162.55,Silabus Mata Kuliah Dasar Sistem Telekomunikasi (TET201) dapat dilihat di situs web Fakultas Teknolo
+MULTITURN_DRIFT,,MTD-027,,TE,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1031.59,"Ya, pada mata kuliah Dasar Sistem Telekomunikasi (TET201), salah satu topik yang dibahas adalah tran"
+MULTITURN_DRIFT,,MTD-027,,TE,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_HOMEWORK)
+MULTITURN_DRIFT,,MTD-027,,TE,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,824.6,"Untuk Mata Kuliah Dasar Sistem Telekomunikasi (TET201), SKS (Satuan Kredit Sembilan) adalah 4."
+MULTITURN_DRIFT,,MTD-028,,TE,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1443.48,Jatah beban SKS Anda dapat dihitung dengan menggunakan rumus berikut:  Jatah beban = Jumlah SKS yang
+MULTITURN_DRIFT,,MTD-028,,TE,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1305.12,"Jatah beban SKS Anda saat ini adalah 3.25, dan Anda memiliki jatah beban 24 SKS untuk semester depan"
+MULTITURN_DRIFT,,MTD-028,,TE,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-028,,TE,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1331.75,"Di Fakultas Teknologi Maju dan Multidisiplin (FTMM), Universitas Airlangga, tidak ada aturan paritas"
+MULTITURN_DRIFT,,MTD-029,,TE,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1410.52,"Untuk mengambil Praktik Kerja Lapangan (PKL) di Teknik Elektro FTMM, mahasiswa harus memenuhi persya"
+MULTITURN_DRIFT,,MTD-029,,TE,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1183.59,"Ya, mahasiswa Teknik Elektro FTMM dapat mengajukan Praktik Kerja Lapangan (PKL) pada semester ke-4 d"
+MULTITURN_DRIFT,,MTD-029,,TE,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_GENERAL)
+MULTITURN_DRIFT,,MTD-029,,TE,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,812.87,Mahasiswa Teknik Elektro FTMM dapat mengajukan Praktik Kerja Lapangan (PKL) dengan durasi minimal 6 
+MULTITURN_DRIFT,,MTD-030,,TE,,,,1,IN_DOMAIN_INITIAL,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1265.92,"Untuk kelulusan Sarjana di Teknik Elektro FTMM, mahasiswa harus mengambil minimal 120 SKS (Satuan Kr"
+MULTITURN_DRIFT,,MTD-030,,TE,,,,2,IN_DOMAIN_EXPLORATION,ALLOW,ALLOW,1.0,,,,1.0,CAG_RAG,1019.56,"Ya, nilai D (Ditengah) untuk Teknik Elektro FTMM dihitung sebagai bagian dari total SKS kelulusan. N"
+MULTITURN_DRIFT,,MTD-030,,TE,,,,3,TOPIC_DRIFT,REFUSE,REFUSE,1.0,,,,0.0,GUARDED,0.0,REFUSED_BY_GUARDRAIL (OUT_OF_SCOPE_HOMEWORK)
+MULTITURN_DRIFT,,MTD-030,,TE,,,,4,IN_DOMAIN_RECOVERY,ALLOW,ALLOW,1.0,,,,0.0,CAG_RAG,1473.77,"Ya, mahasiswa Teknik Elektro FTMM dapat tetap lulus ujian tahunan jika memenuhi persyaratan sebagai "
