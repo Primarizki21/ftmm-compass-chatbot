@@ -194,6 +194,86 @@ Contoh respon sukses:
 }
 ```
 
+
+## Berbagi Akses Backend via Cloudflare Tunnel (Solusi Tim & Perangkat Ringan)
+
+Tidak semua rekan tim (misal developer Frontend UI, QA, atau peneliti penulisan naskah) memiliki laptop dengan RAM atau GPU yang memadai untuk menjalankan Ollama secara lokal.
+
+Anda dapat menggunakan **Cloudflare Tunnel (`cloudflared`)** agar 1 orang (Host) yang memiliki mesin berkemampuan baik membagikan backend lokal ke seluruh rekan tim melalui URL publik HTTPS yang aman dan gratis tanpa perlu konfigurasi port forwarding router:
+
+```
++-----------------------------------+                           +--------------------------------------+
+|            HOST PC                |                           |         CLIENT / REKAN DEV           |
+| (Menjalankan FastAPI & Ollama)    |                           | (Laptop Frontend / Spek Ringan / HP) |
+|   FastAPI Port 8000               |                           |                                      |
+|          |                        |                           |                                      |
+|          v                        |                           |   Frontend `ftmm-compass-ui`         |
+|  `cloudflared tunnel`             | === HTTPS Cloudflare ===> |   `.env`:                            |
+|  `http://localhost:8000`          |                           |   `VITE_API_BASE_URL=https://...`    |
+|  -> https://xxxx.trycloudflare.com|                           |                                      |
+|                                   |                           |   (NOL instalasi Python/Ollama/RAM!) |
++-----------------------------------+                           +--------------------------------------+
+```
+
+---
+
+### Peran 1: Untuk Host (Pemilik PC / Server yang Menjalankan Backend)
+
+1. **Pasang `cloudflared` di mesin Anda**:
+   - **Windows (PowerShell / Winget)**:
+     ```powershell
+     winget install --id Cloudflare.cloudflared
+     ```
+   - **macOS (Homebrew)**:
+     ```bash
+     brew install cloudflared
+     ```
+   - **Linux / WSL2 (Ubuntu / Debian)**:
+     ```bash
+     curl -L --output cloudflared.deb https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb
+     sudo dpkg -i cloudflared.deb
+     ```
+
+2. **Jalankan Tunnel 1 Baris (Quick Tunnel)**:
+   Setelah backend FastAPI aktif di port 8000, buka terminal baru dan jalankan:
+   ```bash
+   cloudflared tunnel --url http://localhost:8000
+   ```
+
+3. **Salin & Bagikan URL Publik**:
+   Cloudflare akan menampilkan URL publik acak pada log terminal, contohnya:
+   ```text
+   2026-10-23 INF +--------------------------------------------------------------------------------------------+
+   2026-10-23 INF |  Your quick Tunnel has been created! Visit it at:                                         |
+   2026-10-23 INF |  https://rapidly-academic-compass.trycloudflare.com                                       |
+   2026-10-23 INF +--------------------------------------------------------------------------------------------+
+   ```
+   Bagikan URL tersebut (`https://...trycloudflare.com`) kepada rekan tim Anda!
+
+> **Tips CORS untuk Host**: Jika rekan tim mengakses dari origin/domain berbeda, pastikan pada file `.env` di mesin Host variabel `ALLOWED_ORIGINS` disetel mengizinkan akses (misal `ALLOWED_ORIGINS=*` atau mencantumkan domain frontend rekan tim).
+
+---
+
+### Peran 2: Untuk Client / Rekan Tim (Developer Frontend / Tester)
+
+Rekan tim yang menerima URL tunnel **TIDAK PERLU** memasang Python, dependensi AI, maupun Ollama di laptop mereka:
+
+1. **Hubungkan Frontend UI (`ftmm-compass-ui`)**:
+   Buka repositori frontend di laptop rekan tim, edit file `.env`:
+   ```ini
+   VITE_API_BASE_URL=https://rapidly-academic-compass.trycloudflare.com
+   ```
+2. **Jalankan Frontend**:
+   ```bash
+   npm run dev
+   ```
+   Komponen Chatbot, Degree Planner, dan Course Finder di UI akan langsung terhubung ke backend AI milik Host secara *real-time* dengan latensi rendah.
+
+3. **Akses Swagger Docs Interaktif**:
+   Rekan tim juga dapat langsung membuka dokumentasi API interaktif di browser tanpa aplikasi tambahan:
+   ```text
+   https://rapidly-academic-compass.trycloudflare.com/docs
+   ```
 ---
 
 ## Pengujian & Regresi (Testing)
