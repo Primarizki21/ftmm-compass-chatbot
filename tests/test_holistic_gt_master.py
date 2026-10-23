@@ -84,9 +84,9 @@ def test_clean_thinking_content():
     text2 = "Jawaban resmi akademik.<think>Penalaran yang terpotong tanpa penutup"
     assert clean_thinking_content(text2) == "Jawaban resmi akademik."
 
-    # 3. Fallback when text only contains thinking block
+    # 3. Unclosed think tag without answer -> empty string (safe against leaking internal thoughts)
     text3 = "<think>Konten penalaran yang diekstraksi tanpa tag"
-    assert clean_thinking_content(text3) == "Konten penalaran yang diekstraksi tanpa tag"
+    assert clean_thinking_content(text3) == ""
 
     # 4. Clean text without think tags
     text4 = "Syarat PKL minimal 80 SKS kumulatif."

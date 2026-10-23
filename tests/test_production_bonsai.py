@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 from unittest.mock import patch, MagicMock
 import httpx
 import pytest
@@ -197,44 +198,43 @@ def test_react_agent_with_bonsai_client():
 
 def test_health_check_endpoint_schema_and_status():
     async def _run_tests():
-        with patch("httpx.AsyncClient.get") as mock_get:
-            # Case 1: Both Bonsai and Ollama online
-            mock_ok = MagicMock()
-            mock_ok.status_code = 200
-            mock_get.return_value = mock_ok
+        with patch.dict(os.environ, {"LLM_BACKEND": "bonsai"}):
+            with patch("httpx.AsyncClient.get") as mock_get:
+                # Case 1: Both Bonsai and Ollama online
+                mock_ok = MagicMock()
+                mock_ok.status_code = 200
+                mock_get.return_value = mock_ok
 
-            res_healthy = await handle_health_check(strict=False)
-            assert isinstance(res_healthy, HealthResponse)
-            assert res_healthy.status == "healthy"
-            assert res_healthy.active_backend == "bonsai"
-            assert res_healthy.bonsai_online is True
-            assert res_healthy.ollama_online is True
-            assert res_healthy.generator_model == "bonsai-2-4b"
-            assert res_healthy.embedding_model == "nomic-embed-text-v2-moe"
+                res_healthy = await handle_health_check(strict=False)
+                assert isinstance(res_healthy, HealthResponse)
+                assert res_healthy.status == "healthy"
+                assert res_healthy.active_backend == "bonsai"
+                assert res_healthy.bonsai_online is True
+                assert res_healthy.ollama_online is True
+                assert res_healthy.generator_model == "bonsai-2-4b"
+                assert res_healthy.embedding_model == "nomic-embed-text-v2-moe"
 
-            # Case 2: Bonsai offline, Ollama online -> degraded
-            def side_effect_probe(url):
-                resp = MagicMock()
-                if "8080" in url:
-                    resp.status_code = 503
-                else:
-                    resp.status_code = 200
-                return resp
+                # Case 2: Bonsai offline, Ollama online -> degraded
+                def side_effect_probe(url):
+                    resp = MagicMock()
+                    if "8080" in url:
+                        resp.status_code = 503
+                    else:
+                        resp.status_code = 200
+                    return resp
 
-            mock_get.side_effect = side_effect_probe
-            res_degraded = await handle_health_check(strict=False)
-            assert res_degraded.status == "degraded"
-            assert res_degraded.bonsai_online is False
-            assert res_degraded.ollama_online is True
+                mock_get.side_effect = side_effect_probe
+                res_degraded = await handle_health_check(strict=False)
+                assert res_degraded.status == "degraded"
+                assert res_degraded.bonsai_online is False
+                assert res_degraded.ollama_online is True
 
-            # Case 3: Both offline with strict=True -> raises HTTPException 503
-            mock_fail = MagicMock()
-            mock_fail.status_code = 500
-            mock_get.side_effect = None
-            mock_get.return_value = mock_fail
+                # Case 3: Both offline with strict=True -> raises HTTPException 503
+                mock_fail = MagicMock()
+                mock_fail.status_code = 500
+                mock_get.side_effect = None
+                mock_get.return_value = mock_fail
 
-            with pytest.raises(HTTPException) as exc_info:
-                await handle_health_check(strict=True)
-            assert exc_info.value.status_code == 503
-
-    asyncio.run(_run_tests())
+                with pytest.raises(HTTPException) as exc_info:
+                    await handle_health_check(strict=True)
+                assert exc_info.value.status_code == 503

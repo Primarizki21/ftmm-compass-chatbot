@@ -729,8 +729,6 @@ def clean_thinking_content(text: str) -> str:
         return ""
     cleaned = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL).strip()
     cleaned = re.sub(r"<think>.*$", "", cleaned, flags=re.DOTALL).strip()
-    if not cleaned and "<think>" in text:
-        cleaned = re.sub(r"</?think>", "", text, flags=re.IGNORECASE).strip()
     if cleaned.startswith("Thinking Process:") or cleaned.startswith("**Thinking Process:**"):
         ans_match = re.search(
             r"(?:Berikut|Berdasarkan|Panduan|Syarat|Kesimpulan|Jawaban|Final Answer)[\s\S]+$",

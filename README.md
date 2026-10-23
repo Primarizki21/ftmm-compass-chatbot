@@ -1,256 +1,268 @@
 # FTMM COMPASS — AI Chatbot Backend
 
-Backend service and evaluation engine for the **FTMM COMPASS** academic advising chatbot at Faculty of Advanced Technology and Multidisciplinary (FTMM), Universitas Airlangga.
+Backend service dan evaluation engine untuk academic advising chatbot **FTMM COMPASS** di Fakultas Teknologi Maju dan Multidisiplin (FTMM), Universitas Airlangga.
 
-This microservice provides high-precision academic advising, course discovery, prerequisite validation, and degree planning across all 5 FTMM study programs (TSD, TRKB, RN, TI, and TE). It interfaces with the frontend user interface at `ftmm-compass-ui`.
+Microservice ini menyediakan layanan konsultasi akademik cerdas, pencarian mata kuliah kurikulum 5 program studi (TSD, TRKB, RN, TI, TE), validasi prasyarat (*prerequisite DAG*), dan sintesis rencana studi otomatis (*degree planner*). Layanan ini terhubung langsung ke antarmuka frontend di repositori `ftmm-compass-ui`.
 
 ---
 
-## Architecture Highlights
+## Arsitektur Inti (Core Architecture)
 
 1. **Hybrid RAG-CAG (Retrieval-Augmented Generation + Cache-Augmented Generation)**:
-   - **CAG (Cache-Augmented Generation)**: In-memory pre-warmed context for static faculty policies, SKS study load limits, graduation requirements, and institutional SOPs (0 ms retrieval latency).
-   - **RAG (Retrieval-Augmented Generation)**: Dense FAISS vector indexing combined with BM25 Okapi and Reciprocal Rank Fusion (RRF) for dynamic, long-tail curriculum queries and syllabus exploration.
+   - **CAG (Cache-Augmented Generation)**: In-memory pre-warmed context untuk regulasi statis fakultas, batas beban SKS berdasarkan IPS, syarat kelulusan, dan SOP akademik (latensi retrieval 0 ms).
+   - **RAG (Retrieval-Augmented Generation)**: Dense FAISS vector indexing dipadukan dengan BM25 Okapi dan Reciprocal Rank Fusion (RRF) untuk penelusuran silabus mata kuliah dan prasyarat kurikulum yang dinamis.
 2. **System-1 Decider (Single-Embed Shared Latent Pipeline & 6-Class BLAS Dispatch)**:
-   - Fast cosine centroid gating (<0.1 ms matrix dot-product inference) using a single L2-normalized latent vector per turn to route conversational intents (`CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`), prune unnecessary tool schemas, and prevent LLM tool-calling hallucinations.
+   - Gating berbasis centroid semantik kontinu (<0.1 ms dot-product matrix) menggunakan 1 vektor laten per kueri untuk mengklasifikasikan intent (`CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`), memangkas skema tools yang tidak relevan, dan mengeliminasi halusinasi pemanggilan fungsi.
 3. **Cascaded Defense-in-Depth Guardrails**:
-   - **Tier 1 (0 ms)**: Deterministic Syntax Filter targeting low-level syntax attacks (SQL injection syntax, parameter tampering exploits) with zero semantic regex brittleness.
-   - **Tier 2 (~30 ms)**: Semantic Dual-Centroid Gate utilizing calibrated continuous cosine distance against multi-cluster academic vs non-academic prototypes to deflect out-of-domain (OOD) queries and semantic adversarial jailbreaks.
-   - **Tier 3**: NeMo Colang input rails for dialog safety and institutional policy compliance.
-   - **Tier 4**: Deterministic physical parameter bounds check (legal SKS limits 0–24, semesters 1–8).
+   - **Tier 1 (0 ms)**: Deterministic Syntax Sanitizer untuk menangkal injeksi SQL diskrit dan tampering parameter kurikulum tanpa kerapuhan regex semantik.
+   - **Tier 2 (~30 ms)**: Semantic Dual-Centroid Gate dengan kalibrasi margin cosine similarity untuk menolak kueri di luar lingkup akademik (OOD) dan adversarial prompt injection.
+   - **Tier 3**: NeMo Colang safety flow untuk kepatuhan dialog institusi.
+   - **Tier 4**: Physical Parameter Rail untuk memvalidasi batas legal argumen (semester 1–8, batas SKS 0–24).
 
 ---
 
 ## Tech Stack
 
-- **Runtime & Package Manager**: Python >= 3.12, [`uv`](https://github.com/astral-sh/uv)
+- **Runtime & Package Manager**: Python >= 3.12, [`uv`](https://github.com/astral-sh/uv) (atau standar Python `venv` + `pip`)
 - **Web Framework**: FastAPI, Uvicorn, Pydantic v2
 - **Vector Search & Retrieval**: FAISS (`faiss-cpu`), Scikit-learn, NumPy
-- **Primary Generator LLM**: Bonsai-2-4B Ternary (PQ2_0 / 1.58-bit) via `llama-server` CUDA (Port 8080)
-- **Embedding & Fallback LLM**: Ollama daemon (`nomic-embed-text-v2-moe`, `qwen2.5:3b` fallback) (Port 11434)
+- **Generator LLM Produksi**: Ollama native `llama3.2:3b` (Port 11434)
+- **Embedding Model Dense**: Ollama native `nomic-embed-text-v2-moe` (768 dimensi MRL)
 - **Containerization**: Docker, Docker Compose
 
 ---
 
-## Getting Started & Local Setup
+## Panduan Instalasi & Menjalankan (Cross-Platform Setup)
 
-Sistem ini menggunakan **Topologi 3-Service** untuk memisahkan beban kerja secara optimal:
-1. **FastAPI Backend (`:8000`)**: Logika aplikasi, state machine, guardrails, routing, dan API REST/SSE.
-2. **Ollama Daemon (`:11434`)**: Melayani model embedding dense (`nomic-embed-text-v2-moe`) dan model cadangan (fallback).
-3. **llama-server / llama.cpp (`:8080`)**: Melayani model generator utama **Bonsai-2-4B Ternary (1.58-bit PQ2_0)** secara native C++ CUDA dengan throughput tinggi dan footprint RAM sangat ramping (<780 MB Host RAM, <2.2 GB VRAM).
+Sistem ini dirancang menggunakan **Topologi 2-Service Ringkas (FastAPI + Ollama)** yang dapat berjalan di **Windows, macOS (Apple Silicon M-Series / Intel), dan Linux / WSL2** tanpa memerlukan GPU NVIDIA khusus dan tanpa setup driver CUDA yang rumit.
+
+```
++---------------------------+       HTTP REST / SSE       +-------------------------------+
+|     FastAPI Backend       | <=========================> |         Ollama Daemon         |
+|   `http://localhost:8000` |                             |    `http://localhost:11434`   |
+| (Logika, Routing, FAISS)  |                             | (Llama 3.2 3B + Nomic Embed)  |
++---------------------------+                             +-------------------------------+
+```
 
 ---
 
 ### Prasyarat Sistem (Prerequisites)
 
-1. **Sistem Operasi**: Linux (Ubuntu 22.04+) atau Windows WSL2.
-2. **Hardware**: GPU NVIDIA disarankan (VRAM >= 4 GB untuk full GPU offload), atau CPU fallback.
-3. **Python & Package Manager**: Python >= 3.12 dan [`uv`](https://github.com/astral-sh/uv).
-   ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   ```
-4. **Ollama**: Terpasang di sistem (`/usr/local/bin/ollama` atau `~/.local/bin/ollama`).
+1. **Python**: Versi >= 3.12 terpasang di sistem.
+2. **Ollama**: Aplikasi runtime model lokal.
 
 ---
 
-### Panduan Setup Langkah Demi Langkah (Step-by-Step)
+### Langkah 1: Pasang Ollama & Unduh Model (Semua OS)
 
-#### Langkah 1: Clone Repositori & Install Dependencies
-```bash
-git clone <repo-url>
-cd ftmm-compass-chatbot
-uv sync
-cp .env.example .env
-```
-
----
-
-#### Langkah 2: Setup llama.cpp (`llama-server`) & Model Bonsai-2-4B
-
-Model utama yang digunakan adalah **Ternary-Bonsai-2-4B** (bobot terkuantisasi 1.58-bit `PQ2_0`), yang dijalankan via binary `llama-server` yang mendukung kernel ternary.
-
-##### Opsi A: Menggunakan Direktori Sibling `../Bonsai-demo` (Paling Praktis)
-Jika Anda sudah meng-clone atau menjalankan repositori `Bonsai-demo` di folder yang bersebelahan (`../Bonsai-demo`), skrip runner kami akan **otomatis mendeteksi** binary dan model di direktori tersebut tanpa perlu konfigurasi tambahan.
-
-##### Opsi B: Setup Standalone di dalam Repositori Ini
-Jika Anda menjalankan proyek ini secara mandiri (*standalone*), siapkan binary dan model di direktori proyek:
-
-1. **Unduh Binary `llama-server` Pre-built (PrismML CUDA)**:
+1. Unduh dan pasang Ollama dari situs resmi: **[https://ollama.com/download](https://ollama.com/download)**
+   - **Windows**: Jalankan `OllamaSetup.exe`.
+   - **macOS**: Unduh dan jalankan aplikasi Ollama (*otomatis mendukung akselerasi Apple Silicon Metal GPU*).
+   - **Linux / WSL2**: Jalankan perintah `curl -fsSL https://ollama.com/install.sh | sh`.
+2. Pastikan Ollama berjalan, lalu buka Terminal / Command Prompt / PowerShell dan unduh model yang dibutuhkan:
    ```bash
-   mkdir -p bin
-   # Contoh unduh binary release Linux x86_64 CUDA 12:
-   curl -L https://github.com/PrismML-Eng/llama.cpp/releases/download/prism-b10777-e3de715/llama-prism-b10777-e3de715-bin-ubuntu-x64-cuda-cu12.4.tar.gz | tar -xz -C bin/
-   chmod +x bin/llama-server
-   ```
+   # 1. Model generator utama (Llama 3.2 3B - ~2.0 GB)
+   ollama pull llama3.2:3b
 
-2. **Unduh Bobot Model GGUF (~1.14 GB)**:
-   ```bash
-   mkdir -p models
-   # Menggunakan huggingface-cli via uv:
-   uv run huggingface-cli download prism-ml/Ternary-Bonsai-2-4B-gguf Ternary-Bonsai-2-4B-PQ2_0.gguf --local-dir ./models
-   ```
-   *(File model akan berada di `models/Ternary-Bonsai-2-4B-PQ2_0.gguf`).*
-
-3. **Jalankan Service `llama-server`**:
-   ```bash
-   bash scripts/start_bonsai_service.sh
-   # Atau jalankan di background:
-   nohup bash scripts/start_bonsai_service.sh > /tmp/bonsai_server.log 2>&1 &
-   ```
-
-##### Mengapa Parameter Ini Digunakan? (Technical Rationale)
-Skrip `scripts/start_bonsai_service.sh` menjalankan `llama-server` dengan parameter yang sudah disetel khusus untuk stabilitas WSL2 & VRAM terbatas:
-
-| Flag Parameter | Nilai | Penjelasan Teknis |
-|---|---|---|
-| `-m` | `...PQ2_0.gguf` | Menunjuk ke bobot model ternary 1.58-bit yang sangat efisien. |
-| `--port` | `8080` | Port default OpenAI-compatible API untuk Bonsai. |
-| `-c` | `4096` | Ukuran context window 4.096 token, pas untuk percakapan multi-turn & schema tools. |
-| `-ngl` | `99` | Offload seluruh layer (36 layer) ke GPU CUDA untuk latensi inferensi maksimal (<50 ms/token). |
-| `-np` | `1` | Mengunci alokasi ke 1 slot sekuensial. Mencegah duplikasi alokasi KV-cache di memori. |
-| `--cache-ram 0` | `0` | Mematikan alokasi cache prompt di RAM Host. |
-| `--no-cache-prompt` | Aktif | Mencegah `llama-server` melakukan penulisan berulang ke Host RAM, mengeliminasi risiko disk thrashing / swapping ke `.vhdx` di WSL2. |
-
-##### Verifikasi Service `llama-server`:
-```bash
-# 1. Cek status kesehatan server
-curl -s http://localhost:8080/health | jq .
-# Output yang diharapkan: {"status":"ok"}
-
-# 2. Tes inferensi sederhana (OpenAI format)
-curl -s http://localhost:8080/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model": "bonsai-2-4b", "messages": [{"role": "user", "content": "Halo! Jawab singkat."}]}' | jq .choices[0].message.content
-```
-
----
-
-#### Langkah 3: Setup Ollama Daemon (Embedding & Fallback)
-
-Ollama melayani representasi vektor semantik dan bertindak sebagai cadangan jika `llama-server` tidak aktif.
-
-1. **Jalankan daemon Ollama**:
-   ```bash
-   ollama serve
-   ```
-2. **Unduh model embedding dan model cadangan**:
-   ```bash
-   # Model embedding dense resmi (768d / 256d Matryoshka):
+   # 2. Model embedding kurikulum (Nomic Embed Text v2 MoE - ~280 MB)
    ollama pull nomic-embed-text-v2-moe
-
-   # Model fallback generator (opsional, jika fallback diaktifkan):
-   ollama pull qwen2.5:3b
    ```
 
 ---
 
-#### Langkah 4: Jalankan FastAPI Chatbot Backend
+### Langkah 2: Clone Repositori & Setup Konfigurasi (.env)
 
-Setelah `llama-server` (`:8080`) dan Ollama (`:11434`) aktif, jalankan aplikasi FastAPI:
+Buka terminal pada direktori kerja Anda:
 
 ```bash
-uv run uvicorn src.api.server:app --host 0.0.0.0 --port 8000 --reload
+git clone https://github.com/FTMM-COMPASS/ftmm-compass-chatbot.git
+cd ftmm-compass-chatbot
 ```
 
-##### Verifikasi Kesehatan Dual-Tier Backend:
-Lakukan pemanggilan ke endpoint health check backend:
-```bash
-curl -s http://localhost:8000/api/v1/health | jq .
-```
-Pastikan respon menunjukkan status sehat:
+Salin berkas konfigurasi lingkungan:
+- **macOS / Linux / WSL2**:
+  ```bash
+  cp .env.example .env
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  Copy-Item .env.example .env
+  ```
+- **Windows (Command Prompt / CMD)**:
+  ```cmd
+  copy .env.example .env
+  ```
+
+> **Catatan**: Konfigurasi default di `.env.example` sudah disetel langsung untuk Ollama native (`LLM_BACKEND=ollama`, `LLM_MODEL_NAME=llama3.2:3b`, `EMBED_MODEL_NAME=nomic-embed-text-v2-moe`). Anda tidak perlu mengubah isi file `.env`.
+
+---
+
+### Langkah 3: Install Dependensi Python
+
+Pilih salah satu metode instalasi berikut:
+
+#### Opsi A: Menggunakan `uv` (Sangat Cepat & Direkomendasikan)
+
+Jika Anda ingin instalasi dependensi selesai dalam hitungan detik:
+
+- **Windows (PowerShell)**:
+  ```powershell
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  uv sync
+  ```
+- **macOS (Terminal)**:
+  ```bash
+  brew install uv   # atau: curl -LsSf https://astral.sh/uv/install.sh | sh
+  uv sync
+  ```
+- **Linux / WSL2 (Bash)**:
+  ```bash
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  uv sync
+  ```
+
+#### Opsi B: Menggunakan Standar Python `venv` + `pip` (Tanpa Tool Tambahan)
+
+Jika Anda tidak ingin memasang `uv`, Anda bisa menggunakan bawaan Python:
+
+- **Windows (PowerShell)**:
+  ```powershell
+  # 1. Buat virtual environment
+  python -m venv .venv
+
+  # 2. Aktifkan virtual environment
+  .venv\Scripts\Activate.ps1
+
+  # 3. Pasang paket proyek
+  pip install -e .
+  ```
+  *(Jika muncul error execution policy di PowerShell, jalankan: `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` lalu ulangi aktivasi).*
+
+- **macOS / Linux / WSL2 (Terminal)**:
+  ```bash
+  # 1. Buat virtual environment
+  python3 -m venv .venv
+
+  # 2. Aktifkan virtual environment
+  source .venv/bin/activate
+
+  # 3. Pasang paket proyek
+  pip install -e .
+  ```
+
+---
+
+### Langkah 4: Jalankan Backend FastAPI
+
+Pastikan daemon Ollama aktif di latar belakang, lalu jalankan server:
+
+- **Jika menggunakan `uv`**:
+  ```bash
+  uv run uvicorn src.api.server:app --host 0.0.0.0 --port 8000 --reload
+  ```
+- **Jika menggunakan virtual environment standar**:
+  ```bash
+  python -m uvicorn src.api.server:app --host 0.0.0.0 --port 8000 --reload
+  ```
+
+Backend kini aktif dan siap melayani permintaan di `http://localhost:8000`.
+
+---
+
+### Langkah 5: Verifikasi Status Layanan (Health Check)
+
+Buka terminal baru untuk memverifikasi konektivitas dual-service:
+
+- **macOS / Linux / WSL2**:
+  ```bash
+  curl -s http://localhost:8000/api/v1/health | jq .
+  ```
+- **Windows (PowerShell)**:
+  ```powershell
+  Invoke-RestMethod -Uri http://localhost:8000/api/v1/health | ConvertTo-Json
+  ```
+
+Contoh respon sukses:
 ```json
 {
   "status": "healthy",
   "service": "FTMM COMPASS Chatbot Backend",
-  "active_backend": "bonsai",
-  "bonsai_online": true,
+  "active_backend": "ollama",
   "ollama_online": true,
-  "generator_model": "bonsai-2-4b",
+  "generator_model": "llama3.2:3b",
   "embedding_model": "nomic-embed-text-v2-moe"
 }
 ```
 
 ---
 
-### Troubleshooting & FAQ Setup
+## Pengujian & Regresi (Testing)
 
-1. **Error: `llama-server: error while loading shared libraries: libcudart.so.12`**:
-   - **Penyebab**: Binary CUDA tidak menemukan file shared library runtime CUDA di `LD_LIBRARY_PATH`.
-   - **Solusi**: Skrip `start_bonsai_service.sh` otomatis mencari di `~/.local/lib/ollama/cuda_v12`, `/usr/local/cuda/lib64`, dan direktori binary. Jika CUDA Anda berada di path lain, tambahkan ke `.env`:
-     ```bash
-     CUDA_LIB_DIR=/usr/local/cuda/lib64
-     ```
+Jalankan test suite untuk memastikan seluruh logika guardrail, retrieval, planning, dan healthcheck berfungsi 100%:
 
-2. **RAM WSL2 Tiba-tiba Penuh / Windows Terasa Berat**:
-   - **Penyebab**: WSL2 default mengizinkan alokasi hingga 50% RAM sistem dan rentan melakukan swap disk.
-   - **Solusi**: Parameter `-np 1`, `--cache-ram 0`, dan `--no-cache-prompt` pada skrip runner telah dirancang untuk membatasi konsumsi RAM hingga ~780 MB. Pastikan juga membatasi memory WSL2 di file `~/.wslconfig` jika diperlukan (`memory=8GB`).
-
-3. **Ingin Berjalan Tanpa `llama-server` (Murni Menggunakan Ollama)**:
-   - Jika perangkat Anda tidak memiliki GPU untuk menjalankan `llama-server`, Anda dapat beralih sepenuhnya ke generator Ollama.
-   - Cukup ubah konfigurasi di file `.env`:
-     ```ini
-     LLM_BACKEND=ollama
-     LLM_MODEL_NAME=qwen2.5:3b
-     ```
-   - Sistem akan secara otomatis mengarahkan seluruh inferensi ReAct generator ke Ollama tanpa membutuhkan `llama-server`.
-
----
-## Docker Deployment
-
-### 1. Local Development di Linux / WSL2 (Default `network_mode: host`)
-Untuk pengembangan lokal di Linux WSL2, `docker-compose.yml` dikonfigurasi menggunakan **`network_mode: host`**:
-- **Keunggulan**: Container mengakses native GPU daemon di host (`llama-server:8080` dan `ollama:11434`) langsung via loopback `127.0.0.1` tanpa terhalang firewall UFW host, tanpa overhead NAT bridge, dan port `8000` langsung tersedia di host.
-- **Jalankan Container**:
+- **Menggunakan `uv`**:
   ```bash
-  docker compose up --build -d
+  uv run pytest tests/
   ```
-- **Healthcheck Verification**:
+- **Menggunakan virtual environment standar**:
   ```bash
-  curl -s http://127.0.0.1:8000/api/v1/health | jq .
+  pytest tests/
   ```
-  Pastikan kedua backend terverifikasi aktif: `"bonsai_online": true` dan `"ollama_online": true`.
 
-### 2. Multi-Container Production (`ftmm-network`)
-Untuk deployment server produksi di VPS/Cloud terisolasi (di mana seluruh service berjalan di dalam kontainer):
-1. Buat bridge network bersama:
-   ```bash
-   docker network create ftmm-network 2>/dev/null || true
-   ```
-2. Jika daemon GPU berjalan di host dengan firewall UFW aktif (Ubuntu/WSL2), buka kedua port:
-   ```bash
-   sudo ufw allow 11434/tcp
-   sudo ufw allow 8080/tcp
-   ```
-3. Atau jalankan Ollama langsung di dalam kontainer Docker:
-   ```bash
-   docker run -d --gpus=all -v ollama_data:/root/.ollama -p 11434:11434 --network ftmm-network --name ollama ollama/ollama
-   ```
 ---
 
-## API Endpoints (Dual-Tier REST Architecture)
+## Docker Deployment (Opsional)
 
-Layanan mengekspos endpoint kanonik (`/api/v1/*`) dan alias kompatibilitas (`/api/*`):
-- `GET /api/v1/health` : Probe kesehatan layanan dual-tier (konektivitas Bonsai port 8080 dan Ollama port 11434).
-- `GET /api/v1/courses` — Katalog 369 mata kuliah kurikulum 5 prodi FTMM dengan paginasi adaptif (`page`, `per_page`).
-- `GET /api/v1/courses/search` — Pencarian semantik dan kata kunci silabus via Hybrid FAISS + BM25.
-- `POST /api/v1/chat` — Dialog akademik interaktif dengan Intent Decider & Hybrid RAG-CAG engine.
-- `POST /api/v1/chat/stream` — Real-time Server-Sent Events (SSE) streaming token dialog.
-- `POST /api/v1/plans/validations` — Validasi rencana studi terhadap graf prasyarat (DAG) & paritas semester.
-- `POST /api/v1/plans` — Sintesis rencana studi deterministik 8 semester otomatis.
+Jika Anda ingin menjalankan layanan secara terisolasi via Docker:
 
-Spesifikasi lengkap schema, Pydantic contracts, dan panduan integrasi tersedia di [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md).
----
-
-## Testing & Quality Assurance
-
-Run the test suite with `pytest`:
-
+### 1. Mode Development di Linux / WSL2 (`network_mode: host`)
+Pada Linux / WSL2, container mengakses daemon Ollama di host melalui loopback `127.0.0.1`:
 ```bash
-uv run pytest tests/
+docker compose up --build -d
+```
+
+### 2. Mode Produksi Multi-Container (`ftmm-network`)
+Untuk deployment server di mana Ollama dan FastAPI sama-sama berjalan di dalam Docker:
+```bash
+docker network create ftmm-network 2>/dev/null || true
+docker run -d --gpus=all -v ollama_data:/root/.ollama -p 11434:11434 --network ftmm-network --name ollama ollama/ollama
 ```
 
 ---
 
-## Empirical Research & Experiment Ledger
+## Daftar Endpoint REST API (Dual-Tier Kanonik)
 
-Rigorous empirical benchmark logs, latency profiles, ablation studies (Exp-001 through Exp-019), and architecture decision records are tracked in [`docs/EXPERIMENT_LEDGER.md`](docs/EXPERIMENT_LEDGER.md) and individual experiment folders under [`docs/exp-*/`](docs/).
+Layanan menyediakan endpoint RESTful kanonik (`/api/v1/*`) dan alias kompatibilitas (`/api/*`):
+
+| HTTP Method | Endpoint | Deskripsi Fungsi |
+|---|---|---|
+| `GET` | `/api/v1/health` | Status probe kesehatan microservice dan konektivitas Ollama. |
+| `GET` | `/api/v1/courses` | Katalog kurikulum 369 mata kuliah 5 prodi FTMM dengan filter paginasi. |
+| `GET` | `/api/v1/courses/search` | Pencarian cerdas silabus berbasis FAISS Dense + BM25 RRF. |
+| `POST` | `/api/v1/chat` | Endpoint percakapan akademik interaktif multi-turn. |
+| `POST` | `/api/v1/chat/stream` | Server-Sent Events (SSE) streaming respons token langsung. |
+| `POST` | `/api/v1/plans/validations` | Validasi aturan prasyarat kurikulum (DAG), beban batas SKS, dan paritas semester. |
+| `POST` | `/api/v1/plans` | Sintesis rencana studi deterministik 144 SKS (8 semester) berbasis Neuro-Symbolic CSP. |
+
+Dokumentasi skema request/response JSON selengkapnya dapat dilihat di [`docs/API_DOCUMENTATION.md`](docs/API_DOCUMENTATION.md).
+
+---
+
+## Catatan Deprecasi Model (Bonsai 1.58-bit Ternary)
+
+Model eksperimental **Ternary-Bonsai-2-4B (1.58-bit PQ2_0)** via `llama-server` CUDA C++ sebelumnya digunakan pada fase ablasi riset (Exp-019 dan Exp-025). 
+
+Per 21 Oktober 2026 (Exp-031), generator backend resmi **distandardisasi ke `llama3.2:3b` via Ollama native**:
+1. **Zero-Friction Cross-Platform**: Dapat berjalan langsung di macOS (Apple Silicon Metal), Windows (CPU/GPU), dan Linux tanpa kompilasi C++ binary atau ketergantungan driver CUDA `libcudart.so.12`.
+2. **Stabilitas Memori WSL2**: Mengeliminasi risiko disk thrashing dan swapping memori ke `.vhdx` pada lingkungan terbatas.
+3. **Kinerja Penalaran Profil Tinggi**: Mencatatkan akurasi penalaran kohor (*cohort reasoning*) sebesar **92.50%** dan pemulihan konteks multi-turn sebesar **100.0%**.
+
+Kode adapter untuk backend alternatif tetap tersimpan secara modular di `src/engine/llm_client.py` untuk kebutuhan riset akademik lanjutan.
+
+---
+
+## Buku Induk Eksperimen & Portofolio Riset
+
+Seluruh riwayat eksperimen, metrik kuantitatif, log latensi, dan studi ablasi ilmiah (Exp-001 hingga Exp-031) didokumentasikan secara rinci di:
+- **Buku Induk Eksperimen**: [`docs/EXPERIMENT_LEDGER.md`](docs/EXPERIMENT_LEDGER.md)
+- **Folder Laporan Eksperimen**: [`docs/exp-*/`](docs/)
