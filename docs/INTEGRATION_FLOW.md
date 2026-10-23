@@ -16,7 +16,7 @@ graph LR
     FE <--> GW[API Gateway Backend<br/>Mantra: FastAPI /api/v1]
     GW <--> AI[AI Engine Microservice<br/>Nauval & Ario: port 8000]
     GW <--> DB[(PostgreSQL Database<br/>Darryl: schema_v2_1_rc1)]
-    AI <--> LocalEngine[Ternary Bonsai-2-4B + Nomic Embed v2 MoE]
+    AI <--> LocalEngine[Llama 3.2 3B + Nomic Embed Text v2 MoE]
     AI <--> VectorStore[(FAISS IndexFlatIP + BM25)]
 ```
 
@@ -28,42 +28,45 @@ graph LR
 | **Tier 4: Relational DB** | PostgreSQL 16 (`schema_v2_1_rc1.sql`) | Darryl (Database) | Relasi prasyarat matkul (`course_prerequisites` DAG), paritas ganjil/genap, dan persistensi rencana studi. |
 
 
-### 1.1 Pipeline Internal AI Engine Microservice (Hasil Riset Exp-008 s.d. Exp-025)
+### 1.1 Pipeline Internal AI Engine Microservice
 
 AI Engine mengimplementasikan arsitektur *Cascaded Defense-in-Depth* dan *Single-Embed Shared Latent Pipeline*:
 
 ```mermaid
 graph TD
-    Query[Kueri Mahasiswa] --> T1[Tier 1: Deterministic Syntax Filter 0 ms<br/>SQL Injection & Parameter Tampering]
-    T1 -- Blocked: Syntax Attack / Exploit --> RefusalT1[Refusal Keamanan Sintaksis: 0 ms]
-    T1 -- Allowed --> Embed[Single-Embed Step: Ollama C++ Native<br/>1x Call -> L2-Normalized Shared Latent Vector]
-    Embed --> T2[Tier 2: Semantic Dual-Centroid Gating ~30 ms<br/>OOD Detection & Adversarial Jailbreak Boundary]
-    T2 -- Blocked: Out-of-Scope Non-Akademik / Jailbreak --> RefusalT2[Refusal Batasan Topik & Etika: ~30 ms]
-    T2 -- Allowed --> Mem[Conversation Memory Manager<br/>Dense Gazetteer Linking & Latent Ellipsis Context]
-    Mem --> Decider[6-Class System-1 Decider: BLAS Dot-Product <0.1 ms<br/>Shared Latent Vector Intent & Tool Dispatch]
-    Decider -- CHAT_ONLY --> DirectLLM[ReAct Agent: Zero Tool Schema Overhead ~400-700 ms]
-    Decider -- REGULATION_SOP --> CAGRoute[Direct CAG Route: Pre-cached Faculty SOP 0 ms Retrieval]
-    Decider -- PREREQUISITE / SKS / PLAN / DISCOVERY --> ToolsLLM[ReAct Agent: Injeksi Tool Spesifik Saja]
-    DirectLLM --> Out[Jawaban Akhir Teks]
+    Query[Pertanyaan Mahasiswa] --> T1[Tier 1: Filter Keamanan Input 0.0 ms<br/>Sanitasi Kode SQL & Manipulasi Parameter]
+    T1 -- Ditolak: Pola SQL Injection --> RefusalT1[Penolakan Keamanan: HTTP 400]
+    T1 -- Lolos Keamanan --> Norm[Penyelarasan Bahasa Akademik ~2 ms<br/>Kamus Slang O1, Fonetik STT, Typo Damerau-Levenshtein]
+    Norm -- Teks Rapi --> Embed[Pembuatan Vektor Makna: Single-Embed ~30 ms<br/>Nomic Embed Text v2 MoE 768d]
+    Embed -- Vektor Makna d=768 --> Mem[Penyambung Konteks Dialog<br/>Riwayat Sesi & Profil Mahasiswa]
+    Mem -- Konteks Lengkap --> T2[Tier 2: Penyaring Relevansi & Etika <35 ms<br/>Penyaring Topik FTMM & Anti-Joki Tugas]
+    T2 -- Ditolak: Di Luar Topik / Joki Tugas --> RefusalT2[Penolakan Etika & Batasan Topik]
+    T2 -- Topik Sah FTMM --> Decider[Pemilih Jalur Cepat: System-1 Decider <0.1 ms<br/>Klasifikasi Vektor Makna ke 4 Jalur]
+    Decider -- Sapaan Langsung --> DirectLLM[Jalur Sapaan Langsung: Llama 3.2 3B<br/>Respons Cepat Tanpa Alat ~0.5 dtk]
+    Decider -- Aturan & SOP --> CAGRoute[Jalur Aturan & SOP Resmi: Hybrid CAG-RAG<br/>Llama 3.2 3B + Panduan Akademik FAISS & 8 SOP]
+    Decider -- Info Kurikulum --> ToolsLLM[Jalur Info Kurikulum: RAG<br/>Llama 3.2 3B + FAISS 369 Silabus & Prasyarat DAG]
+    Decider -- Perencana Studi --> CSPRoute[Jalur Perencana Studi: CSP Solver<br/>Sintesis Rencana 8 Semester & Dedup Agama]
+    DirectLLM --> Out[Pengirim Jawaban Real-Time: SSE Stream]
     CAGRoute --> Out
-    ToolsLLM --> T4[Tier 4: Deterministic Argument & Physical Tool Rail]
-    T4 -- Parameter Valid --> Exec[Eksekusi Tool Database / DAG / Kurikulum]
-    T4 -- Parameter Melanggar SKS/Semester --> RefusalT4[Refusal Parameter Pelanggaran Aturan]
-    Exec --> Gen[Kompilasi Jawaban Akhir & DegreePlanPayload JSON]
-    Gen --> Out
+    ToolsLLM --> T4[Tier 4: Validasi Aturan Akademik Fisik<br/>Pengecekan Batas SKS maks 24 & Semester 1-8]
+    CSPRoute --> T4
+    T4 -- Parameter Valid --> Exec[Kompilasi Jawaban & DegreePlanPayload JSON]
+    T4 -- Pelanggaran Aturan --> RefusalT4[Penolakan Batas Beban SKS]
+    Exec --> Out
+    Out --> ClientOut[Tampilan Jawaban di Layar Mahasiswa]
 ```
 
 | Komponen Pipeline | Modul Sumber | Mekanisme & Target Latensi | Status Validasi |
 |---|---|---|---|
-| **Tier 1 Syntax Filter** | `src/guardrails/tier1_filter.py` | Deterministic Syntax Filter (0.0 ms) untuk cegah SQL syntax injection (`DROP TABLE`, `UNION SELECT`) & parameter tampering numerik. Zero semantic regex. | Tuntas (Exp-008, Exp-019, 0% ASR) |
-| **Tier 2 Dual-Centroid Gating** | `src/guardrails/tier2_semantic_gate.py` | Semantic Dual-Centroid Gating (<35 ms) menggunakan L2-normalized shared latent vector untuk deteksi OOD, jailbreak adversarial, dan task-intent disambiguation sains vs homework solver. | Tuntas (Exp-016, Exp-018, Exp-019, 100% OOD-R, 100% Disambiguation) |
-| **Memory Manager** | `src/engine/memory.py` | Dense Gazetteer Linking (369 kurikulum FTMM) + Latent Ellipsis & Structured Context Injection (prodi, semester, IPS, minat). | Tuntas (Exp-009, Exp-019, $\ge$95% Anaphora Success) |
-| **System-1 Decider** | `src/engine/decider.py` | 6-Class System-1 Decider BLAS Dot-product (<0.1 ms inferensi matrix): `CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`. Memangkas token skema JSON dan redundansi embedding call. | Tuntas (Exp-011 96.7% Acc, Exp-015 95.0% Acc, Exp-017 Qwen3+kNN 100.0% Acc, Exp-019 Single-Embed Pipeline) |
-| **ReAct Agent Engine** | `src/engine/react_agent.py` | Qwen2.5-3B VRAM Pinned (`OLLAMA_MAX_LOADED_MODELS=2`) + DeepSeek-style prefix cache. | Tuntas (Exp-010, P50 1.39s) |
-| **CSP Degree Planner** | `src/engine/tools/academic_tools.py` | Neuro-Symbolic CSP Planner (`generate_degree_plan`) dengan Dense Gazetteer Normalizer, FAISS focus track expansion, penegakan paritas semester, batas SKS, dan dedup agama tunggal. | Tuntas (Exp-020, 100.0% Success, 0% Fallback) |
-| **Tier 4 Argument Rail** | `src/guardrails/tier4_tool_rail.py` | Validasi batas legal semester (1–8) dan SKS (0–24) sebelum pemanggilan tool fisik. | Tuntas (Exp-008) |
-| **Embedding Backbone** | `src/knowledge/retriever.py` & `src/engine/decider.py` | Two-Tier Native Embedding Benchmark: High-Capacity Mode `qwen3-embedding:0.6b` (1024d, Hit@3 87.25%, Router 98.33%) & Resource-Constrained Mode `nomic-embed-text-v2-moe` (256d Matryoshka, Hit@3 83.89%, Router 96.67%, Margin 0.1316, Peak VRAM 3.6 GB). | Tuntas (Exp-021) |
-| **Academic Normalizer** | `src/engine/normalizer.py` | Pre-NLU Normalizer: Kamus leksikal O(1), Bounded Damerau-Levenshtein ($d \le 2$), dan penanganan noise fonetik STT. | Tuntas (Exp-023, F1 0.9333, Error Drop -58.33%, Latency 2.12 ms) |
+| **Tier 1 Syntax Filter** | `src/guardrails/tier1_filter.py` | Deterministic Syntax Filter (0.0 ms) untuk cegah SQL syntax injection (`DROP TABLE`, `UNION SELECT`) & parameter tampering numerik. Zero semantic regex. | Tuntas (Attack Success Rate 0.0%) |
+| **Tier 2 Dual-Centroid Gating** | `src/guardrails/tier2_semantic_gate.py` | Semantic Dual-Centroid Gating (<35 ms) menggunakan L2-normalized shared latent vector untuk deteksi OOD, jailbreak adversarial, dan task-intent disambiguation sains vs homework solver. | Tuntas (OOD Rejection 100%, Task Disambiguation 100%) |
+| **Academic Normalizer** | `src/engine/normalizer.py` | Pre-NLU Normalizer: Kamus leksikal O(1), Bounded Damerau-Levenshtein ($d \le 2$), dan penanganan noise fonetik STT. | Tuntas (F1 0.9333, Error Drop -58.33%, Latensi ~2.12 ms) |
+| **Memory Manager** | `src/engine/memory.py` | Dense Gazetteer Linking (369 kurikulum FTMM) + Latent Ellipsis & Structured Context Injection (prodi, semester, IPS, minat). | Tuntas (Anaphora Resolution $\ge$95%) |
+| **System-1 Decider** | `src/engine/decider.py` | 6-Class System-1 Decider BLAS Dot-product (<0.1 ms inferensi matrix): `CHAT_ONLY`, `PREREQUISITE`, `SKS_CALCULATION`, `DEGREE_PLANNING`, `COURSE_DISCOVERY`, `REGULATION_SOP`. Memangkas token skema JSON dan redundansi embedding call. | Tuntas (Akurasi Klasifikasi >98%, Latensi <0.1 ms) |
+| **ReAct Agent Engine** | `src/engine/react_agent.py` | Llama 3.2 3B VRAM Pinned (`OLLAMA_MAX_LOADED_MODELS=2`) + DeepSeek-style prefix cache. | Tuntas (P50 ~1.0s, Sub-Detik Response) |
+| **CSP Degree Planner** | `src/engine/tools/academic_tools.py` | Neuro-Symbolic CSP Planner (`generate_degree_plan`) dengan Dense Gazetteer Normalizer, FAISS focus track expansion, penegakan paritas semester, batas SKS, dan dedup agama tunggal. | Tuntas (Sukses Penempatan 100%, Zero Fallback) |
+| **Tier 4 Argument Rail** | `src/guardrails/tier4_tool_rail.py` | Validasi batas legal semester (1–8) dan SKS (0–24) sebelum pemanggilan tool fisik. | Tuntas (Validasi Batas Semester & SKS 100%) |
+| **Embedding Backbone** | `src/knowledge/retriever.py` & `src/engine/decider.py` | Two-Tier Native Embedding: Standard Production Mode `nomic-embed-text-v2-moe` (768d Matryoshka, Hit@3 >83%, Peak VRAM <3.5 GB) dan High-Capacity Mode `qwen3-embedding:0.6b` (1024d). | Tuntas (Konektivitas Ollama C++ Native) |
 
 ## 2. Sequence Diagram Alur Integrasi End-to-End
 
@@ -81,7 +84,7 @@ sequenceDiagram
     FE->>GW: POST /api/v1/chat/stream (Payload: message, history, student_profile)
     GW->>GW: Validasi JWT & Rate Limit (slowapi max 20 req/menit)
     GW->>AI: Proxy forward ke AI Engine (POST /api/chat/stream)
-    AI->>AI: System-1 Intent Router -> ReAct Agent tool-calling (search_courses, calculate_sks_limit)
+    AI->>AI: System-1 Intent Router -> ReAct Agent tool-calling (Llama 3.2 3B)
     loop Asynchronous Token Stream
         AI-->>GW: Yield event: token (kata-per-kata)
         GW-->>FE: SSE event: token (live typing effect)

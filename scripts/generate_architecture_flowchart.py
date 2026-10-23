@@ -19,10 +19,12 @@ import matplotlib.patches as patches
 
 
 class FlowchartBuilder:
-    def __init__(self, width: float = 14.5, height: float = 22.0, dpi: int = 300):
+    def __init__(self, width: float = 14.5, height: float = 24.5, dpi: int = 300):
+        self.width = width
+        self.height = height
         self.fig, self.ax = plt.subplots(figsize=(width, height), dpi=dpi)
-        self.ax.set_xlim(0, 14.5)
-        self.ax.set_ylim(0, 22.0)
+        self.ax.set_xlim(0, width)
+        self.ax.set_ylim(0, height)
         self.ax.set_aspect("equal")
         self.ax.axis("off")
         self.nodes = {}
@@ -122,10 +124,10 @@ class FlowchartBuilder:
 
         # Clean vertical stacking: Badge at top-center -> Title -> Subtitle
         if badge:
-            badge_w = min(1.85, w - 0.4)
-            badge_h = 0.23
+            badge_w = min(2.5, w - 0.35)
+            badge_h = 0.24
             badge_x = cx - badge_w / 2
-            badge_y = cy + h / 2 - badge_h - 0.10
+            badge_y = cy + h / 2 - badge_h - 0.08
             badge_patch = patches.FancyBboxPatch(
                 (badge_x, badge_y), badge_w, badge_h,
                 boxstyle=patches.BoxStyle("Round", pad=0.02, rounding_size=0.08),
@@ -139,13 +141,13 @@ class FlowchartBuilder:
             # Title placed comfortably below badge
             title_y = badge_y - 0.22
             self.ax.text(cx, title_y, title, ha="center", va="center",
-                         fontsize=10.0, fontweight="bold", color=title_color, zorder=4)
+                         fontsize=9.8, fontweight="bold", color=title_color, zorder=4)
 
             # Subtitle placed below title
             if subtitle:
-                self.ax.text(cx, cy - h / 2 + 0.35, subtitle, ha="center", va="center",
-                             fontsize=7.5, color=self.colors["process_sub"], zorder=4,
-                             linespacing=1.25)
+                self.ax.text(cx, cy - h / 2 + (0.45 if h > 1.5 else 0.32), subtitle, ha="center", va="center",
+                             fontsize=7.3, color=self.colors["process_sub"], zorder=4,
+                             linespacing=1.22)
         else:
             # No badge: vertically centered title and subtitle
             if subtitle:
@@ -190,14 +192,13 @@ class FlowchartBuilder:
 
         # Text centered comfortably within diamond bounds
         if subtitle:
-            self.ax.text(cx, cy + 0.12, title, ha="center", va="center",
-                         fontsize=9.8, fontweight="bold", color=self.colors["decision_title"], zorder=4)
-            self.ax.text(cx, cy - 0.18, subtitle, ha="center", va="center",
-                         fontsize=7.4, color="#1E40AF", zorder=4, linespacing=1.20)
+            self.ax.text(cx, cy + 0.14, title, ha="center", va="center",
+                         fontsize=9.5, fontweight="bold", color=self.colors["decision_title"], zorder=4)
+            self.ax.text(cx, cy - 0.20, subtitle, ha="center", va="center",
+                         fontsize=7.3, color="#1E40AF", zorder=4, linespacing=1.20)
         else:
             self.ax.text(cx, cy, title, ha="center", va="center",
                          fontsize=9.8, fontweight="bold", color=self.colors["decision_title"], zorder=4)
-
         self.nodes[node_id] = {
             "type": "decision",
             "cx": cx, "cy": cy, "w": w, "h": h,
@@ -341,11 +342,10 @@ class FlowchartBuilder:
 
     def render_header(self, title: str, subtitle: str):
         """Adds a professional academic header bar."""
-        self.ax.text(7.25, 21.4, title, ha="center", va="center",
-                     fontsize=15, fontweight="bold", color="#0F172A")
-        self.ax.text(7.25, 21.05, subtitle, ha="center", va="center",
-                     fontsize=9.2, color="#475569")
-
+        self.ax.text(self.width / 2, self.height - 0.65, title, ha="center", va="center",
+                     fontsize=14.5, fontweight="bold", color="#0F172A")
+        self.ax.text(self.width / 2, self.height - 1.02, subtitle, ha="center", va="center",
+                     fontsize=9.0, color="#475569")
     def save(self, png_path: str, pdf_path: str):
         """Saves high-res PNG and vector PDF."""
         Path(png_path).parent.mkdir(parents=True, exist_ok=True)
@@ -355,126 +355,132 @@ class FlowchartBuilder:
 
 
 def build_ftmm_compass_flowchart():
-    builder = FlowchartBuilder(width=14.5, height=22.0, dpi=300)
+    builder = FlowchartBuilder(width=14.5, height=24.5, dpi=300)
     builder.render_header(
-        "FTMM COMPASS: AI Engine Microservice End-to-End Pipeline",
-        "Single-Embed Shared Latent Vector + Cascaded Guardrails + System-1 Decider + CSP Planner"
+        "FTMM COMPASS: Alur Kerja Kecerdasan Buatan Chatbot Akademik",
+        "Penyelarasan Bahasa + Pertahanan Bertingkat + Vektor Makna Nomic Embed + Penalaran Llama 3.2 3B"
     )
 
     # 1. Start Node
     builder.add_terminal(
-        node_id="start", cx=7.25, cy=20.2, w=5.4, h=0.75,
-        title="Student Query (Browser / Chatbot UI)",
-        subtitle="POST /api/v1/chat/stream { message, history, student_profile }"
+        node_id="start", cx=7.25, cy=22.80, w=6.4, h=0.75,
+        title="Pertanyaan Mahasiswa (Browser / Chatbot UI)",
+        subtitle="Pesan teks, riwayat obrolan, dan profil mahasiswa via POST /api/v1/chat/stream"
     )
 
-    # 2. Tier 1 Process: Deterministic Syntax Filter
+    # 2. Tier 1 Process: Filter Keamanan Input
     builder.add_process(
-        node_id="tier1", cx=7.25, cy=18.6, w=6.2, h=1.2,
-        title="Tier 1: Deterministic Syntax Filter",
-        subtitle="SQL Injection Sanitization &\nMalicious Parameter Tampering Defense",
-        badge="0.0 ms Latency"
+        node_id="tier1", cx=7.25, cy=21.25, w=6.4, h=1.15,
+        title="Tier 1: Filter Keamanan Input",
+        subtitle="Pemeriksaan instan (0.0 ms) untuk memblokir kode berbahaya\ndan manipulasi parameter numerik ilegal",
+        badge="Keamanan 0.0 ms"
     )
 
     # 3. Tier 1 Refusal Node
     builder.add_process(
-        node_id="refusal_t1", cx=1.40, cy=18.6, w=2.6, h=0.9,
-        title="Security Refusal",
-        subtitle="Blocked: Malicious SQL Syntax\nHTTP 400 Bad Request (0.0 ms)",
+        node_id="refusal_t1", cx=1.40, cy=21.25, w=2.6, h=0.95,
+        title="Penolakan Keamanan",
+        subtitle="Ditolak: Pola SQL Injection\nHTTP 400 Bad Request (0.0 ms)",
         theme="refusal"
     )
 
-    # 4. Single-Embed Process: Ollama C++ Native
+    # 4. Pre-NLU Academic Normalizer (Step 1b)
     builder.add_process(
-        node_id="embed", cx=7.25, cy=16.7, w=6.4, h=1.2,
-        title="Single-Embed Step (Ollama C++ Native Daemon)",
-        subtitle="1x Inference nomic-embed-text -> L2-Normalized Vector (d=768)\nZero-Redundancy Shared Memory Latent Pipeline",
-        theme="embed", badge="~30 ms Latency"
+        node_id="normalizer", cx=7.25, cy=19.55, w=6.4, h=1.15,
+        title="Penyelarasan Bahasa Akademik",
+        subtitle="Merapikan singkatan gaul (O(1)), salah dengar suara (STT),\ndan salah ketik kode mata kuliah (Damerau-Levenshtein)",
+        badge="Normalisasi ~2 ms"
     )
 
-    # 5. Tier 2 Decision: Semantic Dual-Centroid Gate
+    # 5. Single-Embed Process: Nomic Embed Text v2 MoE
+    builder.add_process(
+        node_id="embed", cx=7.25, cy=17.85, w=6.6, h=1.15,
+        title="Pembuatan Vektor Makna (Single-Embed)",
+        subtitle="Model: Nomic Embed Text v2 MoE (Ollama C++, 768 dimensi)\nMengubah pertanyaan jadi 1 vektor makna untuk dipakai bersama",
+        theme="embed", badge="Vektor Laten ~30 ms"
+    )
+
+    # 6. Conversation Memory & Context Injection
+    builder.add_process(
+        node_id="memory", cx=7.25, cy=16.15, w=6.6, h=1.15,
+        title="Penyambung Konteks Dialog (Memory Manager)",
+        subtitle="Menghubungkan maksud pertanyaan dengan riwayat sesi,\nidentifikasi mata kuliah tersirat, dan profil mahasiswa",
+        badge="Memori Sesi"
+    )
+
+    # 7. Tier 2 Decision: Penyaring Relevansi & Etika Akademik
     builder.add_decision(
-        node_id="tier2", cx=7.25, cy=14.65, w=5.8, h=1.75,
-        title="Tier 2: Semantic Dual-Centroid Gate",
-        subtitle="L2 Cosine Centroid Boundary (<35 ms)\nOOD Detection & Adversarial Jailbreak Defense"
+        node_id="tier2", cx=7.25, cy=14.25, w=6.4, h=1.60,
+        title="Tier 2: Penyaring Relevansi & Etika Akademik",
+        subtitle="Batas semantik kemiripan makna (<35 ms):\nMemastikan topik perkuliahan FTMM & menolak joki tugas"
     )
 
-    # 6. Tier 2 Refusal Node
+    # 8. Tier 2 Refusal Node
     builder.add_process(
-        node_id="refusal_t2", cx=1.40, cy=14.65, w=2.6, h=0.9,
-        title="Topic & Scope Refusal",
-        subtitle="Blocked: Non-Academic / Jailbreak\nStandard Error Envelope (~30 ms)",
+        node_id="refusal_t2", cx=1.40, cy=14.25, w=2.6, h=0.95,
+        title="Penolakan Etika / Topik",
+        subtitle="Ditolak: Pertanyaan di luar topik FTMM\natau permintaan joki tugas kuliah",
         theme="refusal"
     )
 
-    # 7. Memory Manager Process
-    builder.add_process(
-        node_id="memory", cx=7.25, cy=12.55, w=6.6, h=1.2,
-        title="Conversation Memory & Context Injection",
-        subtitle="Dense Gazetteer Linking (369 Kurikulum FTMM)\nStudent Profile & Latent Ellipsis Context",
-        badge="In-Memory State"
-    )
-
-    # 8. System-1 Decider Decision Node
+    # 9. System-1 Decider Decision Node
     builder.add_decision(
-        node_id="decider", cx=7.25, cy=10.45, w=6.6, h=1.85,
-        title="System-1 Decider (6-Class Intent Matrix)",
-        subtitle="Matrix Dot-Product BLAS O(1) (<0.1 ms)\nShared Latent Intent Classification"
+        node_id="decider", cx=7.25, cy=12.10, w=6.6, h=1.65,
+        title="Pemilih Jalur Cepat (System-1 Decider)",
+        subtitle="Klasifikasi instan (<0.1 ms) berdasarkan vektor makna:\nMengarahkan pertanyaan ke jalur penanganan yang paling efisien"
     )
 
-    # 9. Execution Subsystems (4 Parallel Blocks)
-    exec_y = 7.65
-    exec_h = 1.85
+    # 10. Execution Subsystems (4 Parallel Blocks)
+    exec_y = 9.00
+    exec_h = 2.05
     exec_w = 2.85
 
     builder.add_process(
         node_id="exec_chat", cx=1.85, cy=exec_y, w=exec_w, h=exec_h,
-        title="ReAct Direct (Chitchat)",
-        subtitle="Intent: CHAT_ONLY\nZero Tool Schema (~400-700 ms)\nDeepSeek-Style Prefix Caching",
-        theme="route", badge="Fast Path"
+        title="Jalur Sapaan Langsung",
+        subtitle="Model: Llama 3.2 3B\nMenjawab sapaan dan tanya jawab umum\ntanpa memuat alat bantu (~0.5 dtk)",
+        theme="route", badge="Jalur Cepat"
     )
     builder.add_process(
         node_id="exec_cag", cx=5.45, cy=exec_y, w=exec_w, h=exec_h,
-        title="Direct CAG Route",
-        subtitle="Intent: REGULATION_SOP\nPre-cached 8 SOP FTMM (~811 tok)\n0.0 ms Retrieval Overhead",
-        theme="route", badge="Zero-Retrieval"
+        title="Jalur Aturan & SOP Resmi",
+        subtitle="Model: Llama 3.2 3B + FAISS\nPanduan Akademik, Skripsi, PKL, Yudisium\ndan 8 SOP layanan administrasi FTMM",
+        theme="route", badge="Hybrid CAG-RAG"
     )
-
     builder.add_process(
         node_id="exec_tools", cx=9.05, cy=exec_y, w=exec_w, h=exec_h,
-        title="Tools ReAct Agent",
-        subtitle="Intent: PREREQUISITE / SKS / DISCOV\nHybrid FAISS Dense + BM25 RRF\nPrerequisite DAG & SKS Constraint Rail",
-        theme="route", badge="Tool-Calling"
+        title="Jalur Info Kurikulum (RAG)",
+        subtitle="Model: Llama 3.2 3B + FAISS\nPencarian 369 silabus mata kuliah FTMM,\ncek prasyarat (DAG), dan hitung batas SKS",
+        theme="route", badge="Pencarian Cerdas"
     )
-
     builder.add_process(
         node_id="exec_csp", cx=12.65, cy=exec_y, w=exec_w, h=exec_h,
-        title="Neuro-Symbolic CSP Planner",
-        subtitle="Intent: DEGREE_PLANNING\nDense Gazetteer & FAISS Track Exp\nTopological Placement, Parity & Dedup",
-        theme="route", badge="CSP Solver"
+        title="Jalur Perencana Studi (CSP)",
+        subtitle="Penyusun rencana 8 semester otomatis:\nMenjamin batas SKS, prasyarat lulus,\nparitas ganjil/genap, & 1 mata kuliah agama",
+        theme="route", badge="Solver Otomatis"
     )
 
-    # 10. Tier 4 Process: Physical Parameter Rail
+    # 11. Tier 4 Process: Validasi Batas Akademik Fisik
     builder.add_process(
-        node_id="tier4", cx=7.25, cy=5.05, w=6.6, h=1.15,
-        title="Tier 4: Physical Parameter Rail",
-        subtitle="Deterministic Argument Validation\nLegal Semester 1-8 & Capacity Limit SKS 0-24",
-        badge="Safety Invariant"
+        node_id="tier4", cx=7.25, cy=6.00, w=6.6, h=1.15,
+        title="Tier 4: Validasi Aturan Akademik Fisik",
+        subtitle="Pengecekan batasan baku sebelum eksekusi sistem:\nSemester legal 1–8 dan batas beban SKS (maks 24 SKS)",
+        badge="Invarian Aturan"
     )
 
-    # 11. Compilation & Stream Node
+    # 12. Asynchronous Token Streamer
     builder.add_process(
-        node_id="stream", cx=7.25, cy=3.40, w=6.8, h=1.15,
-        title="Asynchronous Token Streamer & DegreePlan JSON",
-        subtitle="Yielding SSE Event Tokens kata-per-kata\nCompiling DegreePlanPayload JSON Widget",
-        badge="SSE Streaming"
+        node_id="stream", cx=7.25, cy=4.30, w=6.8, h=1.15,
+        title="Pengirim Jawaban Real-Time (SSE Stream)",
+        subtitle="Mengalirkan respons kata per kata (efek mengetik langsung)\ndan menyusun data terstruktur untuk kartu rencana studi",
+        badge="Streaming Langsung"
     )
 
-    # 12. Terminal End Node
+    # 13. Terminal End Node
     builder.add_terminal(
-        node_id="end", cx=7.25, cy=1.80, w=6.2, h=0.75,
-        title="Output SSE Stream & DegreePlanCardWidget",
-        subtitle="Live Typing Effect & Visual Semester 1-8 Roadmap"
+        node_id="end", cx=7.25, cy=2.60, w=6.2, h=0.75,
+        title="Tampilan Jawaban di Layar Mahasiswa",
+        subtitle="Teks jawaban mengalir langsung & kartu visual rencana studi interaktif"
     )
 
     # CONNECTIONS & ROUTING
@@ -482,41 +488,65 @@ def build_ftmm_compass_flowchart():
     builder.draw_direct_arrow("start", "tier1", from_snap="bottom", to_snap="top")
 
     # Tier 1 -> Refusal T1 (Blocked)
-    builder.draw_horizontal_branch("tier1", "refusal_t1", from_snap="left", to_snap="right",
-                                   label="SQL Injection Attack", label_color="#E11D48")
+    builder.draw_horizontal_branch(
+        "tier1", "refusal_t1", from_snap="left", to_snap="right",
+        label="Serangan SQL Ditolak", label_color="#E11D48"
+    )
 
-    # Tier 1 -> Embed (Allowed)
-    builder.draw_direct_arrow("tier1", "embed", from_snap="bottom", to_snap="top",
-                              label="Allowed", label_color="#059669", label_side="right")
+    # Tier 1 -> Normalizer (Allowed)
+    builder.draw_direct_arrow(
+        "tier1", "normalizer", from_snap="bottom", to_snap="top",
+        label="Lolos Keamanan", label_color="#059669", label_side="right"
+    )
 
-    # Embed -> Tier 2
-    builder.draw_direct_arrow("embed", "tier2", from_snap="bottom", to_snap="top",
-                              label="Shared Latent d=768", label_color="#0D9488", label_side="right")
+    # Normalizer -> Embed
+    builder.draw_direct_arrow(
+        "normalizer", "embed", from_snap="bottom", to_snap="top",
+        label="Teks Rapi", label_color="#059669", label_side="right"
+    )
 
-    # Tier 2 -> Refusal T2 (OOD Blocked)
-    builder.draw_horizontal_branch("tier2", "refusal_t2", from_snap="left", to_snap="right",
-                                   label="OOD Non-Academic", label_color="#E11D48")
+    # Embed -> Memory
+    builder.draw_direct_arrow(
+        "embed", "memory", from_snap="bottom", to_snap="top",
+        label="Vektor Makna d=768", label_color="#0D9488", label_side="right"
+    )
 
-    # Tier 2 -> Memory (In-Scope)
-    builder.draw_direct_arrow("tier2", "memory", from_snap="bottom", to_snap="top",
-                              label="In-Scope Academic", label_color="#059669", label_side="right")
+    # Memory -> Tier 2
+    builder.draw_direct_arrow(
+        "memory", "tier2", from_snap="bottom", to_snap="top",
+        label="Konteks Lengkap", label_color="#2563EB", label_side="right"
+    )
 
-    # Memory -> Decider
-    builder.draw_direct_arrow("memory", "decider", from_snap="bottom", to_snap="top",
-                              label="Context Enriched", label_color="#2563EB", label_side="right")
+    # Tier 2 -> Refusal T2 (OOD / Homework Blocked)
+    builder.draw_horizontal_branch(
+        "tier2", "refusal_t2", from_snap="left", to_snap="right",
+        label="Topik Luar / Joki Ditolak", label_color="#E11D48"
+    )
+
+    # Tier 2 -> Decider (Academic Allowed)
+    builder.draw_direct_arrow(
+        "tier2", "decider", from_snap="bottom", to_snap="top",
+        label="Topik Sah FTMM", label_color="#059669", label_side="right"
+    )
 
     # Decider -> 4 Execution Blocks (1-to-N Branching Bus)
     target_ids = ["exec_chat", "exec_cag", "exec_tools", "exec_csp"]
-    branch_labels = ["CHAT_ONLY", "REGULATION_SOP", "DISCOVERY / SKS", "DEGREE_PLANNING"]
-    builder.draw_fork_1_to_n(source_id="decider", target_ids=target_ids,
-                             bus_y=9.05, labels=branch_labels)
+    branch_labels = ["Sapaan Langsung", "Aturan & SOP", "Katalog & Silabus", "Perencana Studi"]
+    builder.draw_fork_1_to_n(
+        source_id="decider", target_ids=target_ids,
+        bus_y=10.60, labels=branch_labels
+    )
 
     # 4 Execution Blocks -> Tier 4 (N-to-1 Collector Bus)
-    builder.draw_collector_n_to_1(source_ids=target_ids, target_id="tier4", bus_y=6.05)
+    builder.draw_collector_n_to_1(
+        source_ids=target_ids, target_id="tier4", bus_y=7.25
+    )
 
     # Tier 4 -> Stream
-    builder.draw_direct_arrow("tier4", "stream", from_snap="bottom", to_snap="top",
-                              label="Parameter Valid", label_color="#059669", label_side="right")
+    builder.draw_direct_arrow(
+        "tier4", "stream", from_snap="bottom", to_snap="top",
+        label="Hasil Tervalidasi", label_color="#059669", label_side="right"
+    )
 
     # Stream -> End
     builder.draw_direct_arrow("stream", "end", from_snap="bottom", to_snap="top")

@@ -23,7 +23,7 @@
           <mxGeometry x="700" y="90" width="300" height="920" as="geometry"/>
         </mxCell>
 
-        <mxCell id="lane_ai" value="&lt;b&gt;AI Engine Microservice&lt;/b&gt;&lt;br&gt;ftmm-compass-chatbot (Nauval &amp;amp; Ario)&lt;br&gt;&lt;i&gt;Ollama Qwen2.5 + ReAct + FAISS&lt;/i&gt;" style="swimlane;startSize=50;fillColor=#e8f5e9;strokeColor=#43a047;fontColor=#1b5e20;html=1;rounded=1;shadow=1;" vertex="1" parent="1">
+        <mxCell id="lane_ai" value="&lt;b&gt;AI Engine Microservice&lt;/b&gt;&lt;br&gt;ftmm-compass-chatbot (Nauval &amp;amp; Ario)&lt;br&gt;&lt;i&gt;Ollama C++ (Llama 3.2 3B &amp;amp; Nomic Embed)&lt;/i&gt;" style="swimlane;startSize=50;fillColor=#e8f5e9;strokeColor=#43a047;fontColor=#1b5e20;html=1;rounded=1;shadow=1;" vertex="1" parent="1">
           <mxGeometry x="1040" y="90" width="320" height="920" as="geometry"/>
         </mxCell>
 
@@ -52,8 +52,8 @@
         </mxCell>
 
         <!-- NODES IN LANE_AI -->
-        <mxCell id="ai_react" value="1. &lt;b&gt;System-1 Intent Router&lt;/b&gt; (Hybrid)&lt;br&gt;2. Ekstrak Entitas (Prodi, Sem, Minat)&lt;br&gt;3. &lt;b&gt;ReAct Tool-Calling&lt;/b&gt; (Ollama Qwen2.5)&lt;br&gt;   - search_courses (FAISS+BM25)&lt;br&gt;   - calculate_sks_limit (Pasal 5.4)&lt;br&gt;   - generate_degree_plan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#43a047;" vertex="1" parent="lane_ai">
-          <mxGeometry x="20" y="100" width="280" height="110" as="geometry"/>
+        <mxCell id="ai_react" value="1. &lt;b&gt;Filter Keamanan &amp;amp; Penyelarasan Bahasa&lt;/b&gt;&lt;br&gt;2. &lt;b&gt;Single-Embed&lt;/b&gt; (Nomic Embed MoE 768d)&lt;br&gt;3. &lt;b&gt;Memory &amp;amp; Tier 2 Dual-Centroid Gate&lt;/b&gt;&lt;br&gt;4. &lt;b&gt;System-1 Decider&lt;/b&gt; (4 Jalur Cepat)&lt;br&gt;5. &lt;b&gt;Penalaran Llama 3.2 3B &amp;amp; CSP Solver&lt;/b&gt;&lt;br&gt;   - search_courses (FAISS) &amp;amp; SOP/Aturan&lt;br&gt;   - calculate_sks_limit &amp;amp; DAG Prasyarat&lt;br&gt;   - generate_degree_plan (CSP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#43a047;" vertex="1" parent="lane_ai">
+          <mxGeometry x="20" y="95" width="280" height="125" as="geometry"/>
         </mxCell>
 
         <mxCell id="ai_stream" value="&lt;b&gt;Async Token Generator&lt;/b&gt;&lt;br&gt;Yield chunk kata per kata &amp;amp;&lt;br&gt;Compile JSON DegreePlanPayload" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#43a047;" vertex="1" parent="lane_ai">
