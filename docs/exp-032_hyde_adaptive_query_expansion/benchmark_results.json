@@ -1,0 +1,202 @@
+{
+  "Direct_Dense": {
+    "hit1": 62.5,
+    "hit3": 82.5,
+    "hit5": 90.0,
+    "mrr": 0.7335416666666666,
+    "ndcg5": 0.7619012591154412,
+    "pre_retrieval_ms": 0.0,
+    "search_ms": 183.6516639499564,
+    "mean_total_ms": 183.6516639499564,
+    "p50_total_ms": 185.19179600025382,
+    "trigger_rate": 0.0,
+    "per_category": {
+      "EXPLICIT_LEXICAL": {
+        "hit1": 100.0,
+        "hit3": 100.0,
+        "hit5": 100.0,
+        "mrr": 1.0,
+        "ndcg5": 1.031546487678573,
+        "p50_total_ms": 181.4180170003965,
+        "trigger_rate": 0.0
+      },
+      "SLANG_INFORMAL": {
+        "hit1": 50.0,
+        "hit3": 75.0,
+        "hit5": 80.0,
+        "mrr": 0.635,
+        "ndcg5": 0.7086215664331643,
+        "p50_total_ms": 187.3544939999192,
+        "trigger_rate": 0.0
+      },
+      "THEMATIC_ABSTRACT": {
+        "hit1": 40.0,
+        "hit3": 70.0,
+        "hit5": 85.0,
+        "mrr": 0.5766666666666667,
+        "ndcg5": 0.6451427345619308,
+        "p50_total_ms": 184.95390099997167,
+        "trigger_rate": 0.0
+      },
+      "CROSS_DISCIPLINARY": {
+        "hit1": 60.0,
+        "hit3": 85.0,
+        "hit5": 95.0,
+        "mrr": 0.7224999999999999,
+        "ndcg5": 0.6622942477880965,
+        "p50_total_ms": 186.70879099954618,
+        "trigger_rate": 0.0
+      }
+    }
+  },
+  "BM25_Sparse": {
+    "hit1": 61.25000000000001,
+    "hit3": 80.0,
+    "hit5": 81.25,
+    "mrr": 0.7004166666666667,
+    "ndcg5": 0.7103302178286703,
+    "pre_retrieval_ms": 0.0,
+    "search_ms": 1.2700604875476529,
+    "mean_total_ms": 1.2700604875476529,
+    "p50_total_ms": 1.2534340003185207,
+    "trigger_rate": 0.0,
+    "per_category": {
+      "EXPLICIT_LEXICAL": {
+        "hit1": 100.0,
+        "hit3": 100.0,
+        "hit5": 100.0,
+        "mrr": 1.0,
+        "ndcg5": 1.031546487678573,
+        "p50_total_ms": 1.575100000081875,
+        "trigger_rate": 0.0
+      },
+      "SLANG_INFORMAL": {
+        "hit1": 35.0,
+        "hit3": 65.0,
+        "hit5": 65.0,
+        "mrr": 0.4916666666666667,
+        "ndcg5": 0.5542662662965341,
+        "p50_total_ms": 0.8632439994471497,
+        "trigger_rate": 0.0
+      },
+      "THEMATIC_ABSTRACT": {
+        "hit1": 50.0,
+        "hit3": 65.0,
+        "hit5": 70.0,
+        "mrr": 0.5766666666666667,
+        "ndcg5": 0.6074356157188728,
+        "p50_total_ms": 1.5280130000974168,
+        "trigger_rate": 0.0
+      },
+      "CROSS_DISCIPLINARY": {
+        "hit1": 60.0,
+        "hit3": 90.0,
+        "hit5": 90.0,
+        "mrr": 0.7333333333333333,
+        "ndcg5": 0.6480725016207016,
+        "p50_total_ms": 1.0763059999590041,
+        "trigger_rate": 0.0
+      }
+    }
+  },
+  "Blind_HyDE": {
+    "hit1": 57.49999999999999,
+    "hit3": 77.5,
+    "hit5": 83.75,
+    "mrr": 0.6795833333333333,
+    "ndcg5": 0.7031345549212324,
+    "pre_retrieval_ms": 1246.4851384000099,
+    "search_ms": 192.3069046999558,
+    "mean_total_ms": 1438.7920430999657,
+    "p50_total_ms": 1400.6262459997743,
+    "trigger_rate": 100.0,
+    "per_category": {
+      "EXPLICIT_LEXICAL": {
+        "hit1": 100.0,
+        "hit3": 100.0,
+        "hit5": 100.0,
+        "mrr": 1.0,
+        "ndcg5": 1.031546487678573,
+        "p50_total_ms": 1397.1406620003108,
+        "trigger_rate": 100.0
+      },
+      "SLANG_INFORMAL": {
+        "hit1": 40.0,
+        "hit3": 75.0,
+        "hit5": 80.0,
+        "mrr": 0.5625,
+        "ndcg5": 0.6542662662965341,
+        "p50_total_ms": 1386.243556999034,
+        "trigger_rate": 100.0
+      },
+      "THEMATIC_ABSTRACT": {
+        "hit1": 45.0,
+        "hit3": 65.0,
+        "hit5": 75.0,
+        "mrr": 0.5558333333333334,
+        "ndcg5": 0.6039694436225425,
+        "p50_total_ms": 1371.5818499995294,
+        "trigger_rate": 100.0
+      },
+      "CROSS_DISCIPLINARY": {
+        "hit1": 45.0,
+        "hit3": 70.0,
+        "hit5": 80.0,
+        "mrr": 0.6,
+        "ndcg5": 0.5227560220872804,
+        "p50_total_ms": 1418.9717830004156,
+        "trigger_rate": 100.0
+      }
+    }
+  },
+  "Adaptive_HyDE": {
+    "hit1": 56.25,
+    "hit3": 78.75,
+    "hit5": 83.75,
+    "mrr": 0.6743750000000001,
+    "ndcg5": 0.6990524952635024,
+    "pre_retrieval_ms": 864.162938774996,
+    "search_ms": 369.11324491252344,
+    "mean_total_ms": 1233.2761836875193,
+    "p50_total_ms": 1548.0390430002444,
+    "trigger_rate": 71.25,
+    "per_category": {
+      "EXPLICIT_LEXICAL": {
+        "hit1": 100.0,
+        "hit3": 100.0,
+        "hit5": 100.0,
+        "mrr": 1.0,
+        "ndcg5": 1.031546487678573,
+        "p50_total_ms": 368.48854100026074,
+        "trigger_rate": 0.0
+      },
+      "SLANG_INFORMAL": {
+        "hit1": 40.0,
+        "hit3": 75.0,
+        "hit5": 80.0,
+        "mrr": 0.5625,
+        "ndcg5": 0.6542662662965341,
+        "p50_total_ms": 1548.3316209993063,
+        "trigger_rate": 100.0
+      },
+      "THEMATIC_ABSTRACT": {
+        "hit1": 40.0,
+        "hit3": 65.0,
+        "hit5": 75.0,
+        "mrr": 0.5308333333333334,
+        "ndcg5": 0.5855159313011153,
+        "p50_total_ms": 1553.8994110002022,
+        "trigger_rate": 90.0
+      },
+      "CROSS_DISCIPLINARY": {
+        "hit1": 45.0,
+        "hit3": 75.0,
+        "hit5": 80.0,
+        "mrr": 0.6041666666666667,
+        "ndcg5": 0.5248812957777873,
+        "p50_total_ms": 1603.6761790010132,
+        "trigger_rate": 95.0
+      }
+    }
+  }
+}

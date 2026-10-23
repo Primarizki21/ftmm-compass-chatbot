@@ -41,6 +41,7 @@
 | **`exp-028` (Card 124)** | 2026-10-21 | Benchmarking Komparatif Spektrum Model SLM dan LLM pada Master Dataset Akademik (Card 124) | Spektrum Instruct: `qwen2.5:1.5b`, `qwen2.5:3b`, `llama3.2:3b`, `qwen2.5:7b` + `nomic-embed-text-v2-moe` | Fact Recall:<br>7B: **78.63%**<br>Qwen 3B: **76.76%**<br>Llama 3B: **75.78%**<br>1.5B: 73.55% | Semantic Sim:<br>7B: **0.8626**<br>Qwen 3B: **0.8505**<br>1.5B: 0.8384<br>Llama 3B: 0.8306 | Tool Sel Acc:<br>Llama 3B: **87.08%**<br>7B: 48.55%<br>Qwen 3B: 18.49%<br>1.5B: 15.81% | P50 TTFT:<br>1.5B: **278.89 ms**<br>Qwen 3B: **531.52 ms**<br>Llama 3B: **613.52 ms**<br>7B: **678.49 ms** | Throughput (TPS):<br>1.5B: **163.56**<br>Qwen 3B: **99.89**<br>Llama 3B: **98.77**<br>7B: 57.09 | VRAM / Pareto:<br>1.5B: 3376M (73.58)<br>Llama 3B: 2536M (**79.12**)<br>Qwen 3B: 4326M (68.75)<br>7B: 4628M (60.95) | **Batas Efisiensi Pareto Spektrum Instruct Terpetakan Tuntas**: Model Direct Instruct Non-Thinking mengeliminasi 100% overhead token pemikiran internal (0 thinking tokens), menjaga 100% context efficiency. Llama-3.2-3B meraih skor Pareto tertinggi (79.12) dan tool selection accuracy tertinggi (87.08%). Qwen-2.5-7B mencatatkan Fact Recall tertinggi (78.63%) dan Semantic Sim terbaik (0.8626). Qwen-2.5-1.5B unggul mutlak pada latensi TTFT (278.89 ms) dan throughput (163.56 TPS). | `docs/exp-028_slm_llm_instruct_spectrum/` |
 | **`exp-030`** | 2026-10-21 | Benchmarking Kompleksitas Multi-Hop Retrieval & Ketahanan Kontaminasi Konteks RAG (Card 122) | `llama3.2:3b` + `nomic-embed-text-v2-moe` (768d MRL Native) | Lexical Hit@1: **96.67%**<br>Lexical MRR: **0.9833**<br>Multi-Recall@5: **98.33%**<br>NDCG@5: **0.9968** | Faithfulness: **0.7733**<br>Isolation Rate: **90.0%** | Multi-Evidence Full-Hit@5: **96.67%**<br>FRR: **0.0%** (Zero False Refusal) | FAISS P50: **351.2 ms**<br>Retrieval Latency: **<360 ms** | Generation P50: **1420 ms**<br>Total P50: **1680 ms** | Zero WSL2 Swapping<br>Peak VRAM: **2540 MiB**<br>100% Pytest PASS | **Ketahanan Multi-Hop & Isolasi Distraktor Silang Prodi Terbukti**: Multi-Recall@5 mencapai 98.33% dan NDCG@5 0.9968 pada kueri kurikulum bersyarat majemuk. Injeksi distraktor silang prodi berhasil diisolasi sebesar 90.0% tanpa mencemari respons program studi mahasiswa. Seluruh 5 butir DoD Card 122 terpenuhi 100% PASS. | `docs/exp-030_multihop_retrieval_and_context_contamination/` |
 | **`exp-031`** | 2026-10-21 | Evaluasi Penalaran Berbasis Profil Mahasiswa (Cohort Dependency) & Ketahanan Multi-Turn Dialog Drift (Card 123) | `llama3.2:3b` + `nomic-embed-text-v2-moe` (768d MRL Native) | Overall Cohort Acc: **92.50%**<br>Binary Verdict: **90.38%**<br>Factual Rule: **96.43%**<br>Profile-Dep Acc: **90.00%** | Multi-Turn Drift Refusal: **93.33%**<br>Recovery Success: **100.0%** | Session Integrity: **93.33%**<br>Anaphora Resolution: **84.62%**<br>State Retention: **100.0%** | Latensi P50:<br>Cohort: **1075.5 ms**<br>Drift: **912.9 ms** | Total Runtime: **394 s** (200 kueri)<br>Throughput: **~1.1s/query** | Zero WSL2 Swapping<br>Peak VRAM: **2316 MiB**<br>100% Pytest PASS | **Ketahanan Multi-Turn & Penalaran Bersyarat Kohor Terbukti**: Membuktikan adaptabilitas model terhadap profil angkatan (2021 vs 2024), semester paket vs mandiri, serta pemulihan seketika dari topic drift tanpa refusal latching. | `docs/exp-031_cohort_dependency_and_multiturn_drift/` |
+| **`exp-032`** | 2026-10-23 | Evaluasi Komparatif HyDE & Adaptive Query Expansion pada SLM Lokal (Card 131) | `llama3.2:3b` + `nomic-embed-text-v2-moe` (768d MRL Native) | Hit@1:<br>Direct: **62.50%**<br>BM25: 61.25%<br>Adaptive: 56.25%<br>Blind HyDE: 57.50% | Hit@3:<br>Direct: **82.50%**<br>BM25: 80.00%<br>Adaptive: **78.75%**<br>Blind HyDE: 77.50% | Hit@5:<br>Direct: **90.00%**<br>BM25: 81.25%<br>Adaptive: 83.75%<br>Blind HyDE: 83.75% | MRR / NDCG@5:<br>Direct: **0.7335 / 0.7619**<br>BM25: 0.7004 / 0.7103<br>Adaptive: 0.6744 / 0.6991 | P50 Latensi:<br>BM25: **1.3 ms**<br>Direct: **185.2 ms**<br>Adaptive: 1548.0 ms<br>Blind HyDE: 1400.6 ms | Slang Hit@3:<br>Direct: 75.0%<br>HyDE: **75.0%**<br>BM25: 65.0% (-35%) | **Trade-Off Empiris HyDE pada SLM Lokal Terbukti**: Menunjukkan bahwa pada kueri slang/abstrak, HyDE dan Direct Dense unggul atas BM25 yang anjlok ke 65%, namun Blind HyDE memicu penalti latensi ~1.2s dan risiko halusinasi silang. Adaptive HyDE memangkas latensi pada kueri leksikal (368 ms). Zero WSL2 Swapping (Peak VRAM 3.209 MiB). | `docs/exp-032_hyde_adaptive_query_expansion/` |
 
 ---
 
@@ -1155,3 +1156,50 @@
   - `docs/exp-031_cohort_dependency_and_multiturn_drift/benchmark_raw_traces.jsonl`
   - `scripts/evaluate_cohort_and_multiturn_drift.py`
   - `tests/test_cohort_and_multiturn_drift.py`
+
+### [exp-032] Evaluasi Komparatif Hypothetical Document Embeddings (HyDE) dan Adaptive Query Expansion pada Model SLM Lokal
+- **Tanggal:** 2026-10-23
+- **Kartu Trello:** Card 131 (`[Nauval & Ario] Evaluasi Komparatif Hypothetical Document Embeddings (HyDE) dan Adaptive Query Expansion pada Model SLM Lokal`).
+- **Tujuan / Hipotesis:**
+  - Menguji efektivitas metode Hypothetical Document Embeddings (HyDE, Gao et al. ACL 2023) dalam mentranslasikan kueri bahasa alami mahasiswa yang singkat, informal/slang, dan abstrak menjadi draf silabus mata kuliah hipotesis sebelum pencocokan vektor padat FAISS.
+  - Mengukur secara empiris trade-off antara peningkatan akurasi temu balik (Hit@1, Hit@3, Hit@5, MRR, NDCG@5) terhadap penalti latensi inferensi pre-retrieval (P50 TTFT ms) dan alokasi memori VRAM GPU pada generator model bahasa kecil lokal (SLM 3B: Llama 3.2 3B).
+  - Mengevaluasi apakah integrasi perutean cerdas System-1 Decider (Adaptive Gated HyDE) mampu mempertahankan akurasi temu balik pada kueri slang/abstrak sekaligus memangkas penalti latensi pada kueri eksplisit leksikal.
+- **Setup Teknis (Two-Stage Decoupled Protocol):**
+  - **Generator:** Ollama `llama3.2:3b` (Direct Instruct Non-Thinking, `max_tokens: 100`, `temperature: 0.3`).
+  - **Embedding:** `nomic-embed-text-v2-moe` (768 dimensi MRL, IndexFlatIP Cosine Similarity).
+  - **Corpus Target:** Katalog kurikulum resmi 369 mata kuliah 5 program studi FTMM UNAIR.
+  - **Decoupled Stage 1:** Pembangkitan 80 dokumen hipotesis dalam isolasi memori murni, diikuti pengosongan generator (`ollama stop`).
+  - **Decoupled Stage 2:** Eksekusi evaluasi 4 varian temu balik (Direct Dense, BM25 Sparse, Blind HyDE, dan Adaptive Gated HyDE) dengan pemantauan VRAM kontinu.
+- **Hasil Kuantitatif (80 Kueri Terstratifikasi Penuh, 320 Evaluasi Komparatif):**
+  - **1. Tabel Kinerja Komparatif 4 Varian:**
+    | Varian Retrieval | Hit@1 (%) | Hit@3 (%) | Hit@5 (%) | MRR | NDCG@5 | Pre-Retrieval (ms) | P50 Latency (ms) | HyDE Trigger (%) |
+    |---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+    | **Direct_Dense** | **62.50%** | **82.50%** | **90.00%** | **0.7335** | **0.7619** | 0.0 ms | **185.2 ms** | 0.0% |
+    | **BM25_Sparse** | **61.25%** | **80.00%** | **81.25%** | **0.7004** | **0.7103** | 0.0 ms | **1.3 ms** | 0.0% |
+    | **Blind_HyDE** | **57.50%** | **77.50%** | **83.75%** | **0.6796** | **0.7031** | 1246.5 ms | **1400.6 ms** | 100.0% |
+    | **Adaptive_HyDE** | **56.25%** | **78.75%** | **83.75%** | **0.6744** | **0.6991** | 864.2 ms | **1548.0 ms** | 71.2% |
+  - **2. Perincian Kinerja per Kategori Kueri (Hit@3 & P50 Latensi):**
+    | Kategori Kueri | Direct Dense | BM25 Sparse | Blind HyDE | Adaptive HyDE |
+    |---|:---:|:---:|:---:|:---:|
+    | **EXPLICIT_LEXICAL (20)** | 100.0% / 181.4ms | 100.0% / 1.6ms | 100.0% / 1397.1ms | **100.0% / 368.5ms** |
+    | **SLANG_INFORMAL (20)** | **75.0% / 187.4ms** | 65.0% / 0.9ms | **75.0% / 1386.2ms** | **75.0% / 1548.3ms** |
+    | **THEMATIC_ABSTRACT (20)** | **70.0% / 185.0ms** | 65.0% / 1.5ms | 65.0% / 1371.6ms | 65.0% / 1553.9ms |
+    | **CROSS_DISCIPLINARY (20)** | **85.0% / 186.7ms** | 90.0% / 1.1ms | 70.0% / 1419.0ms | 75.0% / 1603.7ms |
+- **Temuan Kunci Empiris:**
+  1. **Fenomena Hallucinatory Semantic Drift pada Model SLM 3B:** Berbeda dengan paper HyDE asli (*Gao et al., ACL 2023*) yang menggunakan model komersial raksasa (InstructGPT 175B), model SLM skala 3B lokal rentan menghasilkan draf silabus yang memuat istilah rekayasa umum fiktif pada kueri tematik abstrak dan lintas prodi. Hal ini menggeser vektor embedding menjauh dari silabus resmi FTMM (Hit@3 turun dari 85% ke 70% pada cross-disciplinary).
+  2. **Kerentanan BM25 terhadap Diksi Informal / Slang Mahasiswa:** Pada kueri leksikal formal, BM25 mencapai akurasi mutlak (Hit@3 100.0% dalam 1.6 ms). Namun pada kueri slang/santai, performa BM25 anjlok hingga 65.0% akibat *vocabulary mismatch*. Sebaliknya, representasi semantik kontinu (Direct Dense dan HyDE) mempertahankan Hit@3 solid di 75.0%.
+  3. **Keunggulan Efisiensi Adaptive Gated HyDE:** System-1 Decider berhasil mendeteksi 100% kueri berbobot leksikal eksplisit dan membypass HyDE ke jalur Direct Dense, memangkas latensi dari ~1.4 detik menjadi sub-370 ms tanpa kehilangan akurasi (Hit@3 100%).
+  4. **Stabilitas Hardware & Zero WSL2 Swapping:** Protokol dua tahap menjaga Peak VRAM di 3.209 MiB (jauh di bawah batas 7.000 MiB) dengan zero memory paging WSL2.
+- **Keputusan Arsitektur & Rekomendasi:**
+  - Menetapkan bahwa untuk sistem produksi FTMM COMPASS, **Direct Dense Retrieval (`nomic-embed-text-v2-moe`) tetap menjadi opsi default yang paling efisien Pareto** (Hit@3 82.50%, P50 latensi 185.2 ms, zero generation overhead).
+  - Mengintegrasikan **Adaptive Gated HyDE** khusus sebagai mekanisme penanganan kueri berskor keyakinan semantik rendah ($\text{sim} < 0.45$) atau kueri slang kompleks.
+  - Seluruh 5 butir DoD pada Trello Card 131 terpenuhi 100% PASS.
+- **Artefak:**
+  - `docs/exp-032_hyde_adaptive_query_expansion/README.md`
+  - `docs/exp-032_hyde_adaptive_query_expansion/benchmark_summary.md`
+  - `docs/exp-032_hyde_adaptive_query_expansion/benchmark_metrics.csv`
+  - `docs/exp-032_hyde_adaptive_query_expansion/benchmark_results.json`
+  - `docs/exp-032_hyde_adaptive_query_expansion/benchmark_raw_traces.jsonl`
+  - `scripts/evaluate_hyde_retrieval.py`
+  - `tests/test_hyde_retriever.py`
+  - `data/ground_truth/hyde_eval_dataset.json`

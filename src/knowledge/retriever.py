@@ -22,6 +22,14 @@ INDEX_PATH = INDEX_NOMIC_PATH
 DEFAULT_EMBED_MODEL = os.getenv("EMBED_MODEL_NAME", "nomic-embed-text-v2-moe")
 DEFAULT_EMBED_DIM = int(os.getenv("EMBED_DIMENSION", "768"))
 
+PRODI_ACRONYM_MAP = {
+    "tsd": "teknologi sains data",
+    "trkb": "teknik robotika",
+    "rn": "rekayasa nanoteknologi",
+    "ti": "teknik industri",
+    "te": "teknik elektro",
+}
+
 class CourseRetriever:
     def __init__(
         self,
@@ -70,6 +78,52 @@ class CourseRetriever:
             with open(resolved_meta, "rb") as f:
                 self.metadata = pickle.load(f)
         self._loaded = True
+    def retrieve_by_vector(
+        self,
+        q_vec: np.ndarray,
+        top_k: int = 3,
+        prodi_filter: str | None = None,
+    ) -> list[dict[str, Any]]:
+        if not self._loaded:
+            self.load()
+        if q_vec.ndim == 1:
+            q_vec = q_vec.reshape(1, -1)
+        if self.dimension and q_vec.shape[1] > self.dimension:
+            q_vec = q_vec[:, : self.dimension]
+        norm = np.linalg.norm(q_vec)
+        if norm > 0:
+            q_vec = q_vec / norm
+
+        search_k = top_k * 4 if prodi_filter else top_k
+        scores, indices = self.index.search(q_vec, min(search_k, self.index.ntotal))
+
+        results = []
+        courses = self.metadata["courses"]
+        chunks = self.metadata["chunks"]
+
+        for score, idx in zip(scores[0], indices[0]):
+            if idx < 0 or idx >= len(courses):
+                continue
+            course = courses[idx]
+            chunk = chunks[idx]
+
+            if prodi_filter:
+                p_course = str(course.get("program_studi", "")).lower()
+                raw_filter = prodi_filter.strip().lower()
+                canonical = PRODI_ACRONYM_MAP.get(raw_filter, raw_filter)
+                if canonical not in p_course and p_course not in canonical and raw_filter not in p_course:
+                    continue
+            results.append({
+                "score": float(score),
+                "course": course,
+                "chunk": chunk,
+                "doc_idx": int(idx),
+            })
+            if len(results) >= top_k:
+                break
+
+        return results
+
     def retrieve(self, query: str, top_k: int = 3, prodi_filter: str | None = None) -> list[dict[str, Any]]:
         """
         Melakukan pencarian top_k mata kuliah berdasarkan kesamaan semantik.
@@ -83,42 +137,40 @@ class CourseRetriever:
             embed_kwargs["dimensions"] = self.dimension
         resp = get_ollama_client().embed(**embed_kwargs)
         q_vec = np.array(resp["embeddings"][0], dtype=np.float32).reshape(1, -1)
-        if self.dimension and q_vec.shape[1] > self.dimension:
-            q_vec = q_vec[:, :self.dimension]
-        norm = np.linalg.norm(q_vec)
-        if norm > 0:
-            q_vec = q_vec / norm
-        # Fetch extra candidates if filtering by prodi
-        search_k = top_k * 4 if prodi_filter else top_k
-        scores, indices = self.index.search(q_vec, min(search_k, self.index.ntotal))
+        return self.retrieve_by_vector(q_vec=q_vec, top_k=top_k, prodi_filter=prodi_filter)
 
-        results = []
-        courses = self.metadata["courses"]
-        chunks = self.metadata["chunks"]
+    def retrieve_with_hyde(
+        self,
+        query: str,
+        top_k: int = 3,
+        prodi_filter: str | None = None,
+        generator: Any | None = None,
+        return_hypo: bool = False,
+    ) -> list[dict[str, Any]] | tuple[list[dict[str, Any]], str]:
+        """
+        Melakukan pencarian matkul menggunakan Hypothetical Document Embeddings (HyDE).
+        Membangkitkan draf silabus hipotesis via SLM sebelum pencocokan vektor padat.
+        """
+        if not self._loaded:
+            self.load()
+        if generator is None:
+            from src.knowledge.hyde_generator import get_hyde_generator
+            generator = get_hyde_generator()
 
-        for score, idx in zip(scores[0], indices[0]):
-            if idx < 0 or idx >= len(courses):
-                continue
-            course = courses[idx]
-            chunk = chunks[idx]
-            
-            if prodi_filter:
-                p_course = str(course.get("program_studi", "")).lower()
-                p_filter = prodi_filter.lower()
-                if p_filter not in p_course and p_course not in p_filter:
-                    continue
+        hypo_doc = generator.generate(query=query, prodi_hint=prodi_filter)
+        combined_text = f"{query}\n\n{hypo_doc}" if hypo_doc and hypo_doc != query else query
 
-            results.append({
-                "score": float(score),
-                "course": course,
-                "chunk": chunk,
-                "doc_idx": int(idx)
-            })
-            if len(results) >= top_k:
-                break
+        from src.engine.base import get_ollama_client
+        embed_kwargs = {"model": self.embed_model, "input": combined_text, "keep_alive": -1}
+        if self.dimension and self.dimension < 768:
+            embed_kwargs["dimensions"] = self.dimension
+        resp = get_ollama_client().embed(**embed_kwargs)
+        hypo_vec = np.array(resp["embeddings"][0], dtype=np.float32).reshape(1, -1)
 
+        results = self.retrieve_by_vector(q_vec=hypo_vec, top_k=top_k, prodi_filter=prodi_filter)
+        if return_hypo:
+            return results, hypo_doc
         return results
-
 
 # Global singleton instance
 _retriever_instance: CourseRetriever | None = None

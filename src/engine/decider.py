@@ -341,3 +341,43 @@ class System1Decider:
             margin=margin,
             query_vec=q_vec,
         )
+
+    def should_use_hyde(
+        self,
+        query: str,
+        decision: DecisionResult | None = None,
+        top_similarity: float | None = None,
+    ) -> bool:
+        """
+        Memutuskan secara adaptif apakah kueri membutuhkan ekspansi dokumen hipotesis (HyDE).
+        - Kueri CHAT_ONLY atau REGULATION_SOP: False (0 ms retrieval, ditangani CAG/Direct).
+        - Kueri dengan kode MK eksplisit terdeteksi: False (Direct Dense sudah presisi tinggi).
+        - Kueri COURSE_DISCOVERY, PREREQUISITE, atau kueri dengan margin semantik rendah (< 0.035) /
+          kemiripan rendah (< 0.52): True (ambiguitas tinggi, kesenjangan representasi slang/konseptual).
+        """
+        if decision is None:
+            decision = self.decide(query)
+
+        if decision.category in (DecisionCategory.CHAT_ONLY, DecisionCategory.REGULATION_SOP):
+            return False
+
+        import re
+        if re.search(r"\b[A-Za-z]{3}\s*\d{3}\b", query):
+            return False
+
+        effective_score = top_similarity if top_similarity is not None else decision.confidence
+        if effective_score >= 0.58 and decision.margin >= 0.040:
+            return False
+
+        return True
+
+
+_GLOBAL_DECIDER: System1Decider | None = None
+
+
+def get_system1_decider() -> System1Decider:
+    global _GLOBAL_DECIDER
+    if _GLOBAL_DECIDER is None:
+        _GLOBAL_DECIDER = System1Decider()
+        _GLOBAL_DECIDER.initialize()
+    return _GLOBAL_DECIDER
