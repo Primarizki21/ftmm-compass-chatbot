@@ -19,6 +19,8 @@ DEFAULT_NUM_CTX = int(os.getenv("OLLAMA_NUM_CTX", "2048"))
 LLM_BACKEND = os.getenv("LLM_BACKEND", "ollama").strip().lower()
 BONSAI_HOST = os.getenv("BONSAI_HOST", "http://127.0.0.1:8080").rstrip("/")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
+NINE_ROUTER_HOST = os.getenv("NINE_ROUTER_HOST", "http://127.0.0.1:20128").rstrip("/")
+NINE_ROUTER_API_KEY = os.getenv("NINE_ROUTER_API_KEY", "sk-439cc469a8a3ba1e-6xito6-9bc2f3ec").strip()
 
 _OLLAMA_CLIENT_POOL: dict[str, ollama.Client] = {}
 
@@ -90,6 +92,14 @@ class NormalizedChatResponse:
         self.model = model
         self.backend = backend
         self.raw_response = raw_response or {}
+    @property
+    def content(self) -> str:
+        return self.message.content if self.message else ""
+
+    @property
+    def tool_calls(self) -> list[NormalizedToolCall] | None:
+        return self.message.tool_calls if self.message else None
+
 
     def get(self, key: str, default: Any = None) -> Any:
         if key == "prompt_eval_count":
@@ -127,6 +137,8 @@ class LLMClientAdapter:
         backend: str | None = None,
         bonsai_host: str | None = None,
         ollama_host: str | None = None,
+        nine_router_host: str | None = None,
+        nine_router_api_key: str | None = None,
         fallback_model: str = "llama3.2:3b",
         timeout: float = 60.0,
         enable_fallback: bool | None = None,
@@ -141,6 +153,15 @@ class LLMClientAdapter:
         if not o_host.startswith(("http://", "https://")):
             o_host = f"http://{o_host}"
         self.ollama_host = o_host.rstrip("/")
+
+        nr_host = nine_router_host or os.getenv("NINE_ROUTER_HOST", "http://127.0.0.1:20128")
+        if not nr_host.startswith(("http://", "https://")):
+            nr_host = f"http://{nr_host}"
+        self.nine_router_host = nr_host.rstrip("/")
+        self.nine_router_api_key = (
+            nine_router_api_key
+            or os.getenv("NINE_ROUTER_API_KEY", "sk-439cc469a8a3ba1e-6xito6-9bc2f3ec")
+        ).strip()
 
         self.fallback_model = fallback_model
         self.timeout = timeout
@@ -374,6 +395,14 @@ class LLMClientAdapter:
         keep_alive: Any = None,
         **kwargs: Any,
     ) -> NormalizedChatResponse:
+        if self.backend in ("nine_router", "9router"):
+            return self._chat_nine_router(
+                messages=messages,
+                model=model,
+                tools=tools,
+                options=options,
+                **kwargs,
+            )
         if self.backend == "bonsai":
             try:
                 return self._chat_bonsai(
@@ -487,6 +516,83 @@ class LLMClientAdapter:
             raw_response=data,
         )
 
+    def _chat_nine_router(
+        self,
+        messages: list[Any],
+        model: str | None = None,
+        tools: list[dict[str, Any]] | None = None,
+        options: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> NormalizedChatResponse:
+        target_model = model or os.getenv("LLM_MODEL_NAME", "ag/gemini-3.8-flash-low")
+        clean_messages = self._normalize_messages(messages, for_openai=True)
+
+        num_predict = 1024
+        temperature = 0.1
+        top_p = 0.9
+        if options:
+            num_predict = options.get("num_predict", 1024)
+            temperature = options.get("temperature", 0.1)
+            top_p = options.get("top_p", 0.9)
+
+        payload: dict[str, Any] = {
+            "model": target_model,
+            "messages": clean_messages,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_tokens": num_predict,
+            "stream": False,
+        }
+        if tools:
+            payload["tools"] = tools
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.nine_router_api_key}",
+        }
+        url = f"{self.nine_router_host}/v1/chat/completions"
+        with httpx.Client(timeout=httpx.Timeout(self.timeout, connect=5.0)) as client:
+            resp = client.post(url, json=payload, headers=headers)
+            resp.raise_for_status()
+            data = resp.json()
+
+        choice = data.get("choices", [{}])[0]
+        msg_dict = choice.get("message", {})
+        content = msg_dict.get("content", "") or ""
+        raw_tool_calls = msg_dict.get("tool_calls")
+        reasoning = msg_dict.get("reasoning_content", "") or ""
+        if not content and reasoning and not raw_tool_calls:
+            ans_marker = re.search(r"(?:Draft|Jawaban|Final Answer|Summary):\s*([\s\S]+)$", reasoning, re.IGNORECASE)
+            if ans_marker:
+                content = ans_marker.group(1).strip()
+            else:
+                content = reasoning.strip()
+        parsed_tool_calls = self._parse_tool_calls(
+            content=content,
+            raw_tool_calls=raw_tool_calls,
+            reasoning=reasoning,
+        )
+
+        usage = data.get("usage", {})
+        prompt_eval_count = usage.get("prompt_tokens", 0)
+        eval_count = usage.get("completion_tokens", 0)
+
+        chat_msg = NormalizedChatMessage(
+            role="assistant",
+            content=content,
+            tool_calls=parsed_tool_calls,
+        )
+
+        return NormalizedChatResponse(
+            message=chat_msg,
+            prompt_eval_count=prompt_eval_count,
+            eval_count=eval_count,
+            model=target_model,
+            backend="nine_router",
+            raw_response=data,
+        )
+
+
     def _chat_ollama(
         self,
         messages: list[Any],
@@ -562,6 +668,11 @@ class LLMClientAdapter:
         options: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[str, None]:
+        if self.backend in ("nine_router", "9router"):
+            async for chunk in self._stream_chat_nine_router(messages=messages, model=model, options=options, **kwargs):
+                yield chunk
+            return
+
         if self.backend == "bonsai":
             try:
                 async for chunk in self._stream_chat_bonsai(messages=messages, model=model, options=options, **kwargs):
@@ -629,6 +740,62 @@ class LLMClientAdapter:
         flushed = thought_filter.flush()
         if flushed:
             yield flushed
+
+    async def _stream_chat_nine_router(
+        self,
+        messages: list[Any],
+        model: str | None = None,
+        options: dict[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> AsyncGenerator[str, None]:
+        target_model = model or os.getenv("LLM_MODEL_NAME", "ag/gemini-3.8-flash-low")
+        clean_messages = self._normalize_messages(messages, for_openai=True)
+        num_predict = 1024
+        temperature = 0.1
+        top_p = 0.9
+        if options:
+            num_predict = options.get("num_predict", 1024)
+            temperature = options.get("temperature", 0.1)
+            top_p = options.get("top_p", 0.9)
+
+        payload = {
+            "model": target_model,
+            "messages": clean_messages,
+            "temperature": temperature,
+            "top_p": top_p,
+            "max_tokens": num_predict,
+            "stream": True,
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {self.nine_router_api_key}",
+        }
+        url = f"{self.nine_router_host}/v1/chat/completions"
+        thought_filter = StreamingThoughtFilter()
+
+        async with httpx.AsyncClient(timeout=httpx.Timeout(self.timeout, connect=5.0)) as client:
+            async with client.stream("POST", url, json=payload, headers=headers) as resp:
+                resp.raise_for_status()
+                async for line in resp.aiter_lines():
+                    if not line or not line.startswith("data:"):
+                        continue
+                    raw_data = line[5:].strip()
+                    if raw_data == "[DONE]":
+                        break
+                    try:
+                        chunk_json = json.loads(raw_data)
+                        delta = chunk_json.get("choices", [{}])[0].get("delta", {})
+                        token = delta.get("content") or ""
+                        if token:
+                            filtered = thought_filter.process(token)
+                            if filtered:
+                                yield filtered
+                    except Exception:
+                        continue
+        flushed = thought_filter.flush()
+        if flushed:
+            yield flushed
+
 
     async def _stream_chat_ollama(
         self,
