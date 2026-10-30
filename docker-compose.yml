@@ -14,10 +14,13 @@ services:
       - MKL_NUM_THREADS=2
       - TOKENIZERS_PARALLELISM=false
       - OLLAMA_NUM_CTX=2048
-      - LLM_BACKEND=ollama
-      - LLM_MODEL_NAME=llama3.2:3b
-      - BONSAI_HOST=http://127.0.0.1:8080
-      - OLLAMA_HOST=http://127.0.0.1:11434
+      - LLM_BACKEND=${LLM_BACKEND:-nine_router}
+      - LLM_MODEL_NAME=${LLM_MODEL_NAME:-ag/gemini-3.8-flash-low}
+      - NINE_ROUTER_HOST=${NINE_ROUTER_HOST:-http://127.0.0.1:20128}
+      - NINE_ROUTER_API_KEY=${NINE_ROUTER_API_KEY:-sk-439cc469a8a3ba1e-6xito6-9bc2f3ec}
+      - BONSAI_HOST=${BONSAI_HOST:-http://127.0.0.1:8080}
+      - OLLAMA_HOST=${OLLAMA_HOST:-http://127.0.0.1:11434}
+      - EMBED_MODEL_NAME=${EMBED_MODEL_NAME:-nomic-embed-text-v2-moe}
       - SESSION_STORE_BACKEND=sqlite
       - SESSION_DB_PATH=/app/sessions/sessions.db
       - MAX_CONCURRENT_INFERENCE=1
