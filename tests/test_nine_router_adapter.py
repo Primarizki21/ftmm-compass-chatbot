@@ -71,6 +71,30 @@ def test_nine_router_chat_mock():
         assert kwargs["json"]["model"] == "ag/gemini-3.8-flash-low"
 
 
+def test_nine_router_upstream_error_is_explicit():
+    err_resp = MagicMock()
+    err_resp.status_code = 400
+    err_resp.text = '{"error":{"message":"API key not valid. Please pass a valid API key."}}'
+    err_resp.raise_for_status.side_effect = httpx.HTTPStatusError(
+        "400 Bad Request",
+        request=httpx.Request("POST", "http://127.0.0.1:20128/v1/chat/completions"),
+        response=err_resp,
+    )
+
+    adapter = LLMClientAdapter(
+        backend="nine_router",
+        nine_router_host="http://127.0.0.1:20128",
+        nine_router_api_key="sk-test-key",
+    )
+    with patch("httpx.Client.post", return_value=err_resp):
+        with pytest.raises(RuntimeError) as exc_info:
+            adapter.chat(messages=[{"role": "user", "content": "Halo"}], model="ag/gemini-3.8-flash-low")
+
+    message = str(exc_info.value)
+    assert "9router rejected the request (400)" in message
+    assert "API key not valid" in message
+
+
 def test_nine_router_tool_calls_mock():
     mock_resp_data = {
         "id": "chatcmpl-test-tc",
@@ -173,6 +197,8 @@ def test_health_check_with_nine_router():
 
 
 def test_nine_router_live_smoke():
+    if not os.getenv("NINE_ROUTER_API_KEY"):
+        pytest.skip("NINE_ROUTER_API_KEY not set; skipping live 9router smoke test")
     try:
         r = httpx.get("http://127.0.0.1:20128/v1/models", timeout=1.0)
         if r.status_code != 200:

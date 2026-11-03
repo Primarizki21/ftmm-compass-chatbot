@@ -20,7 +20,6 @@ LLM_BACKEND = os.getenv("LLM_BACKEND", "ollama").strip().lower()
 BONSAI_HOST = os.getenv("BONSAI_HOST", "http://127.0.0.1:8080").rstrip("/")
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
 NINE_ROUTER_HOST = os.getenv("NINE_ROUTER_HOST", "http://127.0.0.1:20128").rstrip("/")
-NINE_ROUTER_API_KEY = os.getenv("NINE_ROUTER_API_KEY", "sk-439cc469a8a3ba1e-6xito6-9bc2f3ec").strip()
 
 _OLLAMA_CLIENT_POOL: dict[str, ollama.Client] = {}
 
@@ -159,9 +158,13 @@ class LLMClientAdapter:
             nr_host = f"http://{nr_host}"
         self.nine_router_host = nr_host.rstrip("/")
         self.nine_router_api_key = (
-            nine_router_api_key
-            or os.getenv("NINE_ROUTER_API_KEY", "sk-439cc469a8a3ba1e-6xito6-9bc2f3ec")
+            nine_router_api_key or os.getenv("NINE_ROUTER_API_KEY", "")
         ).strip()
+        if self.backend in ("nine_router", "9router") and not self.nine_router_api_key:
+            logger.warning(
+                "NINE_ROUTER_API_KEY is empty; 9router at %s will reject requests with 401.",
+                self.nine_router_host,
+            )
 
         self.fallback_model = fallback_model
         self.timeout = timeout
@@ -516,6 +519,16 @@ class LLMClientAdapter:
             raw_response=data,
         )
 
+    @staticmethod
+    def _nine_router_error(status_code: int, body: bytes | str) -> RuntimeError:
+        detail = (body.decode("utf-8", "replace") if isinstance(body, bytes) else body).strip()
+        return RuntimeError(
+            f"9router rejected the request ({status_code}): {detail[:500]}. "
+            "NINE_ROUTER_HOST must be the OpenAI-compatible base URL of 9router "
+            "(e.g. https://<tunnel>, request goes to /v1/chat/completions) and "
+            "NINE_ROUTER_API_KEY must be a key issued by 9router, not a Google Gemini API key."
+        )
+
     def _chat_nine_router(
         self,
         messages: list[Any],
@@ -524,6 +537,8 @@ class LLMClientAdapter:
         options: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> NormalizedChatResponse:
+        if not self.nine_router_api_key:
+            raise RuntimeError("NINE_ROUTER_API_KEY is empty; set a key issued by the 9router dashboard.")
         target_model = model or os.getenv("LLM_MODEL_NAME", "ag/gemini-3.8-flash-low")
         clean_messages = self._normalize_messages(messages, for_openai=True)
 
@@ -553,7 +568,10 @@ class LLMClientAdapter:
         url = f"{self.nine_router_host}/v1/chat/completions"
         with httpx.Client(timeout=httpx.Timeout(self.timeout, connect=5.0)) as client:
             resp = client.post(url, json=payload, headers=headers)
-            resp.raise_for_status()
+            try:
+                resp.raise_for_status()
+            except httpx.HTTPStatusError as exc:
+                raise self._nine_router_error(exc.response.status_code, exc.response.text) from exc
             data = resp.json()
 
         choice = data.get("choices", [{}])[0]
@@ -748,6 +766,8 @@ class LLMClientAdapter:
         options: dict[str, Any] | None = None,
         **kwargs: Any,
     ) -> AsyncGenerator[str, None]:
+        if not self.nine_router_api_key:
+            raise RuntimeError("NINE_ROUTER_API_KEY is empty; set a key issued by the 9router dashboard.")
         target_model = model or os.getenv("LLM_MODEL_NAME", "ag/gemini-3.8-flash-low")
         clean_messages = self._normalize_messages(messages, for_openai=True)
         num_predict = 1024
@@ -775,7 +795,11 @@ class LLMClientAdapter:
 
         async with httpx.AsyncClient(timeout=httpx.Timeout(self.timeout, connect=5.0)) as client:
             async with client.stream("POST", url, json=payload, headers=headers) as resp:
-                resp.raise_for_status()
+                try:
+                    resp.raise_for_status()
+                except httpx.HTTPStatusError as exc:
+                    raw_body = await exc.response.aread()
+                    raise self._nine_router_error(exc.response.status_code, raw_body) from exc
                 async for line in resp.aiter_lines():
                     if not line or not line.startswith("data:"):
                         continue

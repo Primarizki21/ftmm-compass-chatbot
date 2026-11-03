@@ -276,6 +276,21 @@ Rekan tim yang menerima URL tunnel **TIDAK PERLU** memasang Python, dependensi A
    ```
 ---
 
+### Berbagi via 9router (Tunnel Port `20128`)
+
+Jika yang dibagikan adalah **tunnel 9router**, rekan tim terhubung lewat kontrak OpenAI-compatible (bukan endpoint Google):
+
+| Item | Nilai |
+|---|---|
+| Base URL | `https://<tunnel-9router>` — request ke `/v1/chat/completions` |
+| Auth | Header `Authorization: Bearer <NINE_ROUTER_API_KEY>` |
+| Model | Wajib prefix provider, mis. `ag/gemini-3.8-flash-low` |
+| Key | Terbitan dashboard 9router (`sk-...`), **bukan** key Google Gemini |
+
+Gejala salah konfigurasi: client Gemini-native / SDK `google-genai` yang tidak diarahkan ke 9router memanggil `generativelanguage.googleapis.com` secara langsung, lalu mengembalikan `400 API key not valid. Please pass a valid API key.` — pesan itu berasal dari Google, bukan dari 9router, dan tidak akan muncul pada request yang benar-benar melewati 9router.
+
+---
+
 ## Pengujian & Regresi (Testing)
 
 Jalankan test suite untuk memastikan seluruh logika guardrail, retrieval, planning, dan healthcheck berfungsi 100%:
