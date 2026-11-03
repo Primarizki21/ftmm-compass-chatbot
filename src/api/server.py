@@ -26,6 +26,7 @@ from src.api.schemas import (
     HealthResponse,
     BonsaiHealthDetail,
     OllamaHealthDetail,
+    NineRouterHealthDetail,
     StudentProfile,
     DegreePlanPayload,
     DegreePlanSummary,
@@ -114,6 +115,12 @@ def _get_bonsai_base_url() -> str:
     if not host.startswith(("http://", "https://")):
         return f"http://{host}"
     return host.rstrip("/")
+def _get_nine_router_base_url() -> str:
+    host = os.getenv("NINE_ROUTER_HOST", "http://127.0.0.1:20128").strip()
+    if not host.startswith(("http://", "https://")):
+        return f"http://{host}"
+    return host.rstrip("/")
+
 
 def _normalize_course_type(jenis: str | None) -> str:
     j = str(jenis or "").lower()
@@ -205,10 +212,11 @@ async def handle_health_check(strict: bool = False) -> HealthResponse:
 
     bonsai_base_url = _get_bonsai_base_url()
     ollama_base_url = _get_ollama_base_url()
+    nine_router_base_url = _get_nine_router_base_url()
 
     bonsai_online = False
     ollama_online = False
-
+    nine_router_online = False
     async with httpx.AsyncClient(timeout=2.0) as client:
         try:
             b_resp = await client.get(f"{bonsai_base_url}/health")
@@ -224,7 +232,27 @@ async def handle_health_check(strict: bool = False) -> HealthResponse:
         except Exception:
             ollama_online = False
 
-    if active_backend == "bonsai":
+        try:
+            nr_key = os.getenv("NINE_ROUTER_API_KEY", "").strip()
+            nr_headers = {"Authorization": f"Bearer {nr_key}"} if nr_key else {}
+            nr_resp = await client.get(f"{nine_router_base_url}/v1/models", headers=nr_headers)
+            if nr_resp.status_code == 200:
+                nine_router_online = True
+            elif nr_resp.status_code in (401, 403):
+                logger.warning(
+                    "9router di %s menolak key health check (HTTP %s). Endpoint tunnel wajib menyertakan NINE_ROUTER_API_KEY.",
+                    nine_router_base_url,
+                    nr_resp.status_code,
+                )
+        except Exception:
+            nine_router_online = False
+
+    if active_backend in ("nine_router", "9router"):
+        if nine_router_online:
+            service_status = "healthy" if ollama_online else "degraded"
+        else:
+            service_status = "unhealthy"
+    elif active_backend == "bonsai":
         if bonsai_online:
             service_status = "healthy"
         elif ollama_online:
@@ -233,7 +261,6 @@ async def handle_health_check(strict: bool = False) -> HealthResponse:
             service_status = "unhealthy"
     else:
         service_status = "healthy" if ollama_online else "degraded"
-
     if strict:
         if active_backend == "bonsai" and not (bonsai_online or ollama_online):
             raise HTTPException(
@@ -245,6 +272,11 @@ async def handle_health_check(strict: bool = False) -> HealthResponse:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Ollama daemon is offline",
             )
+        elif active_backend in ("nine_router", "9router") and not nine_router_online:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="9router generator daemon is offline",
+            )
 
     return HealthResponse(
         status=service_status,
@@ -252,6 +284,7 @@ async def handle_health_check(strict: bool = False) -> HealthResponse:
         active_backend=active_backend,
         bonsai_online=bonsai_online,
         ollama_online=ollama_online,
+        nine_router_online=nine_router_online,
         generator_model=generator_model,
         embedding_model=embedding_model,
         default_model=generator_model,
@@ -264,6 +297,11 @@ async def handle_health_check(strict: bool = False) -> HealthResponse:
             online=ollama_online,
             host=ollama_base_url,
             default_model=engine.model,
+        ),
+        nine_router=NineRouterHealthDetail(
+            online=nine_router_online,
+            host=nine_router_base_url,
+            default_model=generator_model,
         ),
     )
 

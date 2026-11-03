@@ -9,20 +9,8 @@ services:
     env_file:
       - .env
     environment:
-      - OMP_NUM_THREADS=2
-      - OPENBLAS_NUM_THREADS=2
-      - MKL_NUM_THREADS=2
-      - TOKENIZERS_PARALLELISM=false
-      - OLLAMA_NUM_CTX=2048
-      - LLM_BACKEND=ollama
-      - LLM_MODEL_NAME=llama3.2:3b
-      - BONSAI_HOST=http://127.0.0.1:8080
-      - OLLAMA_HOST=http://127.0.0.1:11434
-      - SESSION_STORE_BACKEND=sqlite
+      # Satu-satunya override container: path sesi di dalam image.
       - SESSION_DB_PATH=/app/sessions/sessions.db
-      - MAX_CONCURRENT_INFERENCE=1
-      - MAX_QUEUE_WAIT_SECONDS=10.0
-      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:8001,http://localhost:3000
     volumes:
       - ./data:/app/data:ro
       - chatbot-sessions:/app/sessions:rw

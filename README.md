@@ -93,7 +93,32 @@ Salin berkas konfigurasi lingkungan:
   copy .env.example .env
   ```
 
-> **Catatan**: Konfigurasi default di `.env.example` sudah disetel langsung untuk Ollama native (`LLM_BACKEND=ollama`, `LLM_MODEL_NAME=llama3.2:3b`, `EMBED_MODEL_NAME=nomic-embed-text-v2-moe`). Anda tidak perlu mengubah isi file `.env`.
+> **Catatan**: `.env.example` dan `.env` memakai daftar variabel yang identik. Backend default memakai **9router** (`LLM_BACKEND=nine_router`). Isi `NINE_ROUTER_API_KEY` dengan key dari dashboard 9router; tanpa key, request dibalas `401 Invalid API key`.
+
+### Variabel `.env`
+
+| Variabel | Default | Fungsi |
+|---|---|---|
+| `LLM_BACKEND` | `nine_router` | Pemilih generator: `nine_router` \| `ollama` \| `bonsai`. |
+| `LLM_MODEL_NAME` | `ag/gemini-3.8-flash-low` | ID model di 9router. Wajib memakai prefix provider (`ag/...`); tanpa prefix → `404 model_not_found`. |
+| `NINE_ROUTER_HOST` | `https://<short-id>.abc-tunnel.us` | Base URL OpenAI-compatible 9router (lokal `http://127.0.0.1:20128` atau tunnel). Request dikirim ke `<host>/v1/chat/completions`. |
+| `NINE_ROUTER_API_KEY` | *(kosong)* | Key terbitan dashboard 9router (`Authorization: Bearer`). Key Google Gemini ditolak `400 API_KEY_INVALID`. |
+| `ENABLE_OLLAMA_FALLBACK` | `false` | Failover otomatis generator ke Ollama bila 9router gagal. |
+| `OLLAMA_HOST` | `http://127.0.0.1:11434` | Endpoint daemon Ollama untuk embedding (`/api/embed`). |
+| `EMBED_MODEL_NAME` | `nomic-embed-text-v2-moe` | Model embedding native Ollama. |
+| `EMBED_DIMENSION` | `768` | Dimensi vektor embedding; harus sama dengan indeks FAISS. |
+| `OLLAMA_NUM_CTX` | `2048` | Batas context window Ollama. |
+| `OLLAMA_NUM_PREDICT` | `256` | Batas token output generator (jalur Ollama). |
+| `SESSION_STORE_BACKEND` | `sqlite` | Penyimpanan sesi percakapan. |
+| `SESSION_DB_PATH` | `data/sessions/sessions.db` | Lokasi database sesi (container memakai `/app/sessions/sessions.db`). |
+| `MAX_CONCURRENT_INFERENCE` | `1` | Jumlah inferensi paralel; kelebihan antre. |
+| `MAX_QUEUE_WAIT_SECONDS` | `10.0` | Batas antre sebelum `429 rate_limit_exceeded`. |
+| `ALLOWED_ORIGINS` | `http://localhost:5173,http://localhost:8001,http://localhost:3000` | Origin CORS yang diizinkan (pisahkan dengan koma, `*` untuk semua). |
+| `OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS`, `TOKENIZERS_PARALLELISM` | `2`, `2`, `2`, `false` | Pinning thread CPU/BLAS agar tidak thrashing di WSL2. |
+
+**Opsional (backend Bonsai, dikomentari di `.env.example`)**: `BONSAI_HOST`, `BONSAI_PORT`, `LLAMA_SERVER_BIN`, `MODEL_PATH`, `CUDA_LIB_DIR`.
+
+**Bukan variabel `.env`**: port service tetap `8000` (di-hardcode `main.py` dan `Dockerfile`), dan endpoint chat tetap `/v1/chat/completions`.
 
 ---
 
@@ -274,6 +299,21 @@ Rekan tim yang menerima URL tunnel **TIDAK PERLU** memasang Python, dependensi A
    ```text
    https://rapidly-academic-compass.trycloudflare.com/docs
    ```
+---
+
+### Berbagi via 9router (Tunnel Port `20128`)
+
+Jika yang dibagikan adalah **tunnel 9router**, rekan tim terhubung lewat kontrak OpenAI-compatible (bukan endpoint Google):
+
+| Item | Nilai |
+|---|---|
+| Base URL | `https://<tunnel-9router>` — request ke `/v1/chat/completions` |
+| Auth | Header `Authorization: Bearer <NINE_ROUTER_API_KEY>` |
+| Model | Wajib prefix provider, mis. `ag/gemini-3.8-flash-low` |
+| Key | Terbitan dashboard 9router (`sk-...`), **bukan** key Google Gemini |
+
+Gejala salah konfigurasi: client Gemini-native / SDK `google-genai` yang tidak diarahkan ke 9router memanggil `generativelanguage.googleapis.com` secara langsung, lalu mengembalikan `400 API key not valid. Please pass a valid API key.` — pesan itu berasal dari Google, bukan dari 9router, dan tidak akan muncul pada request yang benar-benar melewati 9router.
+
 ---
 
 ## Pengujian & Regresi (Testing)

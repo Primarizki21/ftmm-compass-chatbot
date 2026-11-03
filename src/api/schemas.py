@@ -106,6 +106,12 @@ class OllamaHealthDetail(BaseModel):
     host: str
     default_model: str
 
+class NineRouterHealthDetail(BaseModel):
+    online: bool
+    host: str
+    default_model: str
+
+
 
 class HealthResponse(BaseModel):
     status: str = "healthy"
@@ -113,11 +119,13 @@ class HealthResponse(BaseModel):
     active_backend: str = "bonsai"
     bonsai_online: bool = False
     ollama_online: bool = True
+    nine_router_online: bool = False
     generator_model: str = "bonsai-2-4b"
     embedding_model: str = "nomic-embed-text-v2-moe"
     default_model: str = "bonsai-2-4b"
     bonsai: BonsaiHealthDetail | None = None
     ollama: OllamaHealthDetail | None = None
+    nine_router: NineRouterHealthDetail | None = None
 
 
 class CourseItem(BaseModel):

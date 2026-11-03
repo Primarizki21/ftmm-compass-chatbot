@@ -187,8 +187,11 @@ def test_react_agent_with_bonsai_client():
 
     mock_adapter.chat.side_effect = [step1_resp, step2_resp]
 
-    engine = ReActAgentEngine(model="bonsai-2-4b", llm_client=mock_adapter)
-    result = engine.generate_answer(query="Daftar matkul semester 1 TSD apa saja?")
+    mock_embed_client = MagicMock()
+    mock_embed_client.embed.return_value = {"embeddings": [[0.1] * 768]}
+    with patch("src.engine.decider.get_ollama_client", return_value=mock_embed_client):
+        engine = ReActAgentEngine(model="bonsai-2-4b", llm_client=mock_adapter)
+        result = engine.generate_answer(query="Daftar matkul semester 1 TSD apa saja?")
 
     assert result.architecture == "ReAct Agent (Native Tool-Calling)"
     assert "TSD" in result.answer or "Kalkulus" in result.answer
