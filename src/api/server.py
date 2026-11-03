@@ -233,9 +233,17 @@ async def handle_health_check(strict: bool = False) -> HealthResponse:
             ollama_online = False
 
         try:
-            nr_resp = await client.get(f"{nine_router_base_url}/v1/models")
+            nr_key = os.getenv("NINE_ROUTER_API_KEY", "").strip()
+            nr_headers = {"Authorization": f"Bearer {nr_key}"} if nr_key else {}
+            nr_resp = await client.get(f"{nine_router_base_url}/v1/models", headers=nr_headers)
             if nr_resp.status_code == 200:
                 nine_router_online = True
+            elif nr_resp.status_code in (401, 403):
+                logger.warning(
+                    "9router di %s menolak key health check (HTTP %s). Endpoint tunnel wajib menyertakan NINE_ROUTER_API_KEY.",
+                    nine_router_base_url,
+                    nr_resp.status_code,
+                )
         except Exception:
             nine_router_online = False
 

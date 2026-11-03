@@ -196,6 +196,24 @@ def test_health_check_with_nine_router():
     asyncio.run(_run())
 
 
+def test_health_check_nine_router_sends_bearer_key():
+    async def _run():
+        env = {"LLM_BACKEND": "nine_router", "NINE_ROUTER_API_KEY": "sk-health-key"}
+        with patch.dict(os.environ, env):
+            with patch("httpx.AsyncClient.get") as mock_get:
+                mock_ok = MagicMock()
+                mock_ok.status_code = 200
+                mock_get.return_value = mock_ok
+
+                await handle_health_check(strict=False)
+
+                models_calls = [c for c in mock_get.call_args_list if "/v1/models" in c.args[0]]
+                assert models_calls, "health check must probe 9router /v1/models"
+                assert models_calls[0].kwargs["headers"] == {"Authorization": "Bearer sk-health-key"}
+
+    asyncio.run(_run())
+
+
 def test_nine_router_live_smoke():
     if not os.getenv("NINE_ROUTER_API_KEY"):
         pytest.skip("NINE_ROUTER_API_KEY not set; skipping live 9router smoke test")
